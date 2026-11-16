@@ -47,33 +47,35 @@ Son güncelleme: 16 Kasım 2026. Kaynak: YouTube Studio + TikTok "Video analysis
 - [ ] **Finalde tek satırlık bir yorum sorusu** var (ör. "Who's the real NPC here?").
 - [ ] Sabit bir seri kartı ("💿 DISC 2") kullanılıyor; abone dönüşümünü artırmak için.
 
-## 4. Aynı hikâyeyi iki tipte render etmek (A/B)
-Her hikâye iki versiyon olarak çıkar:
+## 4. Yeni videolarda iki tip render (A/B)
+Paylaşılmış videolar **yeniden kurgulanmayacak ve yeniden yüklenmeyecek** (reuse içerik riski). Bu A/B testi yalnızca yeni hikâyelere uygulanır: her yeni hikâye iki versiyon olarak çıkar.
 
 | | **Tip A — Hızlı kesim** | **Tip B — Hikâye kesimi** |
 |---|---|---|
-| Hedef | TikTok + Reels (+ Shorts testi) | YouTube Shorts (+ TikTok testi) |
+| Hedef | TikTok + Reels | YouTube Shorts |
 | Süre | 15–22 sn | 28–40 sn |
-| Açılış | Karşıtlık / sonuç ilk karede ("80 HOURS · 0 TOKENS") | Merak sorusu ilk karede ("HE SEARCHED FOR THE TOKEN ALL GAME...") |
-| Tempo | Sessizlik yok; her 1,5–2 sn'de yeni bir olay | Sessizlik yok; kısa nefes anları müzik veya SFX ile dolu |
-| Final | Punchline, hemen ardından döngü | Punchline, kısa bir tepki anı, döngü ve yorum sorusu |
+| Açılış | Karşıtlık ya da sonuç ilk karede | Merak sorusu ilk karede |
+| Tempo | Sessizlik yok; her 1,5–2 sn'de yeni bir olay | Sessizlik yok; nefes anları müzik veya SFX ile dolu |
+| Final | Punchline, ardından döngü | Punchline, tepki, döngü ve yorum sorusu |
 
-**Ölçüm:** Her iki tip her iki platformda aynı saatte (TR 19:00–21:00) ama farklı günlerde paylaşılır. 48. saatte şu metrikler not edilir:
-- YT: izleyen/geçen %, ortalama izleme süresi, izlenme yüzdesi
-- TT: 3. saniyedeki retention, ortalama izleme süresi, sonuna kadar izleme oranı, yorum ve paylaşım
+Ölçüm: 48. saatte YT izleyen/geçen oranı ve ortalama izleme süresi, TT 3. saniyedeki retention ve sonuna kadar izleme oranı.
+Hedefler: YT izleyen oranı ≥ %60; TT 3. saniyede kalan ≥ %50, sonuna kadar izleyen ≥ %20.
 
-Hedefler: YT'de izleyen oranı **≥ %60**, TT'de 3. saniyede kalan **≥ %50** ve sonuna kadar izleme **≥ %20**.
-
-## 5. Mevcut videolar için yeniden kurgu planı
-| Video | Yapılacak |
+## 5. Paylaşılmış videolardan çıkan dersler (yeni videolara uygulanır)
+| Video | Ders |
 |---|---|
-| **I DON'T GET IT** (ilk sırada) | 0:02 ve 0:06'daki sessizlikler kaldırılacak. Sandık ~0:01,5'te açılacak; açılış sesi, "womp" efekti ve "EMPTY?!" eklenecek. Arkadaşlar ~0:03,5'te ayak sesi ve müzik vuruşuyla girecek. Açılış karesine "80 HOURS · 0 TOKENS" satırı eklenecek. Toplam süre 27 → ~22 sn. Son kare ilk kareye bağlanacak. Script repoda yok: video dosyası (ffmpeg ile yeniden kurgu) ya da `.py` dosyası gerekiyor. |
-| **Rat King** | İlk 20 sn sıkıştırılacak ve çatışma 0. saniyeye alınacak. Tip A versiyonu ~25 sn olacak. |
-| **Last player online** | Karanlık ilk karenin yerine aydınlık, büyük yazılı bir kare ve görünür bir tehdit konacak. "PLAYERS: 2/16" yazısı ekranı dolduracak. |
-| **Cat PS1 fighter** | İlk karede can barları, "ROUND 1 — FIGHT!" yazısı ve hemen bir vuruş olacak. |
-| **Wrong NPC** | Handoff'ta 0 görüntülemede takıldığı yazıyor; yayın durumu kontrol edilecek. Yeniden kurguda "SIDE QUEST ACTIVATED" açılışı kullanılacak. |
+| I DON'T GET IT | 0:02 ve 0:06'daki sessizlik izleyiciyi kaybettirdi. Punchline daha erken gelmeli, karşıtlık ("80 HOURS · 0 TOKENS") ilk karede olmalı. |
+| Rat King | Hikâye tuttu, ama giriş 20 sn sürdü. Çatışma 0. saniyede başlamalı. |
+| Last player online | Karanlık ilk kare ve küçük yazı kaydırılmaya yol açtı. Horror videolarda da ilk kare aydınlık ve okunur olmalı. |
+| Cat PS1 fighter | Döngü çalıştı (%162), ama vaat (can barı, "FIGHT!") ilk karede görünmüyordu. |
 
-## 6. Eksik veriler
+## 6. Analiz ritmi
+- **Video başına:** 48–72. saatte tek bir kontrol. Shorts'un ilk test dalgası bu sürede biter. 7. günde son bir not alınır. Arada bakılmaz.
+- **Haftalık:** Sabit bir günde (ör. Pazar) o haftanın videoları bu dosyaya eklenir.
+- **Yön değişikliği:** Ancak ~15–20 video ya da 4–6 hafta veri birikince. Tek bir videoya bakarak format değiştirilmez.
+- Her seferinde **tek bir değişkeni** değiştir (açılış, süre ya da tempo); aksi halde neyin işe yaradığı anlaşılmaz.
+
+## 7. Eksik veriler
 - "Last player online" videosunun YT retention grafiği ve ortalama izleme süresi
 - TikTok "Viewers" sekmesi (trafik kaynağı, ülke dağılımı)
 - Instagram Reels metrikleri

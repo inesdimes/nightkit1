@@ -20,7 +20,7 @@ Paste this file (or the repo link) at the start of a new chat so Claude can cont
 | The Rat King, AUTO-TRACK (face_track.py), earlier GTA/streamer remakes | see examples | done |
 
 ## Analytics
-- See `ANALYTICS.md` (16 Nov 2026): data, diagnosis, editing checklist, A/B plan (Type A fast cut / Type B story cut), re-cut plan per video.
+- See `ANALYTICS.md` (16 Nov 2026): data, diagnosis, editing checklist, A/B plan for NEW videos (no re-cuts of posted ones), lessons, review rhythm.
 
 ## Pipeline
 - Renderer: `nightkit` + **`nightkit/zraster.py` (z-buffer, use this — fixes "seeing inside models")**. Draw face decals as separate layers with `bias=1.004`; tag decals with `q['hc']` (head centre) and cull when `|c-cam| >= |hc-cam|`.
