@@ -29,6 +29,7 @@ POV_IMPACT=15.35                              # seen through the gap
 SLAM=29.8
 CRASH=43.6
 PUSHES=[45.45,46.35,47.25]
+BOSS_DRAW=25.55; SWORD_DROP=A.SWORD_DROP+24.7
 LETTERS_ON=49.2; BAR_OFF=(51.4,51.9); BAR_ON=54.0
 
 # ======================= B-only set dressing: abandoned corridor, damage, lever =======================
@@ -63,10 +64,11 @@ def dressing():
     Q+=box(lx-0.06,lx+0.04,ly-0.45,ly+0.45,lz-0.22,lz+0.22,A.IRON_L)+box(lx-0.02,lx+0.04,ly+0.45,A.GATE_H,lz-0.03,lz+0.03,A.IRON)
     return Q
 DRESS=dressing()
+def lever_tip(ang): lx,ly,lz=LEVER; return np.array([lx+0.25,ly+0.5*math.cos(ang),lz+0.5*math.sin(ang)])
 def lever(ang):
-    lx,ly,lz=LEVER; tip=np.array([lx+0.25,ly+0.62*math.cos(ang),lz+0.62*math.sin(ang)])
+    lx,ly,lz=LEVER; tip=lever_tip(ang)
     return seg((lx+0.25,ly,lz),tip,0.07,A.IRON_L)+box(lx+0.02,lx+0.3,ly-0.06,ly+0.06,lz-0.06,lz+0.06,A.IRON)+box(tip[0]-0.07,tip[0]+0.07,tip[1]-0.07,tip[1]+0.07,tip[2]-0.07,tip[2]+0.07,(150,28,28))
-def lever_angle(t): return lerp(-0.9,0.9,sm(seg01(t,21.35,21.85)))
+def lever_angle(t): return lerp(0.5,-0.5,sm(seg01(t,21.35,21.85)))
 
 # ======================= state =======================
 def impact(t,lst,dur): return A.impact(t,lst,dur)
@@ -86,19 +88,22 @@ def boss_b(t):
     if t<17.2:                                                    # POV: approaches, shoves, thrown back
         if t<15.15:
             u=sm(seg01(t,13.6,15.15)); z=lerp(7.0,1.75,u)
-            return dict(base=(0,0,z),yaw=PI,walk=t*5.2 if u<0.98 else 0.0,sword='back',rh=(0.95,lerp(1.6,2.7,sm(seg01(t,14.6,15.15))),lerp(0.2,0.9,sm(seg01(t,14.6,15.15)))),
-                        lh=(-0.95,lerp(1.6,2.8,sm(seg01(t,14.6,15.15))),lerp(0.2,0.9,sm(seg01(t,14.6,15.15)))),lean=0.15*u)
+            a_=sm(seg01(t,14.6,15.15)); lean=0.15*u
+            return dict(base=(0,0,z),yaw=PI,walk=t*5.2 if u<0.98 else 0.0,sword='back',rh=(lerp(0.92,1.15,a_),lerp(1.55,2.8,a_),lerp(0.2,0.8,a_)),
+                        lh=(lerp(-0.92,-1.15,a_),lerp(1.55,2.9,a_),lerp(0.2,0.8,a_)),lean=lean)
         k=sm(seg01(t,POV_IMPACT,POV_IMPACT+0.5)); rec=sm(seg01(t,16.1,16.9))
-        z=lerp(1.65,3.7,k); reach=max(0.2,1.65-A.BARRIER_Z-0.12-(z-1.65))
-        return dict(base=(0,0,z),yaw=PI,sword='back',rh=(1.2,lerp(2.8,3.3,k*(1-rec)),lerp(0.95,0.3,k)),lh=(-1.2,lerp(2.9,3.4,k*(1-rec)),lerp(0.95,0.3,k)),
-                    lean=lerp(0.2,-0.3,k)*(1-rec)+0.05*rec,head=0.0)
-    if t<23.6: return dict(base=(-1.3,0,8.0),yaw=0.0,rh=(0.95,1.5,0.25),tip=(1.3,0.1,1.6))
+        z=lerp(1.75,3.7,k); lean=lerp(0.18,-0.3,k)*(1-rec)+0.05*rec; yr=lerp(2.8,3.3,k*(1-rec)); yl=lerp(2.9,3.4,k*(1-rec))
+        D=1.75-A.BARRIER_Z-0.17
+        return dict(base=(0,0,z),yaw=PI,sword='back',rh=(1.15,yr,lerp(A.reach_local(D,0.18,yr,1.55),0.3,k)),lh=(-1.15,yl,lerp(A.reach_local(D,0.18,yl,1.55),0.3,k)),lean=lean,head=0.0)
+    if t<23.6:
+        w=seg01(t,17.2,20.2); tu=sm(seg01(t,17.2,17.8))
+        return dict(base=(lerp(0.0,-1.3,sm(w)),0,lerp(3.7,8.0,sm(w))),yaw=lerp(PI,2*PI,tu),walk=t*5.2 if 0<w<1 else 0.0,sword='back',rh=A.BOSS_IDLE_RH)
     if t<33.0:                                                    # A's arrival behaviour, slowed down
-        u=sm(seg01(t,23.9,25.3)); yaw=lerp(0.0,PI,u); r=sm(seg01(t,25.6,26.3))
-        rh=(0.95,lerp(1.5,2.3,r),lerp(0.25,0.9,r)); tip=(lerp(1.3,0.9,r),lerp(0.1,3.4,r),lerp(1.6,2.6,r))
-        l=sm(seg01(t,31.6,32.6)); rh=lerp3(rh,(0.92,1.6,0.25),l); tip=lerp3(tip,(1.1,0.05,1.9),l)
-        return dict(base=(-1.3,0,8.0),yaw=yaw,rh=rh,tip=tip,head=0.0)
-    P=[(33.0,(-1.3,8.0)),(35.5,(-1.3,3.4)),(37.4,(-0.1,1.4)),(39.4,(0.0,-0.2)),(40.0,(0.0,-1.4)),(40.9,(0.0,-1.4)),(47.5,(0.0,-14.0))]
+        u=sm(seg01(t,23.9,25.3)); yaw=lerp(0.0,PI,u); sw,rh,tip=A.boss_draw(t,BOSS_DRAW)
+        l=sm(seg01(t,31.6,32.6))
+        if l>0: rh=lerp3(rh,(0.92,1.6,0.25),l); tip=lerp3(tip,(1.1,0.05,1.9),l)
+        return dict(base=(-1.3,0,8.0),yaw=yaw,sword=sw,rh=rh,tip=tip,head=0.0)
+    P=[(33.0,(-1.3,8.0)),(35.5,(-1.3,3.4)),(36.5,(-1.3,1.9)),(38.2,(0.0,0.2)),(39.4,(0.0,-0.8)),(40.0,(0.0,-1.4)),(40.9,(0.0,-1.4)),(47.5,(0.0,-14.0))]
     for (t0,p0),(t1,p1) in zip(P,P[1:]):
         if t<t1 or t1==P[-1][0]: u=seg01(t,t0,t1); x=lerp(p0[0],p1[0],u); z=lerp(p0[1],p1[1],u); moving=p0!=p1; break
     lean=-0.12*math.sin(PI*seg01(t,40.0,40.9))                    # stops, looks up at the daylight: free
@@ -106,26 +111,39 @@ def boss_b(t):
     return dict(base=(x,0,z),yaw=yaw,walk=t*5.2 if moving else 0.0,rh=(0.92,1.6,0.25),tip=(1.1,0.05,1.9),lean=lean)
 
 LOW=dict(sword='hand',rh=(0.3,0.95,0.35),swing=2.0)              # sword drawn, held low
+SIDE=dict(sword='hand',rh=(0.3,0.9,0.05),swing=3.0)              # sword drawn, pointing at the floor by his side (near walls)
+KN_LEVER=(-1.45,LEVER[2]-0.15)
+def to_local(p,base,yaw): return tuple(Ry(-yaw)@(np.array(p,float)-np.array(base,float)))
 def knight_b(t):
     if t<7.6: u=seg01(t,4.0,7.6); return dict(base=(0.2,0,lerp(-11.0,-5.7,u)),yaw=0.0,walk=t*7.0,head=0.25*math.sin(t*1.3),**LOW)
     if t<9.2:
         g=sm(seg01(t,7.8,8.2)); return dict(base=(0.2,0,-5.7),yaw=0.0,lean=-0.12*g,sword='hand',rh=lerp3((0.3,0.95,0.35),(0.3,1.2,0.35),g),swing=lerp(2.0,0.45,g),head=0.0)
     if t<12.2:
-        u=sm(seg01(t,9.2,10.6)); x=lerp(0.2,-1.45,u); z=lerp(-5.7,-0.95,u); yaw=lerp(0.0,-PI/2,sm(seg01(t,10.3,10.8)))
-        touch=sm(seg01(t,10.6,10.85))*(1-sm(seg01(t,10.95,11.3)))
-        return dict(base=(x,0,z),yaw=yaw,walk=t*7.0 if u<0.99 else 0.0,lh=(-0.1,1.45,lerp(0.2,0.62,touch)) if touch>0.02 else None,
-                    head=(0.9*sm(seg01(t,11.0,11.4)) if t>11.0 else 0.0),lean=-0.08*sm(seg01(t,10.95,11.2)),**LOW)
+        u=sm(seg01(t,9.2,10.6)); x=lerp(0.2,-1.6,u); z=lerp(-5.7,-0.95,u); yaw=lerp(0.0,-PI/2,sm(seg01(t,10.3,10.8)))
+        touch=sm(seg01(t,10.6,10.85))*(1-sm(seg01(t,10.95,11.3))); hold=sm(seg01(t,9.6,10.3))
+        return dict(base=(x,0,z),yaw=yaw,walk=t*7.0 if u<0.99 else 0.0,lh=(-0.1,1.45,lerp(0.2,0.52,touch)) if touch>0.02 else None,
+                    head=(0.9*sm(seg01(t,11.0,11.4)) if t>11.0 else 0.0),lean=-0.08*sm(seg01(t,10.95,11.2)),sword='hand',
+                    rh=lerp3(LOW['rh'],SIDE['rh'],hold),swing=lerp(LOW['swing'],SIDE['swing'],hold))
+    if t<17.2 and t>=16.8:
+        u=sm(seg01(t,16.8,17.5)); return dict(base=(0.0,0,lerp(-1.1,-1.9,u)),yaw=0.0,walk=t*7.0,lean=0.22*(1-u),**LOW)
     if t<17.2:
-        u=sm(seg01(t,12.2,13.0)); x=lerp(-1.45,0.0,u); z=lerp(-0.95,-1.1,u)
-        return dict(base=(x,0,z),yaw=lerp(-PI/2,0.0,u),walk=t*7.0 if u<0.99 else 0.0,lean=0.22*sm(seg01(t,12.8,13.4)),**LOW)
+        u=sm(seg01(t,12.2,13.0)); x=lerp(-1.6,0.0,u); z=lerp(-0.95,-1.1,u); hold=sm(seg01(t,12.3,12.9))
+        return dict(base=(x,0,z),yaw=lerp(-PI/2,0.0,u),walk=t*7.0 if u<0.99 else 0.0,lean=0.22*sm(seg01(t,12.8,13.4)),sword='hand',
+                    rh=lerp3(SIDE['rh'],LOW['rh'],hold),swing=lerp(SIDE['swing'],LOW['swing'],hold))
     if t<20.2:
-        u=sm(seg01(t,17.2,17.8)); tilt=0.35*sm(seg01(t,18.0,18.5))*(1-sm(seg01(t,19.6,20.0)))
+        u=sm(seg01(t,16.8,17.5)); tilt=0.35*sm(seg01(t,18.0,18.5))*(1-sm(seg01(t,19.6,20.0)))
         return dict(base=(0.0,0,lerp(-1.1,-1.9,u)),yaw=0.0,walk=t*7.0 if 0.02<u<0.98 else 0.0,head=tilt,lean=-0.05,**LOW)
     if t<23.6:
-        if t<21.1: u=sm(seg01(t,20.3,21.1)); return dict(base=(lerp(0.0,-1.4,u),0,lerp(-1.9,-1.3,u)),yaw=lerp(0.0,-PI/2,u),walk=t*7.0,**LOW)
-        if t<22.6:
-            pull=sm(seg01(t,21.3,21.85)); return dict(base=(-1.4,0,-1.3),yaw=-PI/2,lh=(-0.05,lerp(1.75,1.0,pull),0.5),**LOW)
-        u=sm(seg01(t,22.6,23.5)); return dict(base=(lerp(-1.4,0.0,u),0,lerp(-1.3,-1.05,u)),yaw=lerp(-PI/2,0.0,u),walk=t*7.0 if u<0.99 else 0.0,**LOW)
+        if t<21.1:
+            u=sm(seg01(t,20.3,21.1)); h=sm(seg01(t,20.4,21.0))
+            return dict(base=(lerp(0.0,KN_LEVER[0],u),0,lerp(-1.9,KN_LEVER[1],u)),yaw=0.0,walk=t*7.0 if u<0.99 else 0.0,sword='hand',rh=lerp3(LOW['rh'],SIDE['rh'],h),swing=lerp(LOW['swing'],SIDE['swing'],h))
+        if t<22.6:                                                 # left hand on the lever handle the whole time it moves
+            base=(KN_LEVER[0],0,KN_LEVER[1]); grab=sm(seg01(t,21.1,21.35)); rel=sm(seg01(t,22.0,22.3))
+            hand=np.array(to_local(lever_tip(lever_angle(t)),base,0.0)); idle=np.array((-0.27,0.86,0.04))
+            lh=tuple(idle+(hand-idle)*grab*(1-rel))
+            return dict(base=base,yaw=0.0,lh=lh if grab*(1-rel)>0.02 else None,lean=-0.06*sm(seg01(t,21.35,21.85))*(1-rel),**SIDE)
+        u=sm(seg01(t,22.6,23.5)); h=sm(seg01(t,22.7,23.4))
+        return dict(base=(lerp(KN_LEVER[0],0.0,u),0,lerp(KN_LEVER[1],-1.05,u)),yaw=0.0,walk=t*7.0 if u<0.99 else 0.0,sword='hand',rh=lerp3(SIDE['rh'],LOW['rh'],h),swing=lerp(SIDE['swing'],LOW['swing'],h))
     if t<26.9: return dict(base=(0.0,0,-1.05),yaw=0.0,**LOW)
     if t<30.6:                                                    # enters cautiously, raises the sword
         u=seg01(t,26.9,28.6); r=sm(seg01(t,27.8,28.3)); look=-1.1*math.sin(PI*seg01(t,29.9,30.6)) if t>29.9 else 0.0
@@ -140,14 +158,12 @@ def knight_b(t):
                     head=look if t<37.0 else look,lean=-0.06*(1-low))
     if t<44.9: return A.knight_state(t-24.7)                       # run, crash, knocked down (A's motion)
     if t<54.6:                                                    # pushes the wall, then gives up under the inscription
-        z=lerp(1.75,A.BARRIER_Z+0.42,sm(seg01(t,44.6,45.1)))
-        iv,_=impact(t,[CRASH]+PUSHES,0.8); ph=1-iv; giveup=sm(seg01(t,48.6,49.4))
-        reach=z-A.BARRIER_Z-0.06
-        if giveup<0.5:
-            return dict(base=(0.0,0,z+0.12*ph),yaw=PI,rh=(0.25,1.35-0.1*ph,max(0.25,reach)),lh=(-0.25,1.4-0.1*ph,max(0.25,reach)),lean=0.15-0.1*ph,sword='hip')
-        return dict(base=(0.0,0,z+0.12),yaw=PI,lean=-0.12*sm(seg01(t,49.0,50.0)),sword='hip',head=0.25*math.sin(PI*seg01(t,51.2,52.4)))
+        z=lerp(1.75,A.BARRIER_Z+0.42,sm(seg01(t,44.9,45.35)))
+        if t<48.9: return A.knight_push(t,z,PUSHES)
+        back=sm(seg01(t,48.9,49.5))                                # lets go and steps back, looks up at the words
+        return dict(base=(0.0,0,lerp(A.BARRIER_Z+0.54,A.BARRIER_Z+0.7,back)),yaw=PI,lean=-0.12*sm(seg01(t,49.0,50.0)),sword='none',head=0.25*math.sin(PI*seg01(t,51.2,52.4)))
     turn=sm(seg01(t,54.6,55.3)); st=seg01(t,55.2,56.2); eyes=sm(seg01(t,55.5,56.2))
-    return dict(base=(0.0,0,lerp(A.BARRIER_Z+0.54,2.6,sm(st))),yaw=PI+turn*PI,walk=t*6.0 if 0.02<st<0.98 else 0.0,sword='hip',eyes=eyes,lean=0.0)
+    return dict(base=(0.0,0,lerp(A.BARRIER_Z+0.7,2.6,sm(st))),yaw=PI+turn*PI,walk=t*6.0 if 0.02<st<0.98 else 0.0,sword='none',eyes=eyes,lean=0.0)
 
 # ======================= shots =======================
 def shot(V):
@@ -155,10 +171,10 @@ def shot(V):
         iv,_=impact(V,ts,dur); return (math.sin(V*85)*k*iv,math.cos(V*67)*k*0.8*iv)
     if V<7.6:  u=sm(seg01(V,4.0,7.6)); return dict(cam=lerp3((0.9,1.7,-3.1),(0.85,1.65,-2.7),u),tgt=(0.1,1.4,-10.0),fov=62)
     if V<9.2:  return dict(cam=(0.9,1.6,-8.6),tgt=(0.0,2.1,0.0),fov=60,shake=sh_at(OUT_IMPACTS,3.0))
-    if V<12.2: u=sm(seg01(V,9.2,12.2)); return dict(cam=lerp3((0.8,1.65,-3.4),(0.7,1.6,-3.0),u),tgt=(-1.9,1.7,-0.6),fov=60,shake=sh_at(OUT_IMPACTS,2.5))
-    if V<13.6: u=sm(seg01(V,12.2,13.6)); return dict(cam=lerp3((1.0,2.05,-3.0),(0.9,2.0,-2.7),u),tgt=(0.0,1.6,0.0),fov=60)
+    if V<12.2: u=sm(seg01(V,9.2,12.2)); return dict(cam=lerp3((1.55,1.95,-3.3),(1.45,1.9,-3.0),u),tgt=(-1.9,1.75,-0.7),fov=60,shake=sh_at(OUT_IMPACTS,2.5))
+    if V<13.6: u=sm(seg01(V,12.2,13.6)); return dict(cam=lerp3((1.5,2.0,-3.7),(1.0,2.0,-2.9),u),tgt=(-0.2,1.55,-0.3),fov=62)
     if V<17.2: return dict(cam=(0.0,1.6,-1.55),tgt=(0.0,2.4,6.0),fov=70,shake=sh_at([POV_IMPACT],3.5),pov=True)
-    if V<20.2: u=sm(seg01(V,17.2,20.2)); return dict(cam=lerp3((0.0,1.6,-0.7),(0.0,1.6,-0.62),u),tgt=(0.0,1.45,-2.2),fov=64)
+    if V<20.2: u=sm(seg01(V,17.2,20.2)); return dict(cam=lerp3((0.0,1.6,-0.45),(0.0,1.6,-0.4),u),tgt=(0.0,1.45,-2.2),fov=64)
     if V<23.6: u=sm(seg01(V,20.2,23.6)); return dict(cam=lerp3((0.7,1.65,-3.9),(0.6,1.6,-3.5),u),tgt=(-1.5,1.4,-1.1),fov=62)
     if V<25.2: u=sm(seg01(V,23.6,25.2)); return dict(cam=lerp3((-0.95,1.6,-3.9),(-0.9,1.65,-3.5),u),tgt=(-1.1,2.3,8.0),fov=64)
     if V<26.9: u=sm(seg01(V,25.2,26.9)); return dict(cam=lerp3((1.0,2.2,4.3),(0.8,2.4,4.9),u),tgt=(-1.3,3.0,8.0),fov=60)
@@ -170,13 +186,13 @@ def shot(V):
     if V<46.4: return dict(cam=(0.9,1.6,5.2),tgt=(0.0,1.5,-6.0),fov=62,shake=sh_at(PUSHES,1.5,0.3))
     if V<47.6: u=sm(seg01(V,46.4,47.6)); return dict(cam=lerp3((0.3,1.5,-2.5),(0.3,1.5,-2.2),u),tgt=(0.0,1.35,1.2),fov=62,shake=sh_at(PUSHES,2.0,0.3))
     if V<54.6: u=sm(seg01(V,47.6,54.6)); return dict(cam=lerp3((0.0,1.0,8.0),(0.0,1.4,5.2),u),tgt=lerp3((0.0,4.6,0.0),(0.0,2.6,0.0),sm(seg01(V,50.5,53.5))),fov=64)
-    u=sm(seg01(V,54.6,56.35)); return dict(cam=lerp3((0.75,1.8,0.75),(0.7,1.75,1.0),u),tgt=(-0.2,1.9,15.0),fov=54,fog_end=40)
+    u=sm(seg01(V,54.6,56.35)); return dict(cam=lerp3((0.6,1.75,-1.1),(0.5,1.75,-0.7),u),tgt=(-0.1,1.9,15.0),fov=56,fog_end=40)
 
 # ======================= render =======================
 R=A.R
 def render_b(V,sh):
     cam=Camera.look(sh['cam'],sh['tgt']); cp=np.array(sh['cam'])
-    layers=[A.ARENA,DRESS,lever(lever_angle(V)),A.gate_doors(gate_b(V)),A.torches(V)]
+    layers=[A.ARENA,DRESS,lever(lever_angle(V)),A.gate_doors(gate_b(V)),A.torches(V),A.sword_on_floor(V,SWORD_DROP,A.SWORD_FROM,A.SWORD_TO)]
     ks=knight_b(V)
     if not sh.get('pov'): layers.append(prelit(knight(**ks),sh['cam']))
     bs=boss_b(V)
@@ -261,6 +277,41 @@ if TEST and __name__=='__main__':
     for i,im in enumerate(ims): shp.paste(im,(i*182,0))
     shp.resize((shp.width*2,640),Image.NEAREST).save('test.png'); sys.exit()
 
+# ======================= QA manifest =======================
+def _cam(t):
+    if t<4.0: return A.shot(t)['cam']
+    if t>=END_START: s_=A.shot(t-END_OFF); return None if s_.get('outside') else s_['cam']
+    return shot(t)['cam']
+QA=dict(A.QA,dur=DUR,frame=frame,
+    knight=lambda t: A.knight_state(t) if t<4.0 else (A.knight_state(t-END_OFF) if t>=END_START else knight_b(t)),
+    boss=lambda t: A.boss_state(t) if t<4.0 else (A.boss_state(t-END_OFF) if t>=END_START else boss_b(t)),
+    camera=_cam,
+    scenes=[dict(id='hook (=A)',t0=0.0,t1=4.0,action='boss shoves the invisible wall',env='arena'),
+            dict(id='corridor',t0=4.0,t1=7.6,action='knight walks the abandoned corridor, sword drawn',env='corridor'),
+            dict(id='impacts',t0=7.6,t1=9.2,action='impacts behind the gate; knight raises guard',env='corridor'),
+            dict(id='damage',t0=9.2,t1=12.2,action='knight touches gouges/cracks by the door',env='corridor'),
+            dict(id='peek',t0=12.2,t1=13.6,action='knight leans to the gap in the gate',env='corridor'),
+            dict(id='pov',t0=13.6,t1=17.2,action='POV: boss shoves the barrier, thrown back',env='through the gap',pov=True),
+            dict(id='confused',t0=17.2,t1=20.2,action='knight steps back, ? emote',env='corridor'),
+            dict(id='lever',t0=20.2,t1=23.6,action='knight pulls the lever, gate opens',env='corridor'),
+            dict(id='boss-turns',t0=23.6,t1=25.2,action='boss slowly turns around',env='corridor -> arena'),
+            dict(id='boss-line',t0=25.2,t1=26.9,action='boss: You finally came',env='arena'),
+            dict(id='enter',t0=26.9,t1=30.6,action='knight enters, raises sword; gate slams',env='arena'),
+            dict(id='lowers',t0=30.6,t1=33.0,action='boss lowers his sword',env='arena'),
+            dict(id='walk-out',t0=33.0,t1=38.6,action='boss walks past, knight steps aside',env='arena'),
+            dict(id='exit',t0=38.6,t1=41.0,action='boss passes the barrier, stops in the daylight',env='arena, open gate'),
+            dict(id='crash',t0=41.0,t1=44.4,action='knight runs and hits the wall',env='arena'),
+            dict(id='push',t0=44.4,t1=46.4,action='knight pushes the barrier',env='arena'),
+            dict(id='push-front',t0=46.4,t1=47.6,action='knight panics against the barrier (front)',env='corridor view'),
+            dict(id='reveal',t0=47.6,t1=54.6,action='ONE MUST REMAIN; health bars swap',env='arena'),
+            dict(id='throne',t0=54.6,t1=END_START,action='knight turns to the empty throne',env='arena'),
+            dict(id='daylight (=A)',t0=END_START,t1=END_START+1.95,action='old boss walks into daylight',env='outside',set='outside'),
+            dict(id='trapped (=A)',t0=END_START+1.95,t1=DUR,action='knight trapped behind the barrier',env='corridor view')],
+    weapon_events=[('knight',4.0,'hip','hand'),('boss',BOSS_DRAW+0.3,'back','hand'),('knight',SWORD_DROP,'hand','none')],
+    crossings=[('knight',27.0,28.6),('boss',36.6,39.8)],
+    allow_jump=[('knight',4.0),('boss',END_START)],
+    texts=lambda: A.QA['texts']())
+
 # ======================= AUDIO =======================
 def build_audio(path):
     import soundfile as _sf
@@ -313,6 +364,8 @@ def build_audio(path):
     for k in range(12): nb(21.95+k*0.12,0.1,300,2500,0.04,91+k)                          # chains
     tt=s.T(1.4); s.place(np.sin(2*np.pi*np.cumsum(90+40*np.sin(2*np.pi*1.2*tt))/sr)*np.sin(np.pi*tt/1.4)*0.6+s.filt_short(s.noise(1.4,3),lo=100,hi=900)*0.4,22.0,0.2)
     for k in range(3): step_b(23.95+k*0.5,0.2)
+    tt=s.T(0.6); s.place(s.filt_short(s.noise(0.6,18),lo=1800,hi=8000)*np.sin(np.pi*tt/0.6)+np.sin(2*np.pi*np.cumsum(600+900*tt)/sr)*np.exp(-tt*4)*0.3,BOSS_DRAW+0.3,0.1)
+    for k in range(4): step_b(17.4+k*0.7,0.12)                                            # boss walks back to the throne
     for k in range(5): step_k(27.0+k*0.34,0.045,110+k)
     chime(27.4,0.03)
     tt=s.T(0.45); s.place(s.filt_short(s.noise(0.45,8),lo=2500,hi=9000)*np.sin(np.pi*tt/0.45)+np.sin(2*np.pi*np.cumsum(2000+2500*tt)/sr)*np.exp(-tt*3)*0.2,27.8,0.08)
@@ -328,6 +381,7 @@ def build_audio(path):
     # escape
     for k in range(7): step_k(42.35+k*0.18,0.06,140+k)
     zap(CRASH,0.32,150); clank(CRASH+0.02,0.25,151); thud(CRASH+0.4,80,0.2,0.4); clank(CRASH+0.42,0.08,152)
+    for k,dt in enumerate((0.3,0.42,0.5)): clank(SWORD_DROP+dt,0.1-0.025*k,153+k)
     for k,ti in enumerate(PUSHES): zap(ti,0.22,160+k)
     # reveal
     tt=s.T(2.0); s.place(np.sin(2*np.pi*55*tt)*np.minimum(1,tt/0.6)*np.exp(-tt*1.2)+0.5*np.sin(2*np.pi*82.4*tt)*np.minimum(1,tt/0.6)*np.exp(-tt*1.2),LETTERS_ON,0.18)

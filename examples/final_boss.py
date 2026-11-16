@@ -80,9 +80,9 @@ def knight(base,yaw,walk=0.0,run=0.0,sword='hip',rh=None,lh=None,lean=0.0,head=0
     Q+=box(-0.04,0.04,0.79,0.87,0.12,0.135,GOLD,xf=T)                              # buckle
     for sx in (-1,1): Q+=box(sx*0.15,sx*0.27,1.2,1.36,-0.13,0.13,STEEL_L,xf=T)     # pauldrons
     # cape: hangs from the shoulders, flares when running
-    fl=0.12+0.35*run+0.1*abs(math.sin(walk))*(1 if walk else 0)
-    Q+=xform([quad([(-0.2,1.33,-0.12),(0.2,1.33,-0.12),(0.27,0.38+0.25*run,-0.16-fl),(-0.27,0.38+0.25*run,-0.16-fl)],CAPE),
-              quad([(0.2,1.33,-0.125),(-0.2,1.33,-0.125),(-0.27,0.38+0.25*run,-0.165-fl),(0.27,0.38+0.25*run,-0.165-fl)],CAPE_D)],T)
+    fl=0.12+0.35*run+0.1*abs(math.sin(walk))*(1 if walk else 0); cy=0.38+0.25*run+0.5*sit
+    Q+=xform([quad([(-0.2,1.33,-0.12),(0.2,1.33,-0.12),(0.27,cy,-0.16-fl-0.3*sit),(-0.27,cy,-0.16-fl-0.3*sit)],CAPE),
+              quad([(0.2,1.33,-0.125),(-0.2,1.33,-0.125),(-0.27,cy,-0.165-fl-0.3*sit),(0.27,cy,-0.165-fl-0.3*sit)],CAPE_D)],T)
     # head / helmet
     hy=1.36; Rh=Ry(head)
     def Hh(p): p=np.array(p,float); return T(np.array([0,hy,0])+Rh@(p-np.array([0,hy,0])))
@@ -101,14 +101,23 @@ def knight(base,yaw,walk=0.0,run=0.0,sword='hip',rh=None,lh=None,lean=0.0,head=0
         aq,_=limb(sh[sx],hand[sx],(sx*0.5,-0.4,-0.6),0.62,0.11,STEEL,STEEL_D,0.1); Q+=xform(aq,T)
         hp=hand[sx]; Q+=box(hp[0]-0.05,hp[0]+0.05,hp[1]-0.05,hp[1]+0.05,hp[2]-0.05,hp[2]+0.05,STEEL_D,xf=T)
     # short sword
+    Q+=xform(seg((-0.21,0.86,0.06),(-0.24,0.28+0.46*sit,-0.16-0.45*sit),0.05,LEATH),T)  # scabbard (always there; lies back when sitting)
     if sword=='hip':
-        Q+=xform(seg((-0.21,0.86,0.06),(-0.24,0.28,-0.16),0.05,LEATH),T)+box(-0.25,-0.17,0.86,0.9,0.0,0.12,GOLD,xf=T)
+        Q+=box(-0.25,-0.17,0.86,0.9,0.0,0.12,GOLD,xf=T)                                  # hilt of the sheathed sword
     elif sword=='hand':
         hp=hand[1]; dr=np.array([0,math.cos(swing),math.sin(swing)])            # swing 0 = straight up, pi/2 = forward
         tip=hp+dr*0.78; Q+=xform(seg(hp+dr*0.06,tip,0.055,BLADE,0.02),T)
         cr=np.cross(dr,np.array([0,0,1.0]) if abs(dr[2])<0.9 else np.array([0,1.0,0])); cr/=np.linalg.norm(cr)+1e-9
         Q+=xform(seg(hp+dr*0.06-cr*0.11,hp+dr*0.06+cr*0.11,0.04,GOLD),T)+xform(seg(hp-dr*0.1,hp+dr*0.05,0.035,LEATH),T)
     return Q
+def sword_on_floor(t,t_drop,start,end):
+    """the knight's sword after he drops it: falls from his hand (start) and lands flat at end (world coords)"""
+    if t<t_drop: return []
+    u=sm(seg01(t,t_drop,t_drop+0.3)); hp=np.array(lerp3(start,end,u))+np.array([0,0.25*math.sin(PI*u),0])
+    d0=np.array([0.0,-0.4,-1.0]); d1=np.array([1.0,0.0,0.35]); dr=d0+(d1-d0)*u; dr/=np.linalg.norm(dr)
+    tip=hp+dr*0.78; tip[1]=max(tip[1],0.03)
+    cr=np.cross(dr,np.array([0,1.0,0])); cr/=np.linalg.norm(cr)+1e-9
+    return seg(hp+dr*0.06,tip,0.055,BLADE,0.02)+seg(hp+dr*0.06-cr*0.11,hp+dr*0.06+cr*0.11,0.04,GOLD)+seg(hp-dr*0.1,hp+dr*0.05,0.035,LEATH)
 
 # ======================= THE BOSS (giant, dark armour, horns, huge sword) =======================
 def boss(base,yaw,walk=0.0,rh=None,lh=None,lean=0.0,head=0.0,sword='hand',tip=None,eyes=1.0,core=1.0):
@@ -159,6 +168,8 @@ def boss(base,yaw,walk=0.0,rh=None,lh=None,lean=0.0,head=0.0,sword='hand',tip=No
         Q+=xform(seg(a_,c_,0.3,BSWORD,0.06)+seg(c_-np.array([0.26,-0.14,0]),c_+np.array([0.26,-0.14,0])+np.array([0,0,0]),0.1,TRIM)+seg(c_,c_+np.array([0.2,0.38,0]),0.09,LEATH),T)
     else:
         hp=hand[1]; tp=np.array(tip if tip is not None else (1.0,0.12,1.6),float); dr=tp-hp; L=np.linalg.norm(dr); dr/=L+1e-9
+        if hp[1]+dr[1]*3.0<0.1:                                                     # tip rests on / drags along the floor
+            dy=-(hp[1]-0.1)/3.0; hz=np.array([dr[0],0.0,dr[2]]); hz/=np.linalg.norm(hz)+1e-9; dr=hz*math.sqrt(max(0.0,1-dy*dy))+np.array([0,dy,0])
         start=hp+dr*0.18; Q+=xform(seg(start,hp+dr*3.0,0.3,BSWORD,0.06),T)
         Q+=xform(seg(start+dr*0.05,hp+dr*2.9,0.07,BEDGE,0.075,emit=True),T)                          # glowing fuller
         cr=np.cross(dr,np.array([1.0,0,0]) if abs(dr[0])<0.9 else np.array([0,1.0,0])); cr/=np.linalg.norm(cr)+1e-9
@@ -260,21 +271,41 @@ def gate_angle(t):
     if t<14.8: return 1.75*(1-seg01(t,10.65,10.95)**2)
     return 1.75*sm(seg01(t,14.8,15.9))
 
+BOSS_IDLE_RH=(0.92,1.55,0.2); BOSS_GRIP=(0.75,3.65,-0.45); BOSS_OVER=(0.95,3.85,0.1)
+BOSS_BACKTIP=(-0.75,0.95,-0.48); BOSS_UPTIP=(1.0,7.0,-0.3); BOSS_READY_RH=(0.95,2.3,0.9); BOSS_READY_TIP=(0.9,3.4,2.6)
+def boss_draw(t,t0):
+    """(sword, rh, tip): reach to the hilt on the back, pull it up over the shoulder, bring it forward to ready"""
+    if t<t0+0.3: return 'back',lerp3(BOSS_IDLE_RH,BOSS_GRIP,sm(seg01(t,t0,t0+0.3))),None
+    u2=sm(seg01(t,t0+0.3,t0+0.6)); u3=sm(seg01(t,t0+0.6,t0+0.95))
+    if u3<=0: return 'hand',lerp3(BOSS_GRIP,BOSS_OVER,u2),lerp3(BOSS_BACKTIP,BOSS_UPTIP,u2)
+    return 'hand',lerp3(BOSS_OVER,BOSS_READY_RH,u3),lerp3(BOSS_UPTIP,BOSS_READY_TIP,u3)
+def shove_phase(t,impacts,lunge=0.12,dur=0.85):
+    """0 = hands on the wall, 1 = wound up. The lunge into each impact takes `lunge` s (no 1-frame jumps)."""
+    iv,_=impact(t,impacts,dur); ph=1-iv
+    nxt=[ti for ti in impacts if ti>t]
+    if nxt: ph=min(ph,(nxt[0]-t)/lunge)
+    return max(0.0,min(1.0,ph))
+def reach_local(D,lean,y,hip):
+    """local hand z so that, after the torso lean about the hip, the hand's front is D metres ahead of the body base"""
+    return (D-math.sin(lean)*(y-hip))/math.cos(lean)
 def boss_state(t):
     """returns dict for boss(), or None when off-set (outside)."""
     if t<4.0:                                               # HOOK: shoving the invisible wall
-        iv,_=impact(t,HOOK_IMPACTS,0.85); ph=1-iv            # 0 at contact, 1 at wind-up
-        z=1.55+0.35*ph; lean=0.22-0.12*ph
-        reach=z-BARRIER_Z-0.12
-        return dict(base=(0,0,z),yaw=PI,rh=(1.15,2.8-0.25*ph,reach),lh=(-1.15,2.9-0.2*ph,reach-0.05*ph),lean=lean,sword='back',head=0.08*math.sin(t*3))
-    if t<12.6:                                              # arrival: back to the gate, turns, readies sword
-        u=sm(seg01(t,5.6,6.8)); yaw=lerp(0.0,PI,u); r=sm(seg01(t,7.0,7.7))
-        rh=(0.95,lerp(1.5,2.3,r),lerp(0.25,0.9,r)); tip=(lerp(1.3,0.9,r),lerp(0.1,3.4,r),lerp(1.6,2.6,r))
+        ph=shove_phase(t,HOOK_IMPACTS)                       # 0 at contact, 1 at wind-up
+        z=1.55+0.35*ph; lean=0.22-0.12*ph; yr=2.8-0.25*ph; yl=2.9-0.2*ph
+        D=z-BARRIER_Z-0.17                                   # palms (0.15 half-size) stop just short of the wall
+        return dict(base=(0,0,z),yaw=PI,rh=(1.15,yr,reach_local(D,lean,yr,1.55)),lh=(-1.15,yl,reach_local(D,lean,yl,1.55)-0.05*ph),lean=lean,sword='back',head=0.08*math.sin(t*3))
+    if t<12.6:                                              # arrival: gives up at the door, walks away, turns, draws the sword
+        if t<5.6:
+            tu=sm(seg01(t,4.15,4.75)); w=seg01(t,4.0,5.6); x=lerp(0.0,-1.0,sm(w)); z=lerp(1.9,5.2,sm(w))
+            return dict(base=(x,0,z),yaw=lerp(PI,2*PI,tu),walk=t*5.2 if 0.0<w<1.0 else 0.0,sword='back',rh=BOSS_IDLE_RH)
+        yaw=lerp(0.0,PI,sm(seg01(t,5.6,6.8)))
+        sw,rh,tip=boss_draw(t,7.0)
         if t>=12.15:                                       # lowers the weapon
             l=sm(seg01(t,12.3,12.9)); rh=lerp3(rh,(0.92,1.6,0.25),l); tip=lerp3(tip,(1.1,0.05,1.9),l)
-        return dict(base=(-1.3,0,8.0),yaw=yaw,rh=rh,tip=tip,head=0.12*math.sin(t*0.9) if t<5.6 else 0.0)
-    # walks out: (-1.3,8) -> (-1.3,3.0) -> (-0.1,0.9) -> corridor -> daylight
-    P=[(12.6,(-1.3,8.0)),(14.6,(-1.3,3.4)),(15.7,(-0.1,1.4)),(16.4,(0.0,0.0)),(23.6,(0.0,-14.0))]
+        return dict(base=(-1.0,0,5.2),yaw=yaw,sword=sw,rh=rh,tip=tip,head=0.0)
+    # walks out, keeping clear of the knight: (-1,5.2) -> (-1.3,3.4) -> (-1.3,1.9) -> door -> corridor -> daylight
+    P=[(12.6,(-1.0,5.2)),(13.9,(-1.3,3.4)),(14.9,(-1.3,1.9)),(15.9,(0.0,0.2)),(16.4,(0.0,-0.8)),(23.6,(0.0,-14.0))]
     for (t0,p0),(t1,p1) in zip(P,P[1:]):
         if t<t1 or (t1==P[-1][0]):
             u=seg01(t,t0,t1); x=lerp(p0[0],p1[0],u); z=lerp(p0[1],p1[1],u); break
@@ -287,7 +318,7 @@ def knight_state(t):
         z=lerp(-0.75,-1.05,sm(seg01(t,4.0,5.2))); push=1-sm(seg01(t,5.0,5.6))
         return dict(base=(0.0,0,z),yaw=0.0,rh=(0.35,1.15,lerp(0.3,0.6,push)) if push>0.05 else None,lh=(-0.35,1.15,lerp(0.3,0.6,push)) if push>0.05 else None,head=0.0)
     if t<10.0:                                              # walks in through the barrier
-        u=seg01(t,9.0,10.0); return dict(base=(0.0,0,lerp(-0.9,2.6,u)),yaw=0.0,walk=t*9.0,head=0.0)
+        u=seg01(t,9.0,10.0); return dict(base=(lerp(0.0,0.3,u),0,lerp(-1.05,2.6,u)),yaw=0.0,walk=t*9.0,head=0.0)
     if t<17.6:
         dr=sm(seg01(t,10.0,10.4))                          # draws the sword
         rh=lerp3((0.27,0.86,0.04),(0.3,1.15,0.38),dr); sword='hand' if dr>0.35 else 'hip'
@@ -297,19 +328,23 @@ def knight_state(t):
         yaw=0.0 if t<15.0 else lerp(0.0,PI,sm(seg01(t,15.0,16.6)))           # turns to the door
         return dict(base=(0.3,0,2.6),yaw=yaw,rh=rh,sword=sword,swing=lerp(0.0,0.5,dr),head=look if t<15.0 else look*(1-seg01(t,15.0,16.0)),lean=0.0)
     if t<18.9:                                              # runs after him
-        u=seg01(t,17.6,18.9); z=lerp(2.6,BARRIER_Z+0.28,u**0.9); x=lerp(0.3,0.0,u)
-        return dict(base=(x,0,z),yaw=PI,walk=t*15,run=1.0,sword='hand',rh=(0.3,1.1,0.3),swing=0.4)
+        u=seg01(t,17.6,18.9); z=lerp(2.6,KNIGHT_STOP,u**0.9); x=lerp(0.3,0.0,u)
+        return dict(base=(x,0,z),yaw=PI,walk=t*15,run=1.0,sword='hand',rh=(0.3,1.1,0.2),swing=0.25)
     if t<20.4:                                              # crash, knocked back, sits
-        k=sm(seg01(t,18.9,19.25)); z=lerp(BARRIER_Z+0.28,1.75,k); sit=sm(seg01(t,19.05,19.45))*(1-sm(seg01(t,19.9,20.4)))
-        return dict(base=(0.0,0,z),yaw=PI,lean=-0.35*k*(1-sit),sit=sit,sword='hand',rh=(0.35,0.9,0.3),swing=1.2)
+        k=sm(seg01(t,18.9,19.25)); z=lerp(KNIGHT_STOP,1.75,k); sit=sm(seg01(t,19.05,19.45))*(1-sm(seg01(t,19.9,20.4)))
+        return dict(base=(0.0,0,z),yaw=PI,lean=-0.35*k*(1-sit),sit=sit,sword='hand' if t<SWORD_DROP else 'none',rh=(0.3,1.1,0.2) if t<SWORD_DROP else (0.35,0.9,0.3),swing=0.25)
     # pushes the barrier (mirror of the hook) ... then becomes the boss
-    z=lerp(1.75,BARRIER_Z+0.42,sm(seg01(t,20.2,20.65)))
-    iv,_=impact(t,KNIGHT_IMPACTS,0.8); ph=1-iv
-    reach=z-BARRIER_Z-0.06+0.0*ph
-    eyes=sm(seg01(t,25.4,26.2)) if t<26.6 else 1.0
-    turn=sm(seg01(t,25.0,25.9))*(1-sm(seg01(t,26.4,26.6))) if t<28.0 else 0.0
-    return dict(base=(0.0,0,z+0.12*ph),yaw=PI+turn*PI,rh=(0.25,1.35-0.1*ph,max(0.25,reach)) if turn<0.5 else None,lh=(-0.25,1.4-0.1*ph,max(0.25,reach)) if turn<0.5 else None,
-                lean=0.15-0.1*ph,eyes=eyes,sword='hip',head=0.0)
+    return knight_push(t,lerp(1.75,BARRIER_Z+0.42,sm(seg01(t,20.2,20.65))),KNIGHT_IMPACTS,
+                       eyes=sm(seg01(t,25.4,26.2)) if t<26.6 else 1.0,turn=sm(seg01(t,25.0,25.9)) if t<26.6 else 0.0)
+KNIGHT_STOP=BARRIER_Z+0.62                                 # where the running knight meets the wall
+SWORD_DROP=18.95; SWORD_FROM=(-0.3,1.0,0.85); SWORD_TO=(0.55,0.03,1.55)
+def knight_push(t,z,impacts,eyes=0.0,turn=0.0):
+    """palms against the barrier (mirror of the boss in the hook); turn>0.5 = has turned to face the arena"""
+    ph=shove_phase(t,impacts,0.1,0.8); zb=z+0.12*ph; lean=0.15-0.1*ph
+    hands=turn<0.02; zb+=0.15*turn                              # lets go of the wall before turning round
+    yr,yl=1.35-0.1*ph,1.4-0.1*ph; D=zb-BARRIER_Z-0.07
+    return dict(base=(0.0,0,zb),yaw=PI+turn*PI,rh=(0.25,yr,max(0.2,reach_local(D,lean,yr,0.82))) if hands else None,
+                lh=(-0.25,yl,max(0.2,reach_local(D,lean,yl,0.82))) if hands else None,lean=lean if hands else 0.0,eyes=eyes,sword='none',head=0.0)
 
 # ======================= SHOTS =======================
 def hook_shot(t):
@@ -320,12 +355,12 @@ def hook_shot(t):
 def shot(V):
     if V<4.0: return hook_shot(V)
     if V<6.3:  u=sm(seg01(V,4.0,6.3)); return dict(cam=lerp3((-0.95,1.6,-3.9),(-0.9,1.65,-3.4),u),tgt=(-1.1,2.3,8.0),fov=64)
-    if V<9.0:  u=sm(seg01(V,6.3,9.0)); return dict(cam=lerp3((1.0,2.2,4.3),(0.8,2.4,4.9),u),tgt=(-1.3,3.0,8.0),fov=60)
+    if V<9.0:  u=sm(seg01(V,6.3,9.0)); return dict(cam=lerp3((1.4,2.1,1.6),(1.2,2.3,2.1),u),tgt=(-1.0,3.0,5.2),fov=62)
     if V<12.15:
         sh=(0,0)
         if 10.95<=V<11.5: k=1-seg01(V,10.95,11.5); sh=(math.sin(V*80)*4*k,math.cos(V*65)*3*k)
         u=sm(seg01(V,9.0,12.15)); return dict(cam=lerp3((2.0,1.1,5.6),(1.7,1.2,5.0),u),tgt=(0.1,1.5,1.0),fov=66,shake=sh)
-    if V<15.8: u=sm(seg01(V,12.15,15.8)); return dict(cam=lerp3((6.2,2.6,6.4),(5.6,2.4,5.2),u),tgt=lerp3((-1.0,2.0,6.5),(-0.5,1.8,2.4),u),fov=66)
+    if V<15.8: u=sm(seg01(V,12.15,15.8)); return dict(cam=lerp3((6.2,2.6,6.4),(5.6,2.4,5.2),u),tgt=lerp3((-1.0,2.0,4.6),(-0.5,1.8,2.0),u),fov=66)
     if V<17.5: u=sm(seg01(V,15.8,17.5)); return dict(cam=lerp3((1.6,1.0,5.2),(1.3,1.0,4.8),u),tgt=(-0.1,2.0,-1.0),fov=66)
     if V<20.0:
         sh=(0,0)
@@ -353,7 +388,7 @@ def render_inside(V,sh):
     chars=[]
     chars.append(prelit(knight(**ks),sh['cam']))
     if bs is not None: chars.append(boss(**bs))
-    layers=[ARENA,gate_doors(gate_angle(V)),torches(V)]+chars
+    layers=[ARENA,gate_doors(gate_angle(V)),torches(V),sword_on_floor(V,SWORD_DROP,SWORD_FROM,SWORD_TO)]+chars
     L=torch_lights(V)
     fl,_=impact(V,HOOK_IMPACTS if V<4 else KNIGHT_IMPACTS,0.4)
     if fl>0: L=L+[((0,2.2,BARRIER_Z+0.6),(255,40,30),2.5*fl)]
@@ -475,6 +510,33 @@ if TEST and __name__=='__main__':
     for i,im in enumerate(ims): shp.paste(im,(i*182,0))
     shp.resize((shp.width*2,640),Image.NEAREST).save('test.png'); sys.exit()
 
+# ======================= QA manifest (tools/qa/scene_qa.py, PIPELINE.md) =======================
+QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,knight_fn=knight,boss_fn=boss,barrier_z=BARRIER_Z,gate_w=GATE_W,gate_h=GATE_H,corridor_w=GATE_W,
+    knight=lambda t: knight_state(t),
+    boss=lambda t: boss_state(t),
+    camera=lambda t: None if shot(t).get('outside') else shot(t)['cam'],
+    scenes=[dict(id='hook',t0=0.0,t1=4.0,action='boss shoves the invisible wall, barrier flashes red',env='arena, gate shut'),
+            dict(id='arrival',t0=4.0,t1=6.3,action='knight opens the gate; boss turns around',env='corridor -> arena'),
+            dict(id='boss-line',t0=6.3,t1=9.0,action='boss readies sword: You finally came',env='arena'),
+            dict(id='enter',t0=9.0,t1=12.15,action='knight walks in, draws sword; gate slams',env='arena, gate'),
+            dict(id='walk-out',t0=12.15,t1=15.8,action='boss lowers sword and walks past the knight',env='arena'),
+            dict(id='exit',t0=15.8,t1=17.5,action='boss passes through the barrier',env='arena, open gate'),
+            dict(id='crash',t0=17.5,t1=20.0,action='knight runs after him and hits the wall',env='arena, open gate'),
+            dict(id='push',t0=20.0,t1=21.0,action='knight pushes the barrier, boss leaves down the corridor',env='arena, open gate'),
+            dict(id='reveal',t0=21.0,t1=26.6,action='ONE MUST REMAIN; health bars swap; knight turns, eyes glow',env='arena'),
+            dict(id='daylight',t0=26.6,t1=28.55,action='old boss walks into daylight',env='outside',set='outside'),
+            dict(id='trapped',t0=28.55,t1=DUR,action='knight trapped behind the barrier',env='corridor view into arena')],
+    weapon_events=[('boss',7.3,'back','hand'),('knight',10.2,'hip','hand'),('knight',SWORD_DROP,'hand','none')],
+    crossings=[('knight',9.0,10.0),('boss',15.0,16.6)],
+    texts=lambda: [(k,ln,1) for k in SCR['text'] for ln in _wrap(SCR['text'][k].upper().replace('...','..'))]+[('N1',x,2) for x in ('WHY DO FINAL','BOSSES NEVER','LEAVE THEIR','ROOMS?')]
+          +[('hud','FINAL BOSS',2),('hud','KNIGHT',1),('letters','ONE MUST REMAIN',1)])
+def _wrap(txt,n=27):
+    out=[]; c=''
+    for w_ in txt.split():
+        if len(c)+len(w_)+(1 if c else 0)>n: out.append(c); c=w_
+        else: c=(c+' '+w_).strip()
+    return out+[c]
+
 # ======================= AUDIO =======================
 MOTIF=[(0,62,0.5),(0.5,65,0.5),(1.0,64,0.5),(1.5,57,1.0)]      # D-F-E-A: the music identity (shared with B)
 def build_audio(path):
@@ -515,7 +577,9 @@ def build_audio(path):
     # ---------- arrival ----------
     for k in range(10): nb(4.0+k*0.14,0.12,300,2500,0.04,20+k)                          # chains rattle
     tt=s.T(1.4); s.place(np.sin(2*np.pi*np.cumsum(90+40*np.sin(2*np.pi*1.2*tt))/sr)*np.sin(np.pi*tt/1.4)*0.6+s.filt_short(s.noise(1.4,3),lo=100,hi=900)*0.4,4.0,0.2)  # gate creak
-    for k in range(3): step_b(5.75+k*0.45,0.2)
+    for k in range(3): step_b(4.25+k*0.55,0.2)                                       # boss walks away from the door
+    for k in range(2): step_b(5.9+k*0.5,0.16)                                        # ...and turns
+    tt=s.T(0.6); s.place(s.filt_short(s.noise(0.6,17),lo=1800,hi=8000)*np.sin(np.pi*tt/0.6)+np.sin(2*np.pi*np.cumsum(600+900*tt)/sr)*np.exp(-tt*4)*0.3,7.3,0.1)   # draws the sword from his back
     # ---------- knight enters ----------
     for k in range(5): step_k(9.0+k*0.22,0.05,40+k)
     chime(9.2,0.03)
@@ -535,6 +599,7 @@ def build_audio(path):
     for k in range(7): step_k(17.65+k*0.18,0.06,60+k)
     for k,ti in enumerate(KNIGHT_IMPACTS): zap(ti,0.32 if k==0 else 0.22,30+k)
     clank(18.92,0.25,31); thud(19.3,80,0.2,0.4); clank(19.32,0.08,32)                  # falls on armour
+    for k,dt in enumerate((0.3,0.42,0.5)): clank(SWORD_DROP+dt,0.1-0.025*k,33+k)        # dropped sword clatters on the stone
     # ---------- reveal ----------
     tt=s.T(2.0); s.place(np.sin(2*np.pi*55*tt)*np.minimum(1,tt/0.6)*np.exp(-tt*1.2)+0.5*np.sin(2*np.pi*82.4*tt)*np.minimum(1,tt/0.6)*np.exp(-tt*1.2),21.0,0.18)  # letters ignite
     for k in range(5): note(M,23.05+k*0.07,84-k*3,0.08,0.03,'sq',0.5,20)                 # knight bar flickers out

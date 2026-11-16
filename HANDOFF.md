@@ -24,6 +24,9 @@ Paste this file (or the repo link) at the start of a new chat so Claude can cont
 ## Analytics
 - See `ANALYTICS.md` (16 Nov 2026): data, diagnosis, editing checklist, A/B plan for NEW videos (no re-cuts of posted ones), lessons, review rhythm.
 
+## Production process
+- Follow `PIPELINE.md` (asset lock, scene manifest `QA`, previews + `tools/qa/scene_qa.py`, final render, full review).
+
 ## Pipeline
 - Renderer: `nightkit` + **`nightkit/zraster.py` (z-buffer, use this — fixes "seeing inside models")**. Draw face decals as separate layers with `bias=1.004`; tag decals with `q['hc']` (head centre) and cull when `|c-cam| >= |hc-cam|`.
 - Internal 180x320, upscale x6, 24 fps. `TEST=1.0,5.0 python examples/X.py` → test.png; `PART=a:b` renders frames to `out/<prefix>_a.mp4`; `PART=audio` builds the wav; concat + mux with `-af loudnorm=I=-14:TP=-1.5`.
