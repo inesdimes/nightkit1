@@ -14,7 +14,17 @@ L={'N1':"Why do guards in video games forget you after ten seconds?",
    'G1':"Must've been the wind.",
    'G2':"HEY! STOP!",
    'G3':"Now I won't forget!",
-   'G4':"I'm the thief?!"}
+   'G4':"I'm the thief?!",
+   # ---- Experiment B (60 s) extra lines; N1, G1, G4 are shared with A ----
+   'G5':"WHERE DID HE GO?!",
+   'G6':"STOP RIGHT THERE!",
+   'N2':"Apparently, this guy's memory lasts ten seconds.",
+   'G7':"WAIT... SOMETHING'S WRONG!",
+   'G8':"I KNOW THERE WAS A THIEF!",
+   'G9':"I'LL WRITE IT DOWN!",
+   'G10':"NOW I'LL NEVER FORGET!",
+   'G11':"You are the thief...?",
+   'G12':"I knew I'd catch me!"}
 SPEED={'N1':1.13}                        # the hook line must fit in 3 s
 for key in (sys.argv[1:] or list(L)):
     v,sp,af=V[key[0]]
