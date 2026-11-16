@@ -12,7 +12,8 @@ from PIL import Image
 
 def clamp(v,a,b): return a if v<a else (b if v>b else v)
 
-def zrender(R,cam,layers,lights=(),fov=70,fog_start=4,fog_end=24,ambient=0.06,shake=(0,0),bias=None,cull=True):
+def zrender(R,cam,layers,lights=(),fov=70,fog_start=4,fog_end=24,ambient=0.06,shake=(0,0),bias=None,cull=True,return_z=False):
+    """return_z=True also returns the 1/Z buffer (0 = nothing drawn), for compositing transparent effects."""
     W,H=R.W,R.H; vi=R.view(cam,fov); cx,cy,cz,ca,sa,cp,sp,fpx=vi
     fog=np.array(R.fog,float)
     img=np.empty((H,W,3)); img[:]=fog
@@ -76,4 +77,5 @@ def zrender(R,cam,layers,lights=(),fov=70,fog_start=4,fog_end=24,ambient=0.06,sh
             sub=zb[y0:y1,x0:x1]; m=inside&(d>sub)
             if not m.any(): continue
             sub[m]=d[m]; img[y0:y1,x0:x1][m]=col
+    if return_z: return Image.fromarray(np.round(img).astype(np.uint8)),vi,zb
     return Image.fromarray(np.round(img).astype(np.uint8)),vi
