@@ -1,8 +1,10 @@
-import sys,os,math; sys.path.insert(0,'/home/claude/nk'); os.chdir('/home/claude/nk/examples')
+import sys,os,math
+NK=os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..'))
+sys.path.insert(0,NK); os.chdir(os.path.join(NK,'examples'))
 src=open('chest_scam.py').read(); src=src[:src.index('# ======================= PIRATE SHOP')]; __file__='chest_scam.py'; exec(src)
 from nightkit.zraster import zrender
 from nightkit import font, post
-OUTD='/home/claude/nk/out/logo'
+OUTD=os.path.join(NK,'out','logo')
 def glyph(ch): return font.FONT[ch]
 def disc(tilt_t=0.0,spin=0.3):
     """low-poly CD with an embossed pixel '2' on the label"""

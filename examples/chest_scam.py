@@ -2,6 +2,7 @@
 TEST=t1,t2 python examples/trex_size.py | PART=a:b | PART=audio"""
 import os, sys, math, json
 sys.path.insert(0,os.path.join(os.path.dirname(__file__),'..'))
+TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','tts'))   # Kokoro models + generated voice lines live here
 import numpy as np
 from PIL import Image, ImageDraw
 from nightkit.engine import Renderer, Camera, box, quad, tiled_plane, transform
@@ -274,7 +275,7 @@ def curtain(st):
         Q.append(quad([(x0+off,0,Z1-0.02),(x1+off,0,Z1-0.02),(x1+off,2.4,Z1-0.02),(x0+off,2.4,Z1-0.02)],(170,30,40) if k%2 else (140,20,30)))
     return Q
 # ======================= STORY STATE =======================
-SCRIPT=json.load(open('/home/claude/tts/v9/script.json'))
+SCRIPT=json.load(open(f'{TTS_DIR}/v9/script.json'))
 def on(key,t):
     for k,t0,txt,d in SCRIPT:
         if k==key: return t0<=t<t0+d
@@ -684,7 +685,7 @@ def build_audio(path):
     # ---------- voices ----------
     NB=np.zeros(n); duck=np.ones(n)
     for k_,t0,txt,dd in SCRIPT:
-        a,ar=_sf.read(f'/home/claude/tts/v9/{k_}.wav'); a=a if a.ndim==1 else a.mean(1)
+        a,ar=_sf.read(f'{TTS_DIR}/v9/{k_}.wav'); a=a if a.ndim==1 else a.mean(1)
         starts=[t0] if k_ not in ('C0',) else [0.55,28.75]
         if k_=='P1': starts=[1.55]
         for t0_ in starts:

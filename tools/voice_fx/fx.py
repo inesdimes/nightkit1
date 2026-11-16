@@ -1,11 +1,13 @@
 import soundfile as sf, numpy as np, subprocess, json
 from scipy.signal import fftconvolve, butter, sosfilt
+import os, tempfile
+TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','tts'))   # Kokoro models + generated voice lines live here
 SR=48000
 PLAN={1:(0.12,1.0),2:(1.52,1.05),3:(5.7,1.0),4:(9.75,1.0),5:(14.3,1.0),6:(19.4,1.05),7:(23.85,1.0),8:(28.62,1.18),9:(31.0,1.12),10:(32.25,1.12),
       11:(33.62,1.12),12:(36.1,1.15),13:(37.62,1.0),14:(38.88,1.05),15:(41.0,1.1),16:(43.6,1.05),17:(48.7,1.0),18:(52.28,1.1),19:(53.9,1.2),20:(56.1,1.0)}
 CRYSTAL={1,2,17,18,19}          # spoken from inside the crystal
 ECHOED={9,10,11,13}             # the copy's "shadow" voice answers
-TXT=[x[2] for x in json.load(open('/home/claude/tts/v5/script.json'))]+["Don't save here..."]
+TXT=[x[2] for x in json.load(open(f'{TTS_DIR}/v5/script.json'))]+["Don't save here..."]
 def ff(src,dst,af):
     subprocess.run(['ffmpeg','-nostdin','-v','error','-y','-i',src,'-af',af,'-ar',str(SR),'-ac','1',dst],check=True)
 def rd(p): a,_=sf.read(p); return a if a.ndim==1 else a.mean(1)

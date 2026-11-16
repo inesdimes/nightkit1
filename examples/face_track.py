@@ -2,6 +2,7 @@
 Run: python examples/face_track.py   (PART=a:b renders frames, PART=audio builds the soundtrack)"""
 import os, sys, math, json, random
 sys.path.insert(0,os.path.join(os.path.dirname(__file__),'..'))
+TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','tts'))   # Kokoro models + generated voice lines live here
 import numpy as np
 from PIL import Image, ImageDraw
 from nightkit.engine import Renderer, Camera, box, quad, tiled_plane, transform, rx, ry, rz, refresh
@@ -161,7 +162,7 @@ def chair(pull=0.0):
     Q+=box(x-0.04,x+0.04,0.1,0.42,z-0.04,z+0.04,(40,40,46))+box(x-0.3,x+0.3,0.05,0.1,z-0.3,z+0.3,(40,40,46))
     return Q
 # ======================= TIMELINE (story time = video time; the hook replays 21.0 s onward) =======================
-TTS=os.environ.get('TTS','/home/claude/tts')
+TTS=os.environ.get('TTS',TTS_DIR)
 SCRIPT=json.load(open(os.path.join(TTS,'v3','script.json')))
 DUR=34.5; N=int(DUR*FPS); STORY0=5.3
 CAM0=np.array([0.0,1.32,-0.95]); BFK=1.13

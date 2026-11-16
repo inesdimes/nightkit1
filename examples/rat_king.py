@@ -2,6 +2,7 @@
 Run: python examples/rat_king.py -> out/rat_king.mp4    REF=1 renders the character reference sheet."""
 import os, sys, math, json, wave
 sys.path.insert(0,os.path.join(os.path.dirname(__file__),'..'))
+TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','tts'))   # Kokoro models + generated voice lines live here
 import numpy as np
 from PIL import Image, ImageDraw
 from nightkit.engine import Renderer, Camera, box, quad, tiled_plane, transform, rx, ry, rz
@@ -288,7 +289,7 @@ if os.environ.get('REF'):
     for i,im in enumerate(tiles): sh.paste(im,((i%3)*242,(i//3)*322))
     sh.resize((sh.width*2,sh.height*2),Image.NEAREST).save('rat_ref.png'); sys.exit()
 # ======================= TIMELINE =======================
-TTS=os.environ.get('TTS','/home/claude/tts')
+TTS=os.environ.get('TTS',TTS_DIR)
 SCRIPT=json.load(open(os.path.join(TTS,'v2','script.json')))
 LTXT={k:txt for k,t,txt,d in SCRIPT}; LDUR={k:d for k,t,txt,d in SCRIPT}; NARR=[(k,t) for k,t,txt,d in SCRIPT]
 DUR=60.0; N=int(DUR*FPS)

@@ -2,6 +2,7 @@
 Run: TEST=t1,t2 python examples/last_save.py  |  PART=a:b (frames)  |  PART=audio"""
 import os, sys, math, json
 sys.path.insert(0,os.path.join(os.path.dirname(__file__),'..'))
+TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','tts'))   # Kokoro models + generated voice lines live here
 import numpy as np
 from PIL import Image, ImageDraw
 from nightkit.engine import Renderer, Camera, box, quad, tiled_plane, transform, refresh
@@ -414,8 +415,8 @@ def hud(img,T):
     subtitle(d,T)
     return img
 VOICE=os.environ.get('VOICE','kokoro')
-if VOICE=='enes': _N=json.load(open('/home/claude/tts/enes/fx/script.json')); NARR=_N[:19]
-else: NARR=json.load(open('/home/claude/tts/v5/script.json'))
+if VOICE=='enes': _N=json.load(open(f'{TTS_DIR}/enes/fx/script.json')); NARR=_N[:19]
+else: NARR=json.load(open(f'{TTS_DIR}/v5/script.json'))
 HIL={'ME.','NINE','HP.','RED','SAVE','SAFE.','SAVED.','FOOTSTEPS.','ONLY','CRACK.','CLOTH.','IT','STOPPED.',"DIDN'T.",'BODY','MY','LOAD','OLD','FIRST.'}
 WHISPER=(56.1,58.4,"DON'T SAVE HERE...") if VOICE=='enes' else (55.6,57.3,"DON'T SAVE HERE...")
 def wrap(txt,n=26):
@@ -567,7 +568,7 @@ def build_audio(path):
     s.L+=wind; s.R+=np.roll(wind,700)
     thud(56.6,55,0.45,0.9); nb(56.6,0.4,80,1500,0.12,130)
     # ---- whisper ----
-    a,ar=_sf.read('/home/claude/tts/v4/whisper_am_michael.wav'); a=a if a.ndim==1 else a.mean(1)
+    a,ar=_sf.read(f'{TTS_DIR}/v4/whisper_am_michael.wav'); a=a if a.ndim==1 else a.mean(1)
     a=np.interp(np.arange(int(len(a)*sr/ar))/sr,np.arange(len(a))/ar,a); a=s.filt_short(a,lo=500,hi=7000)
     if VOICE!='enes': s.place(a,55.6,0.5,-0.1); s.place(a,55.63,0.25,0.25)
     # ---- end ----
@@ -580,7 +581,7 @@ def build_audio(path):
     if VOICE=='enes':                                          # Enes' own recordings, already processed (fx/F*.wav, stereo)
         NL=np.zeros(n); NR=np.zeros(n); duck=np.ones(n)
         for key,t0,txt,dd in _N:
-            a,ar=_sf.read(f'/home/claude/tts/enes/fx/{key}.wav')
+            a,ar=_sf.read(f'{TTS_DIR}/enes/fx/{key}.wav')
             i=int(t0*sr); j=min(n,i+len(a)); NL[i:j]+=a[:j-i,0]; NR[i:j]+=a[:j-i,1]
             duck[max(0,i-int(0.08*sr)):min(n,i+int((dd+0.3)*sr))]=0.5
         duck=np.convolve(duck,np.ones(2400)/2400,'same')
@@ -589,7 +590,7 @@ def build_audio(path):
         return s.save(path,peak=0.9)
     Nb=np.zeros(n); duck=np.ones(n)
     for key,t0,txt,dd in NARR:
-        a,ar=_sf.read(f'/home/claude/tts/v5/{key}.wav'); a=a if a.ndim==1 else a.mean(1)
+        a,ar=_sf.read(f'{TTS_DIR}/v5/{key}.wav'); a=a if a.ndim==1 else a.mean(1)
         a=np.interp(np.arange(int(len(a)*sr/ar))/sr,np.arange(len(a))/ar,a)
         i=int(t0*sr); j=min(n,i+len(a)); Nb[i:j]+=a[:j-i]
         duck[max(0,i-int(0.08*sr)):min(n,j+int(0.15*sr))]=0.55

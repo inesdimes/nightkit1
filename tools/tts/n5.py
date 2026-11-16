@@ -1,6 +1,8 @@
 import json, soundfile as sf, numpy as np
 from kokoro_onnx import Kokoro
-k=Kokoro('/home/claude/tts/kokoro-v1.0.int8.onnx','/home/claude/tts/voices-v1.0.bin')
+import os, tempfile
+TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','tts'))   # Kokoro models + generated voice lines live here
+k=Kokoro(f'{TTS_DIR}/kokoro-v1.0.int8.onnx',f'{TTS_DIR}/voices-v1.0.bin')
 L=[("L1",0.3,"This is me."),("L2",2.3,"And that... is also me."),
 ("L3",5.9,"Nine HP. No potions. No way back."),("L4",9.9,"Then I saw the red light. A save point."),
 ("L5",14.3,"I made it. I was safe."),("L6",20.8,"Game saved. I could finally rest."),
@@ -13,5 +15,5 @@ out=[]
 for key,t0,txt in L:
     a,sr=k.create(txt,voice='am_michael',speed=0.92,lang='en-us')
     nz=np.where(np.abs(a)>0.01)[0]; a=a[max(0,nz[0]-240):nz[-1]+480]
-    sf.write(f'/home/claude/tts/v5/{key}.wav',a,sr); d=len(a)/sr; out.append([key,t0,txt,round(d,2)]); print(key,t0,round(d,2),round(t0+d,2),txt)
-json.dump(out,open('/home/claude/tts/v5/script.json','w'))
+    sf.write(f'{TTS_DIR}/v5/{key}.wav',a,sr); d=len(a)/sr; out.append([key,t0,txt,round(d,2)]); print(key,t0,round(d,2),round(t0+d,2),txt)
+json.dump(out,open(f'{TTS_DIR}/v5/script.json','w'))

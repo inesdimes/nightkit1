@@ -2,6 +2,7 @@
 Run: python examples/same_skin.py -> out/same_skin.mp4"""
 import os, sys, math, wave
 sys.path.insert(0,os.path.join(os.path.dirname(__file__),'..'))
+TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','tts'))   # Kokoro models + generated voice lines live here
 import numpy as np
 from PIL import Image, ImageDraw
 from nightkit.engine import Renderer, Camera, box, quad, tiled_plane, transform, rx, ry
@@ -11,7 +12,7 @@ OUT='out'; os.makedirs(OUT,exist_ok=True)
 FPS=24; W,H,S=180,320,6
 sm=motion.smooth
 def seg01(t,a,b): return max(0.0,min(1.0,(t-a)/(b-a)))
-SRC=os.environ.get('SRC','/home/claude/v4/src48.wav')
+SRC=os.environ.get('SRC',os.path.join(TTS_DIR,'enes','src48.wav'))
 def lerp3(a,b,u): return tuple(a[i]+(b[i]-a[i])*u for i in range(3))
 def bez(a,c,b,u): return tuple((1-u)**2*a[i]+2*(1-u)*u*c[i]+u*u*b[i] for i in range(3))
 def Rx(a): c,s=math.cos(a),math.sin(a); return np.array([[1,0,0],[0,c,-s],[0,s,c]])

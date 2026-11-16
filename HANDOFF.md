@@ -27,7 +27,7 @@ Paste this file (or the repo link) at the start of a new chat so Claude can cont
 - Cameras on side-eyed animals (T-Rex, birds): use 3/4 views, not straight-on.
 
 ## Voices
-- Kokoro TTS offline: `kokoro-v1.0.int8.onnx` + `voices-v1.0.bin` from the kokoro-onnx GitHub releases (Hugging Face is blocked); `pip install kokoro-onnx`.
+- All scripts read voices/models from `TTS_DIR` (env var; default `<repo>/tts/`, gitignored). Kokoro TTS offline: `kokoro-v1.0.int8.onnx` + `voices-v1.0.bin` from the kokoro-onnx GitHub releases (Hugging Face is blocked); `pip install kokoro-onnx`.
 - Voices used: narrator am_michael, female af_heart/af_bella, am_puck, am_fenrir (T-Rex, pitched 0.78 + drive), bm_george (gator), af_sky (duck), am_onyx (skeleton). Line schedules: `tools/tts/scripts/*.json`; generators `tools/tts/n*.py`.
 - Enes's own voice FX chain (pitch down, sub-octave, slapback, reverb, crystal comb filter): `tools/voice_fx/`.
 

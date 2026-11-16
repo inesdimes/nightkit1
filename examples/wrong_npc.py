@@ -2,6 +2,7 @@
 TEST=t1,t2 python examples/wrong_npc.py | PART=a:b | PART=audio"""
 import os, sys, math, json
 sys.path.insert(0,os.path.join(os.path.dirname(__file__),'..'))
+TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','tts'))   # Kokoro models + generated voice lines live here
 import numpy as np
 from PIL import Image, ImageDraw
 from nightkit.engine import Renderer, Camera, box, quad, tiled_plane, transform
@@ -365,7 +366,7 @@ def otext(d,s,x,y,col,sc=1):
     for ox,oy in ((-1,0),(1,0),(0,-1),(0,1),(-1,-1),(1,1),(-1,1),(1,-1)): font.text(d,s,x+ox*o,y+oy*o,(0,0,0),sc,None)
     font.text(d,s,x,y,col,sc,None)
 def ctext(d,s,y,col,sc=1): otext(d,s,(W-font.width(s,sc))//2,y,col,sc)
-NARR=json.load(open('/home/claude/tts/v6/script.json'))
+NARR=json.load(open(f'{TTS_DIR}/v6/script.json'))
 HIL={'NPC..','ENTIRE','STREET.','NOBODY','BLOCKED','SIDE','QUEST.','STRANGER','NO.','EVERYTHING.','GREEN.','TAXI','REFUSED','MOVE.','STREET','ONE','TWO.','FOUR.','OUTNUMBERED.','WALKED','AWAY.','SIDEWALK.','TEAM.','ALONE.','IT.'}
 def wrap(txt,n=27):
     out=[]; cur=''
@@ -557,7 +558,7 @@ def build_audio(path):
     # ---------- voices ----------
     NB=np.zeros(n); duck=np.ones(n)
     for key,t0,txt,dd,v in NARR:
-        a,ar=_sf.read(f'/home/claude/tts/v6/{key}.wav'); a=a if a.ndim==1 else a.mean(1)
+        a,ar=_sf.read(f'{TTS_DIR}/v6/{key}.wav'); a=a if a.ndim==1 else a.mean(1)
         a=np.interp(np.arange(int(len(a)*sr/ar))/sr,np.arange(len(a))/ar,a)
         if key in ('C1','B1'): a=a*1.05
         i=int(t0*sr); j=min(n,i+len(a)); NB[i:j]+=a[:j-i]
