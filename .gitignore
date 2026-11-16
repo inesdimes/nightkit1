@@ -5,3 +5,5 @@ test.png
 *.onnx
 voices-v1.0.bin
 /tts/
+deliverables/
+*.mp4
