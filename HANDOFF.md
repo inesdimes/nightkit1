@@ -19,6 +19,7 @@ Paste this file (or the repo link) at the start of a new chat so Claude can cont
 | The T-Rex Size Mystery | trex_size.py | dropped by Enes |
 | Final Boss — Experiment A (30.5 s) | final_boss.py | rendered: deliverables/final_boss_A.mp4 |
 | Final Boss — Experiment B (60.25 s, same story, slower mystery) | final_boss_b.py (imports A; 0–4 s + last 3.9 s are A's frames/audio) | rendered: deliverables/final_boss_B.mp4 |
+| The Loot Restocker — Experiment A (29.9 s) | loot_restocker.py (locked assets: goblin, work hat, chest, hatch, hallway, notification; hook 0–3 s + ending shared with the 60 s B) | rendered (kept locally) |
 | The Rat King, AUTO-TRACK (face_track.py), earlier GTA/streamer remakes | see examples | done |
 
 ## Analytics
