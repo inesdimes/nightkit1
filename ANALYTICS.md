@@ -79,3 +79,14 @@ Hedefler: YT izleyen oranı ≥ %60; TT 3. saniyede kalan ≥ %50, sonuna kadar 
 - "Last player online" videosunun YT retention grafiği ve ortalama izleme süresi
 - TikTok "Viewers" sekmesi (trafik kaynağı, ülke dağılımı)
 - Instagram Reels metrikleri
+
+## 8. Posting log
+| Date (TR) | Time | Video | Platform | First reading |
+|---|---|---|---|---|
+| 16 Nov 2026 | 20:30 | Guard Forgets — A (30 s) | ? | ~300 views, "viewed" rate 15 % (early, same evening) |
+| 16 Nov 2026 | 21:21 | Final Boss — B (60 s) | ? | — |
+
+Notes:
+- These are two different stories, not an A/B pair: each video's own A/B partner (Guard Forgets B, Final Boss A) is still unposted.
+- Guard Forgets A, first frame (0.0 s): the guard and the thief are small and far down the corridor, and the hook text covers the top half.
+  This breaks the section 3 checklist ("0th frame: bright, contrasty, a moving character, readable"). It is the most likely cause of the 15 %.
