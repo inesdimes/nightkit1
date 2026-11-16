@@ -8,7 +8,8 @@ OUT=os.path.join(TTS_DIR,'fb'); os.makedirs(OUT,exist_ok=True)
 RAW=os.path.join(tempfile.gettempdir(),'nk_tts_raw.wav')
 k=Kokoro(f'{TTS_DIR}/kokoro-v1.0.int8.onnx',f'{TTS_DIR}/voices-v1.0.bin')
 # narrator: deep + mysterious; boss: huge, slow, echoing
-V={'N':('am_onyx',0.98,'rubberband=pitch=0.9,equalizer=f=120:t=q:w=1:g=3,acompressor=threshold=-20dB:ratio=3:makeup=4'),
+V={'M':('am_onyx',0.98,'rubberband=pitch=0.9,equalizer=f=120:t=q:w=1:g=3,acompressor=threshold=-20dB:ratio=3:makeup=4'),
+   'N':('am_onyx',0.98,'rubberband=pitch=0.9,equalizer=f=120:t=q:w=1:g=3,acompressor=threshold=-20dB:ratio=3:makeup=4'),
    'B':('am_fenrir',0.82,'rubberband=pitch=0.7:formant=shifted,equalizer=f=90:t=q:w=1:g=5,acompressor=threshold=-22dB:ratio=4:makeup=6,aecho=0.8:0.6:70|140:0.25|0.12')}
 L={'N1':"Why do final bosses never leave their rooms?",
    'N2':"A knight opens the final arena.",
@@ -20,7 +21,20 @@ L={'N1':"Why do final bosses never leave their rooms?",
    'N7':"One must remain.",
    'N8':"A new health bar appears: Final Boss.",
    'N9':"He wasn't waiting to fight you.",
-   'N10':"He was waiting to be replaced."}
+   'N10':"He was waiting to be replaced.",
+   # ---- Experiment B (60 s) extra narration; N1, B1, N9, N10 are shared with A ----
+   'M2':"This knight thought he'd found the last fight of the game.",
+   'M3':"But outside the arena, he saw the boss pounding on an invisible wall.",
+   'M4':"It couldn't cross the doorway.",
+   'M5':"When the knight finally opened the gate, the monster whispered,",
+   'M6':"He raised his sword.",
+   'M7':"The gate slammed shut behind him.",
+   'M8':"But the boss didn't attack.",
+   'M9':"It lowered its weapon, stepped past the knight, and walked straight out.",
+   'M10':"The knight ran after it... then slammed into the same invisible wall.",
+   'M11':"Words appeared above the door: One must remain.",
+   'M12':"His health bar vanished.",
+   'M13':"A new one appeared: Final Boss."}
 keys=sys.argv[1:] or list(L)
 for key in keys:
     v,sp,af=V[key[0]]

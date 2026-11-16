@@ -470,7 +470,7 @@ def frame(V):
     return img
 
 TEST=os.environ.get('TEST')
-if TEST:
+if TEST and __name__=='__main__':
     ims=[frame(float(x)) for x in TEST.split(',')]; shp=Image.new('RGB',(len(ims)*182,320))
     for i,im in enumerate(ims): shp.paste(im,(i*182,0))
     shp.resize((shp.width*2,640),Image.NEAREST).save('test.png'); sys.exit()
