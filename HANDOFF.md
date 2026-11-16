@@ -19,6 +19,9 @@ Paste this file (or the repo link) at the start of a new chat so Claude can cont
 | The T-Rex Size Mystery | trex_size.py | dropped by Enes |
 | The Rat King, AUTO-TRACK (face_track.py), earlier GTA/streamer remakes | see examples | done |
 
+## Analytics
+- See `ANALYTICS.md` (16 Nov 2026): data, diagnosis, editing checklist, A/B plan (Type A fast cut / Type B story cut), re-cut plan per video.
+
 ## Pipeline
 - Renderer: `nightkit` + **`nightkit/zraster.py` (z-buffer, use this — fixes "seeing inside models")**. Draw face decals as separate layers with `bias=1.004`; tag decals with `q['hc']` (head centre) and cull when `|c-cam| >= |hc-cam|`.
 - Internal 180x320, upscale x6, 24 fps. `TEST=1.0,5.0 python examples/X.py` → test.png; `PART=a:b` renders frames to `out/<prefix>_a.mp4`; `PART=audio` builds the wav; concat + mux with `-af loudnorm=I=-14:TP=-1.5`.
