@@ -22,6 +22,7 @@ Paste this file (or the repo link) at the start of a new chat so Claude can cont
 | The Loot Restocker — Experiment A (29.9 s) | loot_restocker.py (locked assets: goblin, work hat, chest, hatch, hallway, notification; hook 0–3 s + ending shared with the 60 s B) | rendered (kept locally) |
 | Guard Forgets — Experiment A (30.6 s) | guard_forgets.py (locked: thief, guard, note/cuffs/crown, corridor, alert/memory meter, mission banner; hook 0–3.3 s + punchline shared with the 60 s B) | rendered (kept locally) |
 | Guard Forgets — Experiment B (59.6 s) | guard_forgets_b.py (imports A; 0–3.3 s = A frames+audio; writing/swap/cuffs/crown grab = A's animation re-timed) | rendered (kept locally) |
+| Safe Zone (58.6 s) | safe_zone.py (locked: skeleton, shopkeeper, shop, barrier, payment terminal; channel knight with brown boots) | rendered (kept locally) |
 | The Rat King, AUTO-TRACK (face_track.py), earlier GTA/streamer remakes | see examples | done |
 
 ## Analytics

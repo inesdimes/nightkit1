@@ -58,7 +58,7 @@ RUG=(110,18,24); GOLDT=(190,150,60)
 WHT=(242,238,226); YEL=(255,210,60); RED=(240,50,40); GRN=(80,220,90); GRY=(150,150,160); BLU=(110,170,255)
 
 # ======================= THE KNIGHT (small, silver, blue cape) =======================
-def knight(base,yaw,walk=0.0,run=0.0,sword='hip',rh=None,lh=None,lean=0.0,head=0.0,sit=0.0,eyes=0.0,swing=0.0):
+def knight(base,yaw,walk=0.0,run=0.0,sword='hip',rh=None,lh=None,lean=0.0,head=0.0,sit=0.0,eyes=0.0,swing=0.0,boots=None):
     """local forward = +z. rh/lh: hand targets in local coords (None = idle). eyes>0: visor glows red (new boss)."""
     b=np.array(base,float); Rb=Ry(yaw)
     def Wd(p): return tuple(b+Rb@np.array(p,float))
@@ -73,7 +73,8 @@ def knight(base,yaw,walk=0.0,run=0.0,sword='hip',rh=None,lh=None,lean=0.0,head=0
         else:
             a=ph*sw; ft=hp+np.array([0,-0.78*math.cos(a),0.78*math.sin(a)]); ft[1]=max(0.06,ft[1]+0.08*max(0,math.sin(walk*ph+PI/2))*(1 if walk else 0)); bend=(0,0,1)
         lq,_=limb(hp,ft,bend,0.84,0.15,STEEL_D,STEEL,0.13); Q+=xform(lq,Wd)
-        Q+=box(ft[0]-0.07,ft[0]+0.07,0.0 if sit==0 else ft[1]-0.06,ft[1]+0.05,ft[2]-0.06,ft[2]+0.15,STEEL_D,xf=Wd)
+        if boots=='off': Q+=box(ft[0]-0.055,ft[0]+0.055,0.0 if sit==0 else ft[1]-0.05,ft[1]+0.03,ft[2]-0.05,ft[2]+0.12,(214,206,188),xf=Wd)   # socks
+        else: Q+=box(ft[0]-0.07,ft[0]+0.07,0.0 if sit==0 else ft[1]-0.06,ft[1]+0.05,ft[2]-0.06,ft[2]+0.15,boots or STEEL_D,xf=Wd)
     Q+=box(-0.17,0.17,0.8,1.32,-0.11,0.11,STEEL,xf=T)                              # cuirass
     Q+=box(-0.12,0.12,0.92,1.24,0.11,0.13,STEEL_L,xf=T)                            # chest plate highlight
     Q+=box(-0.18,0.18,0.78,0.88,-0.12,0.12,LEATH,xf=T)                             # belt
