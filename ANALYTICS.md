@@ -89,7 +89,7 @@ Hedefler: YT izleyen oranı ≥ %60; TT 3. saniyede kalan ≥ %50, sonuna kadar 
 Notes:
 - These are two different stories, not an A/B pair: each video's own A/B partner (Guard Forgets B, Final Boss A) is still unposted.
 - Guard Forgets A, first frame (0.0 s): the guard and the thief are small and far down the corridor, and the hook text covers the top half.
-  This breaks the section 3 checklist ("0th frame: bright, contrasty, a moving character, readable"). It is the most likely cause of the 15 %.
+  This is one possible reason for the 15 % (hypothesis, to re-check with more data).
 
 ## 9. Lifetime check (17 Nov 2026, YouTube, "since publish")
 | Video | Length | Views | Views in first 48 h | Watch time | Stayed / swiped | Likes | Subs | Top audience |
@@ -105,4 +105,6 @@ Reading:
   The Rat King is the only one still getting views every few hours.
 - Story videos reach the target audience (English-speaking male gamers, 13–17). The cat video reached a different audience
   (Turkish women 25–34): it has no story, so it doesn't build the channel's audience.
-- Guard Forgets A (15 % stayed) sits at the cat's level, not the story videos' level -> the first frame, not the story.
+- Guard Forgets A (15 % stayed, first hours only) sits near the cat's level; first-frame framing is one possible reason. Too early to tell.
+
+(Observations only, not rules: keep producing and re-check as more data comes in.)
