@@ -18,7 +18,18 @@ L={'N1':"Why do monsters NEVER attack you inside shops?",
    'S3':"Ah! A premium customer.",
    'K3':"WAIT! YOU LET MONSTERS PAY TO ENTER?!",
    'S4':"Naturally. Everyone deserves good service.",
-   'S5':"Would you like to upgrade?"}
+   'S5':"Would you like to upgrade?",
+   # ---- v2: lines that fill the silent stretches ----
+   'K4':"Nice try, bone boys!",
+   'S0':"Welcome! Safe and sound, dear customer!",
+   'N2':"Shops are always safe. Right?",
+   'K5':"So, how much to keep it?",
+   'S6':"Just one hundred gold!",
+   'K6':"My boots too?!",
+   'K7':"Ten gold short?!",
+   'N3':"Meanwhile, outside... the monsters found the payment terminal.",
+   'K8':"Uh-oh.",
+   'K9':"No, no, no, no!"}
 for key in (sys.argv[1:] or list(L)):
     v,sp,af=V[key[0]]
     a,sr=k.create(L[key],voice=v,speed=sp,lang='en-us'); nz=np.where(np.abs(a)>0.01)[0]; a=a[max(0,nz[0]-240):nz[-1]+480]

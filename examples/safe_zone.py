@@ -17,7 +17,7 @@ box,seg,xform,limb,prelit=FB.box,FB.seg,FB.xform,FB.limb,FB.prelit
 sm,seg01,lerp,lerp3,PI,Ry,Rx=FB.sm,FB.seg01,FB.lerp,FB.lerp3,FB.PI,FB.Ry,FB.Rx
 alerp,path3,path_yaw=GF.alerp,GF.path3,GF.path_yaw
 TTS_DIR=FB.TTS_DIR; OUT='out'; os.makedirs(OUT,exist_ok=True)
-FPS=24; W,H,S=180,320,6; DUR=58.6; N=int(round(DUR*FPS))
+FPS=24; W,H,S=180,320,6; DUR=58.6
 SCR=json.load(open(os.path.join(TTS_DIR,'sz','script.json')))
 for ch,rows in {'!':['00100','00100','00100','00100','00100','00000','00100'],'?':['01110','10001','00001','00110','00100','00000','00100'],
                 '+':['00000','00100','00100','11111','00100','00100','00000']}.items(): font.FONT.setdefault(ch,rows)
@@ -222,7 +222,16 @@ def bell(p,ring=0.0):
     x,y,z=p; return box(x-0.08,x+0.08,y,y+0.03,z-0.08,z+0.08,(60,50,40))+box(x-0.06,x+0.06,y+0.03,y+0.11,z-0.06,z+0.06,(230,190,60),emit=ring>0.1)+box(x-0.015,x+0.015,y+0.11-0.02*ring,y+0.15-0.02*ring,z-0.015,z+0.015,(200,170,50))
 
 # ======================= STORY TIMELINE =======================
-VOICE=[('N1',0.05),('K1',5.0),('K2',16.0),('S1',17.0),('S2',24.0),('S3',38.3),('K3',44.6),('S4',47.0),('S5',53.6)]
+VOICE=[('N1',0.05),('K1',5.0),('K4',7.85),('S0',10.3),('N2',13.25),('K2',16.0),('S1',17.0),('K5',20.5),('S6',22.3),('S2',24.0),('K6',27.35),
+       ('K7',29.95),('N3',32.05),('S3',38.3),('K8',43.75),('K3',44.6),('S4',47.0),('K9',50.3),('S5',53.6)]
+# v2 edit: dead stretches are cut out at shot changes (story time -> video time); all animation stays in story time
+SKIPS=[(3.0,4.1),(9.6,10.3),(19.8,20.4),(31.3,32.0),(37.2,38.2),(40.6,42.0),(51.4,52.0)]
+SKIPPED=sum(b-a for a,b in SKIPS)
+def story_t(V):
+    st=V
+    for a,b in SKIPS:
+        if st>=a: st+=b-a
+    return st
 HOOK=3.0
 IMPACTS=[0.9,2.2,6.1,8.3,45.9]                       # skeleton hits on the barrier
 FADE=(42.0,42.9); RESTORE=(45.0,45.6)
@@ -231,6 +240,7 @@ GOLD_EVENTS=[(27.1,65),(29.4,90)]
 NOTE_TRIAL=(15.0,18.2); TIMER=(18.2,56.4); FINAL=56.4; BLACK=58.0
 KSPOT=(0.0,0,1.25); COUNTER_SPOT=(0.0,0,3.42)
 SK_SPOTS=[(0.0,0,-0.62),(-0.65,0,-0.85),(0.75,0,-0.85)]
+N=int(round((DUR-SKIPPED)*FPS))                    # video frames
 def talk(k,t):
     t0=dict(VOICE)[k]; return (0.5+0.5*math.sin(t*22)) if t0<=t<t0+SCR['dur'][k] else 0.0
 def bounce(t,impacts,dur=0.45):
@@ -338,8 +348,8 @@ def premium_state(t):
     u=seg01(t,52.0,55.0); up=sm(seg01(t,54.2,54.7)); return dict(base=tuple(lerp3(PIN[-1],(0.18,0,2.72),u)),yaw=0.0,walk=t*4 if u<1 else 0.0,rh=lerp3((0.26,0.9,0.14),(0.28,1.6,0.05),up),sdir=lerp3((0.0,-1.0,0.25),(0.0,1.0,0.05),up),rage=0.6)
 
 def keeper_state(t):
-    st=dict(base=KEEPER,yaw=PI,smile=1.0,mouth=max(talk(k,t) for k in ('S1','S2','S3','S4','S5')),blink=1.0 if int(t*10)%37==0 else 0.0)
-    if 10.4<=t<12.0: st['rh']=(0.24,1.5,0.3+0.06*math.sin(t*10))                                         # little wave
+    st=dict(base=KEEPER,yaw=PI,smile=1.0,mouth=max(talk(k,t) for k,_ in VOICE if k[0]=='S'),blink=1.0 if int(t*10)%37==0 else 0.0)
+    if 10.35<=t<12.0: st['rh']=(0.24,1.5,0.3+0.06*math.sin(t*10))                                         # little wave
     if 17.0<=t<19.6: st['rh']=(0.2,1.2+0.05*math.sin(t*6),0.36); st['head']=0.12*math.sin(t*2)
     if 24.0<=t<26.9: st['rh']=(0.14,1.25,0.4)                                                          # points at the sword / boots
     if 38.3<=t<40.0: st['head']=0.25; st['lh']=(-0.18,1.18,0.32)
@@ -410,7 +420,7 @@ def render(V,sh):
 # ======================= UI overlays =======================
 otext=GF.otext; wrap=GF.wrap
 HOOK_LINES=['WHY DO','MONSTERS NEVER','ATTACK YOU','INSIDE SHOPS?']
-HIL={'MONSTERS','NEVER','SHOPS?','HA!',"CAN'T",'TOUCH','FREE','TRIAL?','PROTECTION',"ISN'T",'FREE','FOREVER.','RUSTY','SWORD.','BOOTS!','PREMIUM','CUSTOMER.','MONSTERS','PAY','ENTER?!','SERVICE.','UPGRADE?'}
+HIL={'BONE','BOYS!','SAFE','ALWAYS','RIGHT?','HUNDRED','GOLD!','BOOTS','SHORT?!','PAYMENT','TERMINAL.','UH-OH.','NO,','NO!','MONSTERS','NEVER','SHOPS?','HA!',"CAN'T",'TOUCH','FREE','TRIAL?','PROTECTION',"ISN'T",'FREE','FOREVER.','RUSTY','SWORD.','BOOTS!','PREMIUM','CUSTOMER.','MONSTERS','PAY','ENTER?!','SERVICE.','UPGRADE?'}
 SPK={'N':(None,WHT),'K':('KNIGHT:',BLU),'S':('SHOPKEEPER:',GRN)}
 def subtitle(d,V):
     cur=None
@@ -481,7 +491,8 @@ def emotes(d,vi,V,ks,sks):
     if 52.95<=V<53.6:                                                     # 'ding!'
         p=R.project(tuple(np.array(BELL)+np.array([0,0.3,0])),vi)
         if p: otext(d,'DING!',int(p[0])-14,int(p[1])-8,YEL)
-def frame(V):
+def frame(Vv): return frame_story(story_t(Vv))      # video time
+def frame_story(V):
     if V>=BLACK:
         img=Image.new('RGB',(W,H),(0,0,0)); return img
     sh=shot(V); img,vi=render(V,sh); d=ImageDraw.Draw(img)
@@ -528,7 +539,7 @@ def _extra(t):
             sh_=np.array(pt(st_,(sx*(0.22 if nm=='knight' else 0.24),1.27 if nm=='knight' else 1.45,0))); dd=np.linalg.norm(np.array(hand_(st_,sx))-sh_)
             if dd>L_: out.append(('stretch',f'{nm} arm stretched beyond its length ({dd:.2f} m)'))
     return out
-QA=dict(fps=FPS,dur=BLACK,W=W,frame=frame,
+QA=dict(fps=FPS,dur=BLACK,W=W,frame=frame_story,
     chars={'knight':(_kn,knight,'sword','hip'),'skel0':(_sk(0),skeleton,'card',True),'skel1':(_sk(1),skeleton,'card',True),'skel2':(_sk(2),skeleton,'card',True),
            'keeper':(_kp,keeper,'smile',1.0)},
     geom=_geom,extra=_extra,camera=lambda t: shot(t)['cam'],min_cam_dist=0.45,
@@ -649,7 +660,13 @@ def build_audio(path):
     s.reverb(0.14,length=1.0,decay=4.5)
     pk=max(np.abs(s.L).max(),np.abs(s.R).max()); gv=pk*1.05/np.abs(NB).max()
     s.L=s.L*(0.55+0.45*duck)+NB*gv; s.R=s.R*(0.55+0.45*duck)+NB*gv
-    return s.save(path,peak=0.9)
+    st=np.stack([s.L,s.R],1); keep=[]; prev=0
+    for a,b in SKIPS: keep.append(st[int(prev*sr):int(a*sr)]); prev=b
+    keep.append(st[int(prev*sr):]); x=int(0.03*sr); out=keep[0]
+    for seg_ in keep[1:]:
+        w=np.linspace(0,1,x)[:,None]; out=np.concatenate([out[:-x],out[-x:]*(1-w)+seg_[:x]*w,seg_[x:]])
+    out=out/np.max(np.abs(out))*0.9
+    _sf.write(path,out,sr,subtype='PCM_16'); return path
 if __name__=='__main__' and os.environ.get('PART')=='audio':
     print(build_audio(os.path.join(OUT,'safe_zone.wav'))); sys.exit()
 if __name__=='__main__' and os.environ.get('PART'):
