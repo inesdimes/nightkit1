@@ -33,10 +33,10 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp>.py      # regenerate the voice line
 | Cat POV (15 s, TikTok) | examples/cat_pov.py (voice `tools/tts/cp.py`; imports cat/room/pizza from cat_dodge.py) | rendered, not posted |
 | One Apple 15 s cut (15.25 s) | examples/one_apple_15.py (imports v4 assets; voice `tools/tts/ap15.py`) | rendered, not posted; for **TikTok** |
 
-Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`.
+Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`, `captions/safe_zone.md`.
 
 ## Next steps
 1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
-2. Captions for Safe Zone, Loot Restocker.
+2. Caption for Loot Restocker (Safe Zone, One Apple and Cat POV captions are done, all three platforms).
 3. Decide Guard Forgets B (see table).
 4. New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
