@@ -27,12 +27,13 @@ python tools/tts/<fb|lr|gf|sz|ap>.py      # regenerate the voice lines a script 
 | Guard Forgets B (59.6 s) | examples/guard_forgets_b.py | rendered, not posted; open question: post as-is (clean A/B) or remake the first 3 s |
 | Loot Restocker A (29.9 s) | examples/loot_restocker.py | rendered, not posted; the 60 s B was never made |
 | Safe Zone v2 (52.3 s) | examples/safe_zone.py | rendered, not posted |
-| One Apple v4 (30.6 s) | examples/one_apple.py | rendered, not posted (latest; Enes happy with it) |
+| One Apple v4 (30.6 s) | examples/one_apple.py | rendered, not posted; for **YouTube + Instagram** |
+| One Apple 15 s cut (15.25 s) | examples/one_apple_15.py (imports v4 assets; voice `tools/tts/ap15.py`) | rendered, not posted; for **TikTok** |
 
-Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`.
+Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md`.
 
 ## Next steps
 1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
-2. Captions for One Apple, Safe Zone, Loot Restocker.
+2. Captions for Safe Zone, Loot Restocker.
 3. Decide Guard Forgets B (see table).
 4. New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
