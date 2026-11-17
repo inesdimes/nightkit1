@@ -90,3 +90,19 @@ Notes:
 - These are two different stories, not an A/B pair: each video's own A/B partner (Guard Forgets B, Final Boss A) is still unposted.
 - Guard Forgets A, first frame (0.0 s): the guard and the thief are small and far down the corridor, and the hook text covers the top half.
   This breaks the section 3 checklist ("0th frame: bright, contrasty, a moving character, readable"). It is the most likely cause of the 15 %.
+
+## 9. Lifetime check (17 Nov 2026, YouTube, "since publish")
+| Video | Length | Views | Views in first 48 h | Watch time | Stayed / swiped | Likes | Subs | Top audience |
+|---|---|---|---|---|---|---|---|---|
+| I Stole From The Wrong Rat | 61 s | 1.1K | 156 (steady trickle across all 48 h) | 4.9 h | **52.6 %** / 47.4 % | 15 | +1 | US 50 %, male 13–17 |
+| She Hid Her Boyfriend From 10,000… | 35 s | 1.2K | 388 | 3.4 h | 45.7 % / 54.3 % | 7 | 0 | US 26 %, male 13–17 |
+| He left one game after 80 hours… | 27 s | 1.3K | 167 | 2.8 h | 37.7 % / 62.3 % | 15 | +2 | US 23 %, TR 19 %, male 13–17 |
+| If this cat was a PS1 fighter | 7 s | 1.3K | 219 | 1.0 h | 15.3 % / 84.7 % | 6 | +2 | TR 45 %, female 25–34 |
+
+Reading:
+- All four stopped at ~1.1–1.3K = the Shorts test pool; none passed it. Each got one small second wave later.
+- The higher the stayed % (a story with a character and a conflict), the more watch time and the more steady traffic.
+  The Rat King is the only one still getting views every few hours.
+- Story videos reach the target audience (English-speaking male gamers, 13–17). The cat video reached a different audience
+  (Turkish women 25–34): it has no story, so it doesn't build the channel's audience.
+- Guard Forgets A (15 % stayed) sits at the cat's level, not the story videos' level -> the first frame, not the story.
