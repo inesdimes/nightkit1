@@ -1,6 +1,6 @@
 """CAT POV - "POV: Cat is trying to steal your food".  PS1 comedy short, 9:16, 15 s. Fully procedural (nightkit).
 Idea from a real POV clip (a cat peeking around a raised sock foot); recreated from scratch in the channel style as a stealth-game parody:
-the foot is the cover, the cat finds the gap, a LINE OF SIGHT meter fills, the foot gives up, the cat dashes and puts its face in the lens.
+the foot is the cover, the cat finds the gap, a LINE OF SIGHT meter fills, the foot gives up, the cat crouches and jumps straight at the lens.
 LOCKED ASSETS are imported from cat_dodge.py (cat model, bedroom, pizza slice); the POV legs are built here.
 All text is a 2D overlay. Voice: python tools/tts/cp.py -> $TTS_DIR/cp/N1.wav (hook line only).
 Run: TEST=0.5,5,12 python examples/cat_pov.py -> test.png | PART=a:b | PART=audio | QA: python tools/qa/scene_qa.py examples/cat_pov.py"""
@@ -22,7 +22,7 @@ FPS=24; W,H,S=180,320,6; DUR=15.0; N=int(round(DUR*FPS))
 SCR=json.load(open(os.path.join(TTS_DIR,'cp','script.json')))
 
 # ======================= timeline (seconds) =======================
-T_TIRE=11.0; T_DASH=(11.5,12.9); T_FREEZE=12.9; T_WIN=13.05
+T_TIRE=11.0; T_DASH=(11.5,12.9); T_JUMP=(12.2,12.9); T_FREEZE=12.9; T_WIN=13.05
 CAM=np.array([0.0,0.85,0.5]); TGT=np.array([0.0,0.78,-1.0]); FOV=50; FPX=90/math.tan(math.radians(FOV/2))
 CAT_Z=-1.2; D_CAT=CAM[2]-CAT_Z; D_FOOT=0.85
 PJ=(92,112,168); PJ_D=(76,96,150); SKIN=(206,164,138); SOCK=(206,198,216); SOCK_S=(150,128,190)
@@ -64,8 +64,12 @@ def cat_state(t):
     hx=hx_of(t); rise=0.0
     if t<T_DASH[0]:
         return dict(base=(0.35*hx,CD.CAT_Y,CAT_Z),yaw=-0.5*hx,walk=0.0,hx=hx,hyaw=-1.6*hx,hroll=-1.4*hx,hpitch=0.0,lid=0.2,pupil=-6*hx,tail=t*5.0,crouch=0.6,ears=0.1,mouth=0.0,bpitch=0.0,shades=0.0)
-    u=seg01(t,*T_DASH); a=CD.sm(seg01(t,T_DASH[0],12.4)); z=lerp(CAT_Z,-0.2,a**1.4); f=sm(seg01(t,12.4,T_DASH[1]))
-    return dict(base=(0.0,CD.CAT_Y+0.04*f,lerp(z,-0.05,f)),yaw=0.0,walk=t*20 if a<1 else 0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=0.5*f,lid=0.0,pupil=0.0,tail=t*12,crouch=0.6*(1-a),ears=0.7,mouth=0.0,bpitch=-0.55*f,shades=0.0,cheese=sm(seg01(t,12.45,12.8)))
+    if t<T_JUMP[0]:                                                # the foot gave up: he crouches and wiggles his butt
+        c=sm(seg01(t,T_DASH[0],T_DASH[0]+0.35)); wig=0.012*math.sin(t*38)*c
+        return dict(base=(wig,CD.CAT_Y,CAT_Z),yaw=0.0,walk=0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=0.05*c,lid=0.0,pupil=0.0,tail=t*14,crouch=0.6+0.4*c,ears=0.9*c,mouth=0.0,bpitch=0.08*c,shades=0.0)
+    u=seg01(t,*T_JUMP)                                             # ONE big jump straight at the lens
+    z=lerp(CAT_Z,-0.05,sm(u)*0.35+u*0.65); y=lerp(CD.CAT_Y,CD.CAT_Y+0.04,u)+0.55*math.sin(PI*u)
+    return dict(base=(0.0,y,z),yaw=0.0,walk=0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=lerp(0.05,0.5,sm(u)),lid=0.0,pupil=0.0,tail=t*12,crouch=1.0-sm(seg01(u,0.0,0.2)),ears=0.7,mouth=0.0,bpitch=lerp(0.1,-0.55,sm(seg01(u,0.1,1.0))),shades=0.0,cheese=sm(seg01(u,0.8,1.0)))
 def legs_quads(t):
     d=drop_of(t); fx=fx_of(t)+(0.004*math.sin(t*60) if 7.2<=t<T_TIRE else 0.0)
     Q=[]
@@ -80,7 +84,7 @@ def legs_quads(t):
     Q+=box(an[0]-0.05,an[0]+0.05,an[1]-0.03+(0.0 if d<0.5 else 0.0),an[1]+0.06,an[2]-0.19*(0.3+0.7*d),an[2]-0.04,SOCK) if d>0.3 else []   # toes lie flat once she gives up
     return Q
 def plate_quads(t):
-    s=sm(seg01(t,12.4,12.9)); c=PLATE_C
+    s=sm(seg01(t,12.6,12.95)); c=PLATE_C
     Q=box(-0.14,0.14,0.0,0.014,-0.14,0.14,CD.PLATE,xf=lambda p:tuple(c+np.array(p,float)))+box(-0.11,0.11,0.014,0.018,-0.11,0.11,CD.PLATE_D,xf=lambda p:tuple(c+np.array(p,float)))
     Q+=slice_quads(c+np.array([-0.04-0.2*s,0.02+0.25*math.sin(PI*min(1,s*1.1)),-0.02-0.1*s]),0.4+3*s,0.5*s,0.8)+slice_quads(c+np.array([0.05+0.22*s,0.02+0.3*math.sin(PI*min(1,s*1.2)),-0.04-0.1*s]),-0.5-2.5*s,-0.4*s,0.8)
     return Q
@@ -135,7 +139,7 @@ def _cat(t): return cat_state(min(t,T_FREEZE))
 def _cat_model(**st): return cat_model(**st)[0]
 def _extra(t):
     out=[]; cs=cat_state(min(t,T_FREEZE)); x,_,z=cs['base']
-    if T_DASH[0]<=t and -0.9<z<0.05 and abs(x)>0.12: out.append(('intersect','the cat leaves the gap between her legs'))
+    if T_DASH[0]<=t and abs(x)>0.12: out.append(('intersect','the cat leaves the centre line'))
     if t<T_TIRE and abs(fx_of(t))>0.09: out.append(('stretch','foot sways too far'))
     return out
 QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,chars={'cat':(_cat,_cat_model,'_none',1.0)},
@@ -144,7 +148,7 @@ QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,chars={'cat':(_cat,_cat_model,'_none',1.
     camera_ok=lambda p: 0.3<p[1]<1.2 and abs(p[0])<1.0 and -1.5<p[2]<1.0,
     scenes=[dict(id='cover',t0=0.0,t1=3.0,action='POV: the foot is her cover; the cat peeks, the foot chases'),dict(id='peek',t0=3.0,t1=7.0,action='faster peeks, LINE OF SIGHT fills, SPOTTED'),
             dict(id='chase',t0=7.0,t1=T_TIRE,action='very fast peeks; the foot cannot keep up'),dict(id='tire',t0=T_TIRE,t1=T_DASH[0],action='the foot gives up and drops; COVER BROKEN'),
-            dict(id='dash',t0=T_DASH[0],t1=T_FREEZE,action='the cat dashes between her legs through the pizza to the lens'),dict(id='win',t0=T_FREEZE,t1=DUR,action='freeze: face in the camera, MISSION FAILED / CAT WINS')],
+            dict(id='crouch',t0=T_DASH[0],t1=T_JUMP[0],action='the cat crouches and wiggles'),dict(id='jump',t0=T_JUMP[0],t1=T_FREEZE,action='one big jump over the pizza straight into the lens'),dict(id='win',t0=T_FREEZE,t1=DUR,action='freeze: face in the camera, MISSION FAILED / CAT WINS')],
     weapon_events=[],texts=lambda: [('hook',x,2) for x in POV_LINES]+[('ui',s_,1) for s_ in ('COVER: FOOT','SPOTTED!','NOT SEEN','DANGER','COVER BROKEN','FOOD STOLEN')]+[('ui','SPOTTED!',2),('ui','MISSION FAILED',2),('ui','CAT WINS',3)])
 
 TEST=os.environ.get('TEST')
@@ -182,8 +186,8 @@ def build_audio(path):
     AMB+=s.filt(s.rng.normal(0,1,n),lo=80,hi=800)*0.008
     # ---------- music: slow stealth march that speeds up ----------
     sneaky(0.05,3.0,0.7,step=0.26); sneaky(3.0,7.2,0.9,step=0.2,tense=1.0); sneaky(7.2,T_TIRE,1.1,step=0.15,tense=1.0)
-    for k in range(int((T_DASH[1]-T_DASH[0])/0.1)): note(M,T_DASH[0]+k*0.1,33+(k%2),0.12,0.03+0.001*k,'tri',dec=5)
-    for k,m in enumerate((57,60,64,67,69,72,76,79,81,84,88)): note(M,T_DASH[0]+0.3+k*0.07,m,0.12,0.03,'sq',0.25,8)
+    for k in range(int((T_JUMP[0]-T_DASH[0])/0.1)): note(M,T_DASH[0]+k*0.1,33+(k%2),0.12,0.03+0.002*k,'tri',dec=5)                # crouch tension
+    for k,m in enumerate((57,60,64,67,69,72,76,79,81,84,88)): note(M,T_JUMP[0]+k*0.06,m,0.12,0.03,'sq',0.25,8)                 # the jump run-up
     # ---------- sfx ----------
     for k,t0 in enumerate(FL):
         zip_(t0,0.04,500+60*(k%3),1700+100*(k%3),0.11)                                                   # the cat pops out
@@ -193,9 +197,8 @@ def build_audio(path):
         thud(te,70,0.1,0.2)
     note(M,T_TIRE+0.2,60,0.25,0.05,'sq',0.5,5); thud(T_TIRE+0.35,60,0.15,0.3); nb(T_TIRE+0.35,0.2,200,1500,0.04,61,1)
     for k,m in enumerate((57,56,55,54)): note(M,T_TIRE+0.45+k*0.17,m,0.2,0.04,'sq',0.5,6)
-    whoosh(T_DASH[0],0.6,0.06,71,300,4000)
-    for k in range(int(0.9/0.07)): pad(T_DASH[0]+0.05+k*0.07,0.03,80+k)
-    whoosh(12.3,0.6,0.08,73,200,3500)
+    for k in range(int((T_JUMP[0]-T_DASH[0]-0.1)/0.1)): pad(T_DASH[0]+0.1+k*0.1,0.02+0.002*k,80+k)                               # butt wiggle
+    zip_(T_JUMP[0],0.09,300,1500,0.22); thud(T_JUMP[0],80,0.18,0.2); whoosh(T_JUMP[0]+0.05,0.7,0.09,73,200,3500)              # boing + the flight
     thud(T_FREEZE,45,0.5,0.5); nb(T_FREEZE,0.3,100,2500,0.12,75)
     M[int(T_FREEZE*sr):int(T_WIN*sr)]=0
     for k,m in enumerate((67,72,76,84)): note(M,T_WIN+k*0.09,m,0.3,0.06,'sq',0.5,4)
