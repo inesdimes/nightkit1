@@ -1,6 +1,6 @@
 """CAT POV - "POV: Cat is trying to steal your food".  PS1 comedy short, 9:16, 15 s. Fully procedural (nightkit).
 Idea from a real POV clip (a cat peeking around a raised sock foot); recreated from scratch in the channel style as a stealth-game parody:
-the foot is the cover, the cat finds the gap, a LINE OF SIGHT meter fills, the foot gives up, the cat crouches and jumps straight at the lens.
+the foot is the cover, the cat finds the gap, a LINE OF SIGHT meter fills, the foot never gives up: the cat crouches behind it, slips past the late swipe and jumps straight at the lens.
 LOCKED ASSETS are imported from cat_dodge.py (cat model, bedroom, pizza slice); the POV legs are built here.
 All text is a 2D overlay. Voice: python tools/tts/cp.py -> $TTS_DIR/cp/N1.wav (hook line only).
 Run: TEST=0.5,5,12 python examples/cat_pov.py -> test.png | PART=a:b | PART=audio | QA: python tools/qa/scene_qa.py examples/cat_pov.py"""
@@ -22,7 +22,7 @@ FPS=24; W,H,S=180,320,6; DUR=15.0; N=int(round(DUR*FPS))
 SCR=json.load(open(os.path.join(TTS_DIR,'cp','script.json')))
 
 # ======================= timeline (seconds) =======================
-T_TIRE=11.0; T_DASH=(11.5,12.9); T_JUMP=(12.2,12.9); T_FREEZE=12.9; T_WIN=13.05
+T_TIRE=11.3; T_DASH=(11.5,12.9); T_JUMP=(12.2,12.9); T_FREEZE=12.9; T_WIN=13.05
 CAM=np.array([0.0,0.85,0.5]); TGT=np.array([0.0,0.78,-1.0]); FOV=50; FPX=90/math.tan(math.radians(FOV/2))
 CAT_Z=-1.2; D_CAT=CAM[2]-CAT_Z; D_FOOT=0.85
 PJ=(92,112,168); PJ_D=(76,96,150); SKIN=(206,164,138); SOCK=(206,198,216); SOCK_S=(150,128,190)
@@ -40,12 +40,14 @@ def _sim():
     DT=1/240; n=int(DUR/DT)+2; hx=np.zeros(n); F=np.zeros(n); h=0.0; f=0.0
     for i in range(n):
         t=i*DT; k=sum(1 for x in FL if x<=t)-1; side=0.0 if (k<0 or t>=T_TIRE) else (-1.0 if k%2==0 else 1.0)
-        h+=(0.2*side-h)*min(1.0,DT/0.045); f+=(0.07*side-f)*min(1.0,DT/tau(t)); hx[i]=h; F[i]=f
+        late=t>=T_JUMP[0]                                                   # her last swipe: too late, she misses
+        h+=(0.2*side-h)*min(1.0,DT/0.045); f+=((0.13 if late else 0.07*side)-f)*min(1.0,DT/(0.15 if late else (0.25 if t>=T_TIRE else tau(t)))); hx[i]=h; F[i]=f
     return DT,hx,F
 DT_,HX,FX=_sim()
 def hx_of(t): return float(np.interp(t,np.arange(len(HX))*DT_,HX))
 def fx_of(t): return float(np.interp(t,np.arange(len(FX))*DT_,FX))
 def los(t):
+    if t>=T_JUMP[0]: return min(1.0,(t-T_JUMP[0])/0.1)
     """0 = the cat is hidden behind the foot, 1 = clear line of sight (screen-space gap between cat head and foot)"""
     h=hx_of(t); dx=abs((h+0.35*h)*FPX/D_CAT-fx_of(t)*FPX/D_FOOT)
     u=max(0.0,min(1.0,(dx-14)/26)); return u*u*(3-2*u)
@@ -56,10 +58,10 @@ def spot_events():
         if prev<0.7<=v and t-last>0.75: out.append(t); last=t
         prev=v
     return out
-SPOTS=spot_events()
+SPOTS=spot_events()+[T_JUMP[0]+0.05]                  # the final slip: SPOTTED!
 
 # ======================= states =======================
-def drop_of(t): return sm(seg01(t,T_TIRE,T_TIRE+0.7))
+def drop_of(t): return 0.0                                                # the foot never gives up
 def cat_state(t):
     hx=hx_of(t); rise=0.0
     if t<T_DASH[0]:
@@ -69,9 +71,9 @@ def cat_state(t):
         return dict(base=(wig,CD.CAT_Y,CAT_Z),yaw=0.0,walk=0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=0.05*c,lid=0.0,pupil=0.0,tail=t*14,crouch=0.6+0.4*c,ears=0.9*c,mouth=0.0,bpitch=0.08*c,shades=0.0)
     u=seg01(t,*T_JUMP)                                             # ONE big jump straight at the lens
     z=lerp(CAT_Z,-0.05,sm(u)*0.35+u*0.65); y=lerp(CD.CAT_Y,CD.CAT_Y+0.04,u)+0.55*math.sin(PI*u)
-    return dict(base=(0.0,y,z),yaw=0.0,walk=0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=lerp(0.05,0.5,sm(u)),lid=0.0,pupil=0.0,tail=t*12,crouch=1.0-sm(seg01(u,0.0,0.2)),ears=0.7,mouth=0.0,bpitch=lerp(0.1,-0.55,sm(seg01(u,0.1,1.0))),shades=0.0,cheese=sm(seg01(u,0.8,1.0)))
+    return dict(base=(-0.2*math.sin(PI*u),y,z),yaw=0.0,walk=0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=lerp(0.05,0.5,sm(u)),lid=0.0,pupil=0.0,tail=t*12,crouch=1.0-sm(seg01(u,0.0,0.2)),ears=0.7,mouth=0.0,bpitch=lerp(0.1,-0.55,sm(seg01(u,0.1,1.0))),shades=0.0,cheese=sm(seg01(u,0.8,1.0)))
 def legs_quads(t):
-    d=drop_of(t); fx=fx_of(t)+(0.004*math.sin(t*60) if 7.2<=t<T_TIRE else 0.0)
+    d=drop_of(t); fx=fx_of(t)+(0.004*math.sin(t*60) if 7.2<=t<T_JUMP[0] else 0.0)
     Q=[]
     hipL=(-0.10,0.48,0.12); knL=(-0.22,0.50,-0.30); anL=(-0.26,0.47,-0.78)
     Q+=seg(hipL,knL,0.15,PJ)+seg(knL,anL,0.13,PJ)+box(-0.32,-0.2,0.435,0.5,-0.97,-0.77,SOCK)
@@ -122,11 +124,10 @@ def popups(d,t):
         if te<=t<te+0.5:
             k=seg01(t,te,te+0.5); x=int(lerp(12,W-12-font.width('SPOTTED!',2),0.5+0.35*math.sin(te*7))); y=int(124-14*k)
             otext(d,'SPOTTED!',x,y,RED if int(t*12)%2 else (255,140,120),2)
-    if T_TIRE+0.2<=t<T_TIRE+1.3: ctext(d,'COVER BROKEN',118,YEL,1) if False else otext(d,'COVER BROKEN',(W-font.width('COVER BROKEN',1))//2,110,YEL,1)
 def frame(t):
     T=min(t,T_FREEZE); img,vi,cs=render(t,T); d=ImageDraw.Draw(img)
     if t<T_DASH[1]-0.1: pov_text(d)
-    if t<T_DASH[0]+0.3: meter(d,t)
+    if t<T_JUMP[0]+0.4: meter(d,t)
     popups(d,t)
     if t>=T_WIN:
         a=sm(seg01(t,T_WIN,T_WIN+0.12)); c=YEL if int(t*8)%2 else WHT
@@ -139,7 +140,7 @@ def _cat(t): return cat_state(min(t,T_FREEZE))
 def _cat_model(**st): return cat_model(**st)[0]
 def _extra(t):
     out=[]; cs=cat_state(min(t,T_FREEZE)); x,_,z=cs['base']
-    if T_DASH[0]<=t and abs(x)>0.12: out.append(('intersect','the cat leaves the centre line'))
+    if T_JUMP[0]<=t<T_FREEZE and abs(x-fx_of(t))<0.16 and -0.5<z<-0.15: out.append(('intersect',f'the cat touches her foot (dx {abs(x-fx_of(t)):.2f} m)'))
     if t<T_TIRE and abs(fx_of(t))>0.09: out.append(('stretch','foot sways too far'))
     return out
 QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,chars={'cat':(_cat,_cat_model,'_none',1.0)},
@@ -147,9 +148,9 @@ QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,chars={'cat':(_cat,_cat_model,'_none',1.
     camera=lambda t: cam_shot(t)[0],min_cam_dist=0.2,      # the face-in-lens ending is intentional; the 25 cm near-plane clip limit still applies
     camera_ok=lambda p: 0.3<p[1]<1.2 and abs(p[0])<1.0 and -1.5<p[2]<1.0,
     scenes=[dict(id='cover',t0=0.0,t1=3.0,action='POV: the foot is her cover; the cat peeks, the foot chases'),dict(id='peek',t0=3.0,t1=7.0,action='faster peeks, LINE OF SIGHT fills, SPOTTED'),
-            dict(id='chase',t0=7.0,t1=T_TIRE,action='very fast peeks; the foot cannot keep up'),dict(id='tire',t0=T_TIRE,t1=T_DASH[0],action='the foot gives up and drops; COVER BROKEN'),
-            dict(id='crouch',t0=T_DASH[0],t1=T_JUMP[0],action='the cat crouches and wiggles'),dict(id='jump',t0=T_JUMP[0],t1=T_FREEZE,action='one big jump over the pizza straight into the lens'),dict(id='win',t0=T_FREEZE,t1=DUR,action='freeze: face in the camera, MISSION FAILED / CAT WINS')],
-    weapon_events=[],texts=lambda: [('hook',x,2) for x in POV_LINES]+[('ui',s_,1) for s_ in ('COVER: FOOT','SPOTTED!','NOT SEEN','DANGER','COVER BROKEN','FOOD STOLEN')]+[('ui','SPOTTED!',2),('ui','MISSION FAILED',2),('ui','CAT WINS',3)])
+            dict(id='chase',t0=7.0,t1=T_TIRE,action='very fast peeks; the foot cannot keep up'),dict(id='hold',t0=T_TIRE,t1=T_DASH[0],action='the foot centres and hides him: NOT SEEN'),
+            dict(id='crouch',t0=T_DASH[0],t1=T_JUMP[0],action='the cat crouches and wiggles'),dict(id='jump',t0=T_JUMP[0],t1=T_FREEZE,action='her late swipe misses; he slips past the foot and jumps straight into the lens'),dict(id='win',t0=T_FREEZE,t1=DUR,action='freeze: face in the camera, MISSION FAILED / CAT WINS')],
+    weapon_events=[],texts=lambda: [('hook',x,2) for x in POV_LINES]+[('ui',s_,1) for s_ in ('COVER: FOOT','SPOTTED!','NOT SEEN','DANGER','FOOD STOLEN')]+[('ui','SPOTTED!',2),('ui','MISSION FAILED',2),('ui','CAT WINS',3)])
 
 TEST=os.environ.get('TEST')
 if TEST and __name__=='__main__':
@@ -186,7 +187,7 @@ def build_audio(path):
     AMB+=s.filt(s.rng.normal(0,1,n),lo=80,hi=800)*0.008
     # ---------- music: slow stealth march that speeds up ----------
     sneaky(0.05,3.0,0.7,step=0.26); sneaky(3.0,7.2,0.9,step=0.2,tense=1.0); sneaky(7.2,T_TIRE,1.1,step=0.15,tense=1.0)
-    for k in range(int((T_JUMP[0]-T_DASH[0])/0.1)): note(M,T_DASH[0]+k*0.1,33+(k%2),0.12,0.03+0.002*k,'tri',dec=5)                # crouch tension
+    for k in range(int((T_JUMP[0]-T_TIRE)/0.1)): note(M,T_TIRE+k*0.1,33+(k%2),0.12,0.03+0.001*k,'tri',dec=5)                # crouch tension
     for k,m in enumerate((57,60,64,67,69,72,76,79,81,84,88)): note(M,T_JUMP[0]+k*0.06,m,0.12,0.03,'sq',0.25,8)                 # the jump run-up
     # ---------- sfx ----------
     for k,t0 in enumerate(FL):
@@ -195,8 +196,7 @@ def build_audio(path):
     for te in SPOTS:                                                                                     # SPOTTED!
         for k,m in enumerate((88,95)): note(M,te+k*0.09,m,0.1,0.055,'sq',0.5,10)
         thud(te,70,0.1,0.2)
-    note(M,T_TIRE+0.2,60,0.25,0.05,'sq',0.5,5); thud(T_TIRE+0.35,60,0.15,0.3); nb(T_TIRE+0.35,0.2,200,1500,0.04,61,1)
-    for k,m in enumerate((57,56,55,54)): note(M,T_TIRE+0.45+k*0.17,m,0.2,0.04,'sq',0.5,6)
+    whoosh(T_JUMP[0]+0.1,0.3,0.07,79,400,4000); tick(T_JUMP[0]+0.45,0.04,900)                         # her late swipe: whiff
     for k in range(int((T_JUMP[0]-T_DASH[0]-0.1)/0.1)): pad(T_DASH[0]+0.1+k*0.1,0.02+0.002*k,80+k)                               # butt wiggle
     zip_(T_JUMP[0],0.09,300,1500,0.22); thud(T_JUMP[0],80,0.18,0.2); whoosh(T_JUMP[0]+0.05,0.7,0.09,73,200,3500)              # boing + the flight
     thud(T_FREEZE,45,0.5,0.5); nb(T_FREEZE,0.3,100,2500,0.12,75)
