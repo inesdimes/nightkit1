@@ -31,7 +31,7 @@ HOOK=3.5
 T_RECOIL=(3.5,4.6); T_REAPP=(4.6,5.4); T_TIP=(5.4,6.3); T_FLAIL=(6.3,7.4); T_GETUP=(7.4,8.4); T_THINK=(8.4,9.0)
 T_MENU=(9.0,13.0); T_DROP=(13.0,14.2); T_PICK=(14.2,15.7); T_EAT=(15.7,17.7); T_DANCE=(17.7,20.1); T_TREMOR=(20.1,22.6)
 T_LAND=22.6; T_HOLSTER=(23.0,23.9); T_SWORDLOOK=(23.9,25.1); T_CORELOOK=(25.1,26.5); T_SILENCE=(26.5,27.5); T_FIRE=(27.5,28.3); T_FLASH=28.3
-T_DIED=(28.5,29.7); DUR=30.2; N=int(round(DUR*FPS)); BLACK=29.7
+T_DIED=(28.5,29.4); STING=(29.4,32.0); DUR=32.4; N=int(round(DUR*FPS)); BLACK=32.0
 BITES=[16.55,17.0,17.45]; SWORD_DROP=13.2; APPLE_GRAB=14.9; ITEM_GET=(15.0,16.2); BULB=8.5
 
 # ======================= world layout =======================
@@ -123,7 +123,7 @@ def golden_sword(hilt,d,glow=1.0):
     return Q
 
 # ======================= LOCKED ASSET: the dragon =======================
-def dragon(base,yaw,fold=1.0,flap=0.0,head=(0.0,2.55,2.1),hpitch=0.15,hyaw=0.0,jaw=0.0,eye=0.0,fire=0.0,tail=0.0,breathe=0.0):
+def dragon(base,yaw,fold=1.0,flap=0.0,head=(0.0,2.55,2.1),hpitch=0.15,hyaw=0.0,jaw=0.0,eye=0.0,fire=0.0,tail=0.0,breathe=0.0,roll=0.0):
     """low-poly crimson dragon. local forward +z, ~4.5 m long. fold: 1 wings spread .. 0.2 tucked. flap: wing lift angle. eye: 0 red .. 1 gold. fire: mouth glow 0..1."""
     b=np.array(base,float); R_=Ry(yaw)
     def Wd(p): return tuple(b+R_@np.array(p,float))
@@ -161,8 +161,12 @@ def dragon(base,yaw,fold=1.0,flap=0.0,head=(0.0,2.55,2.1),hpitch=0.15,hyaw=0.0,j
         Wr=np.array(wp((1.9,0.9,-0.2))); Tp=np.array(wp((3.0,-0.1,-1.4))); Rt=np.array([sx*0.42,1.5,-0.9]); Tm=np.array(wp((1.9,-0.3,-1.0)))
         Q+=xform(seg(S_,Wr,0.14,DR_D,0.12)+seg(Wr,Tp,0.08,DR_D,0.08)+seg(Wr,Tm,0.07,DR_D,0.07),Wd)
         Q+=xform([quad([tuple(S_),tuple(Wr),tuple(Tp)],DR_WING),quad([tuple(S_),tuple(Tp),tuple(Tm)],DR_WING),quad([tuple(S_),tuple(Tm),tuple(Rt)],(140,34,88))],Wd)
+    if roll>1e-4:                                                     # tips over sideways (like the knight's turtle fall)
+        P=np.array(Wd((-0.75,0.0,0.0))); xform(Q,lambda p: tuple(P+Rz(-roll)@(np.array(p,float)-P)))
+        ymin=min(p[1] for q in Q for p in q['p'])
+        if ymin<0.0: xform(Q,lambda p:(p[0],p[1]-ymin,p[2]))
     return Q
-DR_KEYS={'base','yaw','fold','flap','head','hpitch','hyaw','jaw','eye','fire','tail','breathe'}
+DR_KEYS={'base','yaw','fold','flap','head','hpitch','hyaw','jaw','eye','fire','tail','breathe','roll'}
 
 # ======================= the meadow =======================
 def world_static():
@@ -204,6 +208,7 @@ def dust(t):
 
 # ======================= state functions =======================
 def sky_color(t):
+    if t>=STING[0]: return (112,84,136)
     DAY=(120,180,235); STORM=(96,80,120); DUSK=(128,96,150); DARK=(46,24,44)
     if t<T_TREMOR[0]: return DAY
     if t<T_LAND: return tuple(int(v) for v in lerp3(DAY,STORM,sm(seg01(t,T_TREMOR[0],T_LAND))))
@@ -283,7 +288,8 @@ def bounce(t,impacts,dur=0.45):
 
 DESC=(T_LAND-2.0,T_LAND)
 def dragon_state(t):
-    if t<DESC[0] or t>=T_DIED[0]-0.0 and t>=T_FLASH+0.2: return None
+    if t<DESC[0] or T_DIED[0]<=t<STING[0]: return None
+    if t>=STING[0]: return sting_dragon(t)
     st=dict(yaw=PI,eye=0.0,fire=0.0,jaw=0.0,tail=0.4*math.sin(t*2),breathe=math.sin(t*3))
     if t<T_LAND:                                                   # swoops down, wings flapping
         u=seg01(t,*DESC); y=7.5*(1-(0.6*u+0.4*sm(u))); return dict(st,base=(DRAGON_AT[0]+0.2*(1-u),y,DRAGON_AT[2]+1.2*(1-u)),fold=1.0,flap=0.9*math.sin((t-DESC[0])*13)+0.3,head=(0,2.3,2.2),hpitch=0.25)
@@ -300,6 +306,17 @@ def dragon_state(t):
         a=sm(seg01(t,T_SILENCE[0]+0.2,T_SILENCE[1])); return dict(st,base=base,fold=0.25,flap=-0.1,head=lerp3((1.15,1.2,2.6),(0.0,2.0,2.5),a),hpitch=lerp(0.9,0.1,a),hyaw=lerp(0.25,0.0,a),eye=lerp(1.0,0.0,a),jaw=0.1)
     a=seg01(t,*T_FIRE if t<T_FIRE[1] else (T_FIRE[0],T_FIRE[1])); f=sm(a)
     return dict(st,base=base,fold=0.25,flap=-0.1,head=(0.0,2.0,2.5),hpitch=0.1,hyaw=0.0,eye=0.0,jaw=sm(seg01(t,T_FIRE[0],T_FIRE[0]+0.35)),fire=f)
+def sting_dragon(t):
+    """after YOU DIED: chews, eyes the golden sword, tries to take it... OVERENCUMBERED, tips over"""
+    base=(DRAGON_AT[0],0.0,DRAGON_AT[2]); st=dict(base=base,yaw=PI,fold=0.25,flap=-0.1,tail=0.4*math.sin(t*2),breathe=math.sin(t*3),eye=0.0,fire=0.0)
+    if t<29.95: return dict(st,head=(0.0,2.4,2.2),hpitch=0.1,jaw=0.35+0.3*math.sin(t*18))
+    if t<STING_BUZZ:
+        a=sm(seg01(t,29.95,30.5)); return dict(st,head=lerp3((0.0,2.4,2.2),(1.15,1.2,2.6),a),hpitch=lerp(0.1,0.9,a),hyaw=lerp(0.0,0.25,a),eye=a,jaw=0.6*sm(seg01(t,30.3,30.55)))
+    jolt=sm(seg01(t,STING_BUZZ,STING_BUZZ+0.15)); roll=1.5*sm(seg01(t,STING_BUZZ+0.25,STING_BUZZ+0.85))**1.4+(0.05*math.sin(t*14) if t>STING_BUZZ+0.85 else 0.0)
+    back=sm(seg01(t,STING_BUZZ+0.15,STING_BUZZ+0.5))
+    rr=min(1.0,roll/1.5); st=dict(st,fold=lerp(0.25,0.05,rr),flap=lerp(-0.1,0.6,rr))           # wings tuck in as it rolls
+    return dict(st,head=lerp3(lerp3((1.15,1.2,2.6),(0.9,1.7,2.4),jolt),(0.0,1.7,2.0),back),hpitch=lerp(lerp(0.9,0.4,jolt),0.2,back),hyaw=0.25*(1-back),eye=1.0-jolt,jaw=0.3,roll=roll)
+STING_BUZZ=30.6
 def sword_state(t):
     """legendary sword: in the holster (None), falling, lying on the ground"""
     if t<SWORD_DROP: return None
@@ -342,6 +359,7 @@ def shot(V):
     if V<T_HOLSTER[1]: return dict(cam=(-2.5,1.2,RZ2),tgt=(0.0,1.15,RZ2),fov=40,shake=shake(V))                                      # profile: his hand pats the empty holster
     if V<T_CORELOOK[0]: return dict(cam=WIDE_CAM,tgt=WIDE_TGT,fov=58)                                                              # wide: the dragon eyes the golden sword
     if V<T_CORELOOK[1]: return dict(cam=(2.5,1.3,RZ2),tgt=(0.0,1.3,RZ2),fov=40)                                                      # profile: he studies the apple core
+    if V>=STING[0]: return dict(cam=(-5.0,1.7,1.6),tgt=(0.3,1.3,1.7),fov=58,shake=(4*bounce(V,[STING_BUZZ+0.8],0.5)*math.sin(V*90),0))
     return dict(cam=WIDE_CAM,tgt=WIDE_TGT,fov=58)
 WIDE_CAM=(-6.4,2.0,0.7); WIDE_TGT=(0.2,2.0,0.7)
 
@@ -351,12 +369,16 @@ def lights_amb(V):
     sun=lerp3((255,250,230),(210,160,140),sm(seg01(V,T_TREMOR[0],T_LAND))); amb=lerp(0.62,0.42,sm(seg01(V,T_TREMOR[0],T_LAND)))
     if V>=T_FIRE[0]: amb=lerp(0.42,0.3,sm(seg01(V,T_FIRE[0],T_FLASH)))
     return [((20,40,-10),tuple(int(v) for v in sun),3.0)],amb
+def _pile():
+    st=dict(base=(0.0,0.0,RZ2),yaw=0.4,jig=0.0,ph=0.0); return tilt_quads(pack_quads(st),st,1.45)
+PILE=_pile()
 def render(V,sh):
     cam=Camera.look(sh['cam'],sh['tgt']); ks=knight_state(V); ds=dragon_state(V); ss=sword_state(V); ap=apple_state(V)
     sky=sky_color(V); R.fog=sky
-    layers=[WORLD,flowers(),stump_quads(),pebbles(V),prelit(knight_full(**ks),sh['cam'],warm=0.08)]
+    layers=[WORLD,flowers(),stump_quads(),pebbles(V)]+([prelit(knight_full(**ks),sh['cam'],warm=0.08)] if V<STING[0] else [PILE])
     props=[]
-    if ap is not None and not CORE_IN_HAND(V) or (ap is not None and CORE_IN_HAND(V)): props+=apple_quads(ap[0],ap[1],V*0.0)
+    if V>=STING[0]: props+=apple_quads((0.35,0.11,RZ2+0.35),3,0.6)
+    elif ap is not None: props+=apple_quads(ap[0],ap[1],V*0.0)
     if ss is not None: props+=golden_sword(ss['hilt'],ss['dir'])
     layers.append(props)
     if ds is not None: layers.append(dragon(**{k:v for k,v in ds.items() if k in DR_KEYS}))
@@ -407,8 +429,9 @@ def banner(d,lines,y,col,bg=(40,6,8)):
     panel(d,x0,y,x0+wmax,y+h,col,bg)
     for i,(s,c) in enumerate(lines): ctext(d,s,y+5+i*11,c)
 def slot_xy(r,c): return 31+c*12,34+r*12
-ITEMS=['WOODEN SWORD','RUSTY SWORD','STEEL SWORD','IRON SWORD','BENT SWORD','CHIPPED SWORD','SHINY SWORD','OLD SWORD']
-CURSOR_PATH=[(4,4),(6,7),(2,8),(7,2),(5,5),(1,3),(3,1),(0,0)]
+ITEMS=['SWORD','ANOTHER SWORD','SWORD BUT BLUE','SWORD, AGAIN']
+CURSOR_PATH=[(4,4),(6,7),(2,8),(7,2),(0,0)]; HOP=0.33
+DLG2=11.85
 def menu(d,V):
     if not (T_MENU[0]<=V<T_MENU[1]): return
     a=sm(seg01(V,T_MENU[0],T_MENU[0]+0.2))*(1-sm(seg01(V,T_MENU[1]-0.25,T_MENU[1])))
@@ -423,19 +446,20 @@ def menu(d,V):
                 if V<12.7: g=GOLD if int(V*8)%2 else (255,244,170); d.line([x+2,y+8,x+8,y+2],fill=g,width=2); d.rectangle([x+1,y+6,x+4,y+8],fill=GOLD_D)
             else: d.line([x+2,y+8,x+8,y+2],fill=(BLADE_S if (r+c)%3 else BLADE_R),width=1)
     if V<10.9:                                                            # cursor sweep over the swords
-        t=V-(T_MENU[0]+0.2); k=min(len(CURSOR_PATH)-2,max(0,int(t/0.22))); p0=CURSOR_PATH[k]; p1=CURSOR_PATH[k+1]; e=sm(seg01(t-k*0.22,0.0,0.14))
+        t=V-(T_MENU[0]+0.2); k=min(len(CURSOR_PATH)-2,max(0,int(t/HOP))); p0=CURSOR_PATH[k]; p1=CURSOR_PATH[k+1]; e=sm(seg01(t-k*HOP,0.25,0.33))
         r=lerp(p0[0],p1[0],e) if t>=0 else p0[0]; c=lerp(p0[1],p1[1],e) if t>=0 else p0[1]
-        if t>=len(CURSOR_PATH)*0.22: r,c=0,0
+        if t>=(len(CURSOR_PATH)-1)*HOP: r,c=0,0
     else: r,c=0,0
     x,y=slot_xy(r,c); x=int(x-6); y=int(y+y0-26+12); d.rectangle([x-1,y-1,x+11,y+11],outline=WHT if int(V*10)%2 else YEL)
     if V<10.5:
-        t=max(0.0,V-(T_MENU[0]+0.2)); nm=ITEMS[int(t/0.22)%len(ITEMS)]; ctext(d,nm,y0+176,GRY)
+        t=max(0.0,V-(T_MENU[0]+0.2)); nm=ITEMS[min(len(ITEMS)-1,int(t/HOP))]; ctext(d,nm,y0+176,WHT)
     elif V<12.7: ctext(d,'LEGENDARY GOLDEN SWORD',y0+170,GOLD); ctext(d,'ATK 999   EQUIPPED',y0+182,YEL)
     else: ctext(d,'DROPPED: GOLDEN SWORD',y0+176,GRN)
     if 11.0<=V<12.75:                                                     # the warning dialog
         panel(d,14,y0+52,166,y0+128,RED,(30,8,10))
-        ctext(d,'ARE YOU SURE YOU WANT',y0+60,WHT); ctext(d,'TO DROP THIS ITEM?',y0+72,RED)
-        yes=V>=12.0; press=V>=12.35
+        second=V>=DLG2
+        if not second: ctext(d,'ARE YOU SURE YOU WANT',y0+60,WHT); ctext(d,'TO DROP THIS ITEM?',y0+72,RED); yes=V>=11.45; press=V>=11.65
+        else: ctext(d,'ARE YOU SURE SURE?',y0+60,WHT); ctext(d,"IT'S LEGENDARY.",y0+72,GOLD); yes=V>=12.15; press=V>=12.35
         for (lab,xx,sel) in (('YES',44,yes),('NO',112,not yes)):
             bc=YEL if sel and int(V*8)%2 else (WHT if sel else GRY)
             d.rectangle([xx-8,y0+98,xx+30,y0+114],fill=(60,20,24) if sel else (24,12,20),outline=bc)
@@ -506,21 +530,48 @@ def grade(img,V):
         f=sm(seg01(V,T_FIRE[0],T_FLASH)); a=a*(1-0.25*f)+f*np.array([160,70,10])*0.35
         if V>=T_FLASH: k=1-seg01(V,T_FLASH,T_FLASH+0.2); a=a*(1-k)+k*np.array([255,230,190])
     return Image.fromarray(np.clip(a,0,255).astype(np.uint8))
+def tooltip(d,vi,p3,lines,col):
+    p=R.project(tuple(p3),vi)
+    if not p: return
+    w=max(font.width(s_) for s_,_ in lines)+10; h=len(lines)*10+6; x=int(max(3,min(W-w-3,p[0]-w/2))); y=int(max(40,p[1]-h-16))
+    d.line([int(p[0]),int(p[1]),x+w//2,y+h],fill=col); panel(d,x,y,x+w,y+h,col,(12,10,26))
+    for i,(s_,c) in enumerate(lines): otext(d,s_,x+5,y+4+i*10,c)
+def sting_ui(d,vi,V):
+    head=np.array(DRAGON_AT)+np.array([0,3.4,-2.0])
+    if V<STING_BUZZ+1.4:
+        k=seg01(V,STING[0],STING[0]+0.6); p=R.project(tuple(head),vi)
+        if p and V<30.3: otext(d,'+1 KNIGHT',int(p[0])-26,int(p[1])-int(14*k),GRN)
+    if V>=STING[0]+0.25:
+        a=sm(seg01(V,STING[0]+0.25,STING[0]+0.4)); y=int(lerp(-30,40,a)); col=RED; banner(d,[('DRAGON INV: 100/100',RED)],y,CYAN,(12,10,30))
+    if V>=STING_BUZZ:
+        a=sm(seg01(V,STING_BUZZ,STING_BUZZ+0.15)); y=int(lerp(-30,74,a)); banner(d,[('OVERENCUMBERED!',RED if int(V*7)%2 else (255,150,120))],y,RED)
+    if V>=STING_BUZZ+0.9: banner(d,[('MOVE SPEED: 0%',YEL)],98,YEL,(30,24,8))
 def died(d,V):
     if V<T_DIED[0]: return
     a=sm(seg01(V,T_DIED[0],T_DIED[0]+0.4)); y=int(lerp(110,128,a))
     ctext(d,'YOU DIED',y,(int(60+170*a),int(10+20*a),int(10+20*a)),3)
+def tooltips(d,vi,V,ks):
+    if T_SWORDLOOK[0]+0.5<=V<T_CORELOOK[0]: tooltip(d,vi,SW_LAND+np.array([0,0.1,0.55]),[('GOLDEN SWORD',GOLD),('X99 DMG VS DRAGONS',RED)],GOLD)
+    if T_CORELOOK[0]+0.7<=V<T_CORELOOK[1]: tooltip(d,vi,np.array(khand(ks,1))+np.array([0,0.12,0]),[('APPLE CORE',WHT),('HEALS: 0 HP',RED)],WHT)
+def achievement(d,V):
+    if 6.6<=V<8.3:
+        a=sm(seg01(V,6.6,6.8))*(1-sm(seg01(V,8.1,8.3))); y=int(lerp(330,250,a)); panel(d,16,y,164,y+30,GOLD,(30,22,6)); ctext(d,'ACHIEVEMENT UNLOCKED',y+6,GOLD); ctext(d,'TURTLE MODE',y+17,WHT)
+def hook_hp(d,V):
+    if V>=HOOK: return
+    col=RED if int(V*4)%2 else (120,20,20); panel(d,6,296,76,312,col,(20,8,10)); otext(d,'HP 1/10',12,300,col)
 def frame(V):
     if V>=BLACK: return Image.new('RGB',(W,H),(0,0,0))
-    if V>=T_DIED[0]:
-        img=Image.new('RGB',(W,H),(int(40*(1-seg01(V,T_DIED[0],BLACK))),0,0)); d=ImageDraw.Draw(img); died(d,V); return img
+    if T_DIED[0]<=V<STING[0]:
+        img=Image.new('RGB',(W,H),(int(40*(1-seg01(V,T_DIED[0],STING[0]))),0,0)); d=ImageDraw.Draw(img); died(d,V); return img
+    if V>=STING[0]:
+        sh=shot(V); img,vi=render(V,sh); d=ImageDraw.Draw(img); sting_ui(d,vi,V); return img
     sh=shot(V); img,vi=render(V,sh); img=grade(img,V); d=ImageDraw.Draw(img); ks=knight_state(V)
-    emotes(d,vi,V,ks); hud(d,V); banners(d,V); menu(d,V); warning(d,V); boss_bar(d,V)
-    if V<HOOK: hook_text(d,V)
+    emotes(d,vi,V,ks); tooltips(d,vi,V,ks); hud(d,V); banners(d,V); achievement(d,V); menu(d,V); warning(d,V); boss_bar(d,V)
+    if V<HOOK: hook_text(d,V); hook_hp(d,V)
     return img
 
 # ======================= QA manifest (tools/qa/scene_qa.py, PIPELINE.md) =======================
-def _kn(t): return knight_state(t)
+def _kn(t): return knight_state(t) if t<T_DIED[0] else None
 def _dr(t): return dragon_state(t)
 TREES=[]
 def _geom(t,name,st,V):
@@ -531,6 +582,7 @@ def _geom(t,name,st,V):
     return out
 def _extra(t):
     out=[]; ks=knight_state(t); ds=dragon_state(t); ap=apple_state(t); ss=sword_state(t)
+    if t>=T_DIED[0]: return out
     for sx in (-1,1):                                                                                   # arms never stretch
         sh_=np.array(kpoint(ks,(sx*0.22,1.27,0))); dd=np.linalg.norm(np.array(khand(ks,sx))-sh_)
         if dd>0.66 and not ks.get('tilt'): out.append(('stretch',f'knight arm stretched beyond its length ({dd:.2f} m)'))
@@ -571,9 +623,10 @@ QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,
             dict(id='sword-look',t0=T_HOLSTER[1],t1=T_CORELOOK[0],action='wide: the dragon eyes the golden sword'),
             dict(id='core-look',t0=T_CORELOOK[0],t1=T_CORELOOK[1],action='profile: he looks at the apple core'),
             dict(id='fire',t0=T_CORELOOK[1],t1=T_DIED[0],action='wide: silence; the dragon turns, its mouth glows; flash'),
-            dict(id='died',t0=T_DIED[0],t1=DUR,action='YOU DIED, black')],
+            dict(id='died',t0=T_DIED[0],t1=STING[0],action='YOU DIED'),
+            dict(id='stinger',t0=STING[0],t1=DUR,action='dragon chews; DRAGON INV 100/100; reaches for the sword; OVERENCUMBERED; tips over')],
     weapon_events=[('knight',SWORD_DROP,'hip','none')],
-    texts=lambda: [('hook',x,2) for x in HOOK_LINES]+[('ui',s_,1) for s_ in ('INVENTORY: 100/100','OVERENCUMBERED!','MOVE SPEED: 0%','ARE YOU SURE YOU WANT','TO DROP THIS ITEM?','LEGENDARY GOLDEN SWORD','ATK 999   EQUIPPED','DROPPED: GOLDEN SWORD','ITEM GET!','INV 100/100','QUEST: EAT THE APPLE','LARGE ENEMY NEARBY','CRUNCH','CLANG!')+tuple(ITEMS)]
+    texts=lambda: [('hook',x,2) for x in HOOK_LINES]+[('ui',s_,1) for s_ in ('INVENTORY: 100/100','OVERENCUMBERED!','MOVE SPEED: 0%','ARE YOU SURE YOU WANT','TO DROP THIS ITEM?','LEGENDARY GOLDEN SWORD','ATK 999   EQUIPPED','DROPPED: GOLDEN SWORD','ITEM GET!','INV 100/100','QUEST: EAT THE APPLE','LARGE ENEMY NEARBY','CRUNCH','CLANG!','ARE YOU SURE SURE?',"IT'S LEGENDARY.",'GOLDEN SWORD','X99 DMG VS DRAGONS','APPLE CORE','HEALS: 0 HP','ACHIEVEMENT UNLOCKED','TURTLE MODE','HP 1/10','+1 KNIGHT','DRAGON INV: 100/100')+tuple(ITEMS)]
           +[('ui',s_,2) for s_ in ('+1 HP','WARNING!')]+[('ui','YOU DIED',3),('ui','DRAGON',1)])
 
 TEST=os.environ.get('TEST')
@@ -641,9 +694,12 @@ def build_audio(path):
     # ---------- sfx ----------
     for k in range(7): step_h(0.1+k*0.28,0.05,k)                                                    # hook: heavy steps + clanking swords
     rattle(0.0,2.0,0.03,50); growl(2.8,0.6,0.05,90); grunt(3.2,0.07)                                # strain
+    for k in range(7): note(M,0.3+k*0.5,95,0.06,0.012,'sq',0.5,30)                                 # low-HP beep
+    growl(1.5,0.6,0.06,48)                                                                           # stomach
     buzzer(3.55,0.45,0.12); rattle(3.5,0.8,0.05,51); whoosh(3.6,0.35,0.04,52)
     for k in range(4): step_h(3.85+k*0.18,0.05,60+k)
     for k in range(4): step_h(4.7+k*0.2,0.05,70+k)
+    for k,m in enumerate((79,84,88,91)): note(M,6.65+k*0.07,m,0.2,0.03,'sq',0.25,6)            # achievement
     buzzer(5.55,0.45,0.1); grunt(5.9,0.09,140,0.4); whoosh(5.6,0.5,0.05,53)
     clank(6.05,0.16,1); thud(6.1,45,0.4,0.6); rattle(6.05,0.8,0.08,54)                              # the big fall
     for k in range(int(1.1/0.28)): rattle(6.35+k*0.28,0.25,0.05,80+k); grunt(6.4+k*0.28,0.04,150+10*k)
@@ -652,11 +708,13 @@ def build_audio(path):
     growl(8.5,0.7,0.09,50)                                                                           # stomach
     for k,m in enumerate((79,84,91)): note(M,BULB+0.05+k*0.05,m,0.2,0.03,'sq',0.25,6)             # lightbulb ding
     whoosh(T_MENU[0],0.3,0.04,90,800,5000); tick(T_MENU[0]+0.1,0.04)
-    for k in range(9): tick(T_MENU[0]+0.2+k*0.22,0.03)                                              # cursor sweep
+    for k in range(5): tick(T_MENU[0]+0.2+k*HOP+0.25,0.035)                                       # cursor sweep
     for k,m in enumerate((84,91,96,103)): note(M,10.5+k*0.06,m,0.25,0.025,'sq',0.25,5)            # golden slot
     for k in range(3): note(M,11.0+k*0.2,70 if k!=1 else 64,0.12,0.05,'sq',0.5,10)                  # warning dialog
     for f_ in (110,164.8,220): note(M,11.0,69+12*math.log2(f_/440)+0,1.4,0.03,'sin',dec=0.8,att=0.3)
-    tick(12.0,0.05); note(M,12.35,48,0.4,0.07,'sq',0.5,4); note(M,12.35,60,0.25,0.05,'sq',0.5,6); nb(12.35,0.3,1500,8000,0.04,91)      # YES
+    tick(11.45,0.05); note(M,11.65,55,0.25,0.06,'sq',0.5,6); nb(11.65,0.2,1500,8000,0.03,89)                  # first YES
+    for k in range(2): note(M,DLG2+k*0.15,76+k*3,0.12,0.05,'sq',0.5,10)                            # 'are you SURE sure?'
+    tick(12.15,0.05); note(M,12.35,48,0.4,0.07,'sq',0.5,4); note(M,12.35,60,0.25,0.05,'sq',0.5,6); nb(12.35,0.3,1500,8000,0.04,91)      # YES
     chime(12.7,(72,79,84),0.035)
     whoosh(SWORD_DROP+0.05,0.5,0.05,92,600,4000)
     clank(SWORD_DROP+0.55,0.2,93); clank(SWORD_DROP+0.7,0.1,94)
@@ -680,6 +738,8 @@ def build_audio(path):
     for t0 in (23.45,23.58,23.7): clank(t0,0.07,int(t0*10))                                         # pat pat on the empty holster
     growl(T_SWORDLOOK[0]+0.1,1.1,0.1,55)
     for k,f in enumerate((3000,3900)): tt=s.T(0.6); s.place(np.sin(2*np.pi*f*tt)*np.exp(-tt*6),T_SWORDLOOK[0]+0.7+k*0.08,0.03)             # gold glint
+    for k,m in enumerate((84,79)): note(M,T_SWORDLOOK[0]+0.5+k*0.08,m,0.15,0.03,'sq',0.25,8)          # tooltip pop
+    for k,m in enumerate((60,57)): note(M,T_CORELOOK[0]+0.7+k*0.1,m,0.2,0.04,'sq',0.5,6)               # 'heals: 0' bwomp
     tt=s.T(0.3); s.place(np.sin(2*np.pi*np.cumsum(1400+500*tt/0.3)/sr)*np.exp(-tt*10),25.7,0.05)     # knight's squeak
     M[int(T_SILENCE[0]*sr):int(T_FIRE[0]*sr)]=0
     for t0 in (T_SILENCE[0]+0.3,T_SILENCE[0]+0.95): heartbeat(t0,0.3)
@@ -687,7 +747,19 @@ def build_audio(path):
     tt=s.T(T_FLASH-T_FIRE[0]); s.place(np.sin(2*np.pi*np.cumsum(120+700*(tt/(T_FLASH-T_FIRE[0]))**2)/sr)*(tt/(T_FLASH-T_FIRE[0]))*0.5+s.filt_short(s.noise(T_FLASH-T_FIRE[0],99),lo=300,hi=4000)*(tt/(T_FLASH-T_FIRE[0]))*0.5,T_FIRE[0],0.14)   # fire charge
     thud(T_FLASH,38,0.7,0.7); nb(T_FLASH,0.5,60,3000,0.25,98)                                       # flash boom
     tt=s.T(2.0); s.place((np.sin(2*np.pi*55*tt)+0.7*np.sin(2*np.pi*110.5*tt)+0.4*np.sin(2*np.pi*165*tt))*np.exp(-tt*1.4),T_DIED[0],0.3)   # YOU DIED gong
-    for k,m in enumerate((67,64,60,55,48)): note(M,29.0+k*0.2,m,0.28 if k<4 else 0.9,0.07,'sq',0.5,5 if k<4 else 1.5)          # game over
+    for k,m in enumerate((67,64,60)): note(M,28.85+k*0.16,m,0.2,0.06,'sq',0.5,6)                    # game over
+    # ---------- the stinger ----------
+    for k in range(4): crunch(STING[0]+0.05+k*0.14,0.09,300+k)                                   # chomp chomp
+    chime(STING[0]+0.3,(72,76,79),0.035)                                                            # +1 KNIGHT / item get
+    growl(29.95,0.6,0.08,60)
+    for k,f in enumerate((3000,3900)): tt=s.T(0.5); s.place(np.sin(2*np.pi*f*tt)*np.exp(-tt*6),30.25+k*0.08,0.03)
+    buzzer(STING_BUZZ,0.45,0.13)
+    for k,m in enumerate((57,56,55,54)): note(M,STING_BUZZ+0.3+k*0.17,m,0.2,0.04,'sq',0.5,6)
+    thud(STING_BUZZ+0.8,36,0.6,0.8); rattle(STING_BUZZ+0.8,0.6,0.06,310); nb(STING_BUZZ+0.8,0.5,50,500,0.15,311)   # the dragon topples
+    roar(STING_BUZZ+1.0,0.6,0.08)
+    for k,(m,d_) in enumerate(((60,0.3),(59,0.3),(58,0.3),(57,0.9))):                            # wah wah wah waaah
+        tc=31.25+k*0.2 if k<3 else 31.85; f=440*2**((m-69)/12); tt=s.T(d_)
+        s.place((np.sin(2*np.pi*np.cumsum(f*(1+0.012*np.sin(2*np.pi*5*tt)))/sr)+0.4*np.sin(2*np.pi*np.cumsum(2*f*np.ones_like(tt))/sr))*np.minimum(1,tt/0.03)*np.exp(-tt*(2 if k<3 else 1.0)),tc,0.05)
     # ---------- voice ----------
     NB=np.zeros(n); duck=np.ones(n)
     a,ar=_sf.read(os.path.join(TTS_DIR,'ap','N1.wav')); a=a if a.ndim==1 else a.mean(1)
