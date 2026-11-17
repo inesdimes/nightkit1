@@ -61,7 +61,8 @@ def tag(D,c):
     return D
 def limb(sh,hd,out,col,hand=SKIN,w=0.09):
     el=elbow(sh,hd,out,0.56); return seg(sh,el,w,col)+seg(el,hd,w*0.9,col)+obox(np.array(hd),(0.042,0.042,0.042),np.eye(3),hand)
-def girl(base,yaw,t,sit=0.0,walk=0.0,rh=None,lh=None,hy=0.0,hp=0.0,eye=1.0,mouth=0.0,smile=0.0,panic=0.0,lean=0.0,phone=False,blush=0.0):
+def girl(base,yaw,t,sit=0.0,walk=0.0,rh=None,lh=None,hy=0.0,hp=0.0,eye=1.0,mouth=0.0,smile=0.0,panic=0.0,lean=0.0,phone=False,blush=0.0,legs=None):
+    """legs: optional {-1: foot, 1: foot} in base-relative coords (e.g. lying on a bed); None = the original seated/walking legs"""
     b=np.array(base,float); Rb=Ry(yaw)
     def W(p): return tuple(b+Rb@np.array(p,float))
     hip=0.82-0.34*sit
@@ -70,7 +71,9 @@ def girl(base,yaw,t,sit=0.0,walk=0.0,rh=None,lh=None,hy=0.0,hp=0.0,eye=1.0,mouth
     Q=[]; D=[]; sw=0.45*math.sin(walk)
     for sx,ph in ((-1,1),(1,-1)):
         hp_=np.array([sx*0.09,hip,0])
-        if sit>0.5: kn=hp_+np.array([0,0.02,-0.42]); ft=kn+np.array([0,-0.46,-0.02])
+        if legs is not None and legs.get(sx) is not None:
+            ft=np.array(legs[sx],float); kn=(hp_+ft)/2+np.array([0,0.015+0.3*max(0.0,0.9-np.linalg.norm(ft-hp_)),0])
+        elif sit>0.5: kn=hp_+np.array([0,0.02,-0.42]); ft=kn+np.array([0,-0.46,-0.02])
         else:
             a=ph*sw; ft=hp_+np.array([0,-0.78*math.cos(a),-0.78*math.sin(a)]); kn=(hp_+ft)/2+np.array([0,0,-0.04])
         Q+=transform(seg(hp_,kn,0.13,JEANS)+seg(kn,ft,0.115,JEANS)+box(ft[0]-0.06,ft[0]+0.06,ft[1]-0.04,ft[1]+0.03,ft[2]-0.12,ft[2]+0.05,WHITE),W)
