@@ -29,10 +29,10 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd>.py      # regenerate the voice lines a
 | Loot Restocker A (29.9 s) | examples/loot_restocker.py | rendered, not posted; the 60 s B was never made |
 | Safe Zone v2 (52.3 s) | examples/safe_zone.py | rendered, not posted |
 | One Apple v4 (30.6 s) | examples/one_apple.py | rendered, not posted; for **YouTube + Instagram** |
-| Cat Dodge Boss (15 s) | examples/cat_dodge.py (voice `tools/tts/cd.py`; woman = `face_track.girl()`, new cat model) | rendered, not posted |
+| Cat Dodge Boss (15 s) | examples/cat_dodge.py (voice `tools/tts/cd.py`; woman = `face_track.girl()`, new cat model) | **dropped by Enes (17 Nov)**, do not post |
 | One Apple 15 s cut (15.25 s) | examples/one_apple_15.py (imports v4 assets; voice `tools/tts/ap15.py`) | rendered, not posted; for **TikTok** |
 
-Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md`, `captions/cat_dodge.md`.
+Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but the video was dropped).
 
 ## Next steps
 1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
