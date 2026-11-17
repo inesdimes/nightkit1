@@ -472,7 +472,8 @@ def banner(d,lines,y,col,bg=(40,6,8)):
     for i,(s,c) in enumerate(lines): ctext(d,s,y+5+i*11,c)
 def slot_xy(r,c): return 31+c*12,34+r*12
 ITEMS=['SWORD','ANOTHER SWORD','SWORD BUT BLUE','SWORD, AGAIN']
-CURSOR_PATH=[(4,4),(6,7),(2,8),(7,2),(0,0)]; HOP=0.33
+REASONS=["CAN'T DROP: STARTER","CAN'T DROP: CURSED","CAN'T DROP: SOULBOUND","CAN'T DROP: PRECIOUS"]
+CURSOR_PATH=[(4,4),(6,7),(2,8),(7,2),(0,0)]; HOP=0.42; SWEEP_END=T_MENU[0]+0.2+4*HOP
 DLG2=11.85
 def menu(d,V):
     if not (T_MENU[0]<=V<T_MENU[1]): return
@@ -488,14 +489,15 @@ def menu(d,V):
                 if V<12.7: g=GOLD if int(V*8)%2 else (255,244,170); d.line([x+2,y+8,x+8,y+2],fill=g,width=2); d.rectangle([x+1,y+6,x+4,y+8],fill=GOLD_D)
             else: d.line([x+2,y+8,x+8,y+2],fill=(BLADE_S if (r+c)%3 else BLADE_R),width=1)
     if V<10.9:                                                            # cursor sweep over the swords
-        t=V-(T_MENU[0]+0.2); k=min(len(CURSOR_PATH)-2,max(0,int(t/HOP))); p0=CURSOR_PATH[k]; p1=CURSOR_PATH[k+1]; e=sm(seg01(t-k*HOP,0.25,0.33))
+        t=V-(T_MENU[0]+0.2); k=min(len(CURSOR_PATH)-2,max(0,int(t/HOP))); p0=CURSOR_PATH[k]; p1=CURSOR_PATH[k+1]; e=sm(seg01(t-k*HOP,HOP-0.08,HOP))
         r=lerp(p0[0],p1[0],e) if t>=0 else p0[0]; c=lerp(p0[1],p1[1],e) if t>=0 else p0[1]
         if t>=(len(CURSOR_PATH)-1)*HOP: r,c=0,0
     else: r,c=0,0
     x,y=slot_xy(r,c); x=int(x-6); y=int(y+y0-26+12); d.rectangle([x-1,y-1,x+11,y+11],outline=WHT if int(V*10)%2 else YEL)
-    if V<10.5:
-        t=max(0.0,V-(T_MENU[0]+0.2)); nm=ITEMS[min(len(ITEMS)-1,int(t/HOP))]; ctext(d,nm,y0+176,WHT)
-    elif V<12.7: ctext(d,'LEGENDARY GOLDEN SWORD',y0+170,GOLD); ctext(d,'ATK 999   EQUIPPED',y0+182,YEL)
+    if V<SWEEP_END:
+        t=max(0.0,V-(T_MENU[0]+0.2)); k=min(len(ITEMS)-1,int(t/HOP)); ctext(d,ITEMS[k],y0+170,WHT)
+        if t-k*HOP>0.08 or t<0.01: ctext(d,REASONS[k],y0+182,RED if int(V*10)%2 else (255,140,120))      # junk items are locked
+    elif V<12.7: ctext(d,'LEGENDARY GOLDEN SWORD',y0+170,GOLD); ctext(d,'DROPPABLE: YES',y0+182,GRN)
     else: ctext(d,'DROPPED: GOLDEN SWORD',y0+176,GRN)
     if 11.0<=V<12.75:                                                     # the warning dialog
         panel(d,14,y0+52,166,y0+128,RED,(30,8,10))
@@ -673,7 +675,7 @@ QA=dict(fps=FPS,dur=DUR,W=W,frame=frame_story,
             dict(id='died',t0=T_DIED[0],t1=STING[0],action='YOU DIED'),
             dict(id='stinger',t0=STING[0],t1=DUR,action='dragon chews; DRAGON INV 100/100; reaches for the sword; OVERENCUMBERED; tips over')],
     weapon_events=[('knight',SWORD_DROP,'hip','none')],
-    texts=lambda: [('hook',x,2) for x in HOOK_LINES]+[('ui',s_,1) for s_ in ('INVENTORY: 100/100','OVERENCUMBERED!','MOVE SPEED: 0%','ARE YOU SURE YOU WANT','TO DROP THIS ITEM?','LEGENDARY GOLDEN SWORD','ATK 999   EQUIPPED','DROPPED: GOLDEN SWORD','ITEM GET!','INV 100/100','QUEST: EAT THE APPLE','QUEST: GET SWORD BACK','FREE SLOT!','APPLE CORE','LARGE ENEMY NEARBY','CRUNCH','CLANG!','ARE YOU SURE SURE?',"IT'S LEGENDARY.",'GOLDEN SWORD','X99 DMG VS DRAGONS','APPLE CORE','HEALS: 0 HP','ACHIEVEMENT UNLOCKED','TURTLE MODE','HP 1/10','+1 KNIGHT','DRAGON INV: 100/100')+tuple(ITEMS)]
+    texts=lambda: [('hook',x,2) for x in HOOK_LINES]+[('ui',s_,1) for s_ in ('INVENTORY: 100/100','OVERENCUMBERED!','MOVE SPEED: 0%','ARE YOU SURE YOU WANT','TO DROP THIS ITEM?','LEGENDARY GOLDEN SWORD','ATK 999   EQUIPPED','DROPPED: GOLDEN SWORD','ITEM GET!','INV 100/100','QUEST: EAT THE APPLE','QUEST: GET SWORD BACK','FREE SLOT!','APPLE CORE','LARGE ENEMY NEARBY','CRUNCH','CLANG!','ARE YOU SURE SURE?',"IT'S LEGENDARY.",'DROPPABLE: YES',*REASONS,'GOLDEN SWORD','X99 DMG VS DRAGONS','APPLE CORE','HEALS: 0 HP','ACHIEVEMENT UNLOCKED','TURTLE MODE','HP 1/10','+1 KNIGHT','DRAGON INV: 100/100')+tuple(ITEMS)]
           +[('ui',s_,2) for s_ in ('+1 HP','WARNING!')]+[('ui','YOU DIED',3),('ui','DRAGON',1)])
 
 TEST=os.environ.get('TEST')
@@ -756,8 +758,8 @@ def build_audio(path):
     growl(6.7,0.5,0.09,50)                                                                           # stomach
     for k,m in enumerate((79,84,91)): note(M,BULB+0.05+k*0.05,m,0.2,0.03,'sq',0.25,6)             # lightbulb ding
     whoosh(T_MENU[0],0.3,0.04,90,800,5000); tick(T_MENU[0]+0.1,0.04)
-    for k in range(5): tick(T_MENU[0]+0.2+k*HOP+0.25,0.035)                                       # cursor sweep
-    for k,m in enumerate((84,91,96,103)): note(M,10.5+k*0.06,m,0.25,0.025,'sq',0.25,5)            # golden slot
+    for k in range(4): note(M,T_MENU[0]+0.2+k*HOP+0.06,45,0.12,0.06,'sq',0.5,9); tick(T_MENU[0]+0.2+k*HOP+HOP-0.08,0.035)   # 'bzzt' CAN'T DROP + cursor hop
+    for k,m in enumerate((84,91,96,103)): note(M,SWEEP_END+k*0.06,m,0.25,0.03,'sq',0.25,5)       # golden slot: DROPPABLE
     for k in range(3): note(M,11.0+k*0.2,70 if k!=1 else 64,0.12,0.05,'sq',0.5,10)                  # warning dialog
     for f_ in (110,164.8,220): note(M,11.0,69+12*math.log2(f_/440)+0,1.4,0.03,'sin',dec=0.8,att=0.3)
     tick(11.45,0.05); note(M,11.65,55,0.25,0.06,'sq',0.5,6); nb(11.65,0.2,1500,8000,0.03,89)                  # first YES
