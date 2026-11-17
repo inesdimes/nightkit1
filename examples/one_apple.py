@@ -28,11 +28,19 @@ DR=(200,44,58); DR_D=(142,30,44); DR_BELLY=(236,190,110); DR_WING=(120,36,100); 
 
 # ======================= timeline (story seconds) =======================
 HOOK=3.5
-T_RECOIL=(3.5,4.6); T_REAPP=(4.6,5.4); T_TIP=(5.4,6.3); T_FLAIL=(6.3,7.4); T_GETUP=(7.4,8.4); T_THINK=(8.4,9.0)
-T_MENU=(9.0,13.0); T_DROP=(13.0,14.2); T_PICK=(14.2,15.7); T_EAT=(15.7,17.7); T_DANCE=(17.7,20.1); T_TREMOR=(20.1,22.6)
+T_RECOIL=(3.5,4.0); T_REAPP=(4.0,4.0); T_TIP=(4.0,4.6); T_FLAIL=(4.6,5.6); T_GETUP=(5.6,6.6); T_THINK=(6.6,7.2)
+T_MENU=(9.0,13.0); T_DROP=(13.0,14.2); T_PICK=(14.2,15.7); T_EAT=(15.7,17.7); T_DANCE=(17.7,20.1); T_RETAKE=T_DANCE; T_TREMOR=(20.1,22.6)
 T_LAND=22.6; T_HOLSTER=(23.0,23.9); T_SWORDLOOK=(23.9,25.1); T_CORELOOK=(25.1,26.5); T_SILENCE=(26.5,27.5); T_FIRE=(27.5,28.3); T_FLASH=28.3
-T_DIED=(28.5,29.4); STING=(29.4,32.0); DUR=32.4; N=int(round(DUR*FPS)); BLACK=32.0
-BITES=[16.55,17.0,17.45]; SWORD_DROP=13.2; APPLE_GRAB=14.9; ITEM_GET=(15.0,16.2); BULB=8.5
+T_DIED=(28.5,29.4); STING=(29.4,32.0); DUR=32.4; BLACK=32.0
+BITES=[16.55,17.0,17.45]; SWORD_DROP=13.2; APPLE_GRAB=15.0; ITEM_GET=(15.0,16.2); BULB=6.8; CORE_GET=17.95; RETRY=(19.55,20.5)
+SKIPS=[(7.2,9.0)]                                            # dead time cut at the shot change into the menu
+SKIPPED=sum(b-a for a,b in SKIPS)
+def story_t(V):
+    st=V
+    for a,b in SKIPS:
+        if st>=a: st+=b-a
+    return st
+N=int(round((DUR-SKIPPED)*FPS))                                  # video frames
 
 # ======================= world layout =======================
 STUMP_H=0.5; APPLE_C=np.array([0.0,STUMP_H+0.18,-0.28]); SW_LAND=np.array([-0.72,0.04,-0.5]); DRAGON_AT=(0.3,0.0,3.5)
@@ -222,55 +230,85 @@ def dance_pose(t):
     spin=2*PI*seg01(ph,0.0,1.0) if k==3 else 0.0
     return rh,lh,yo+spin,0.12*abs(math.sin(PI*ph*2))
 REACH_APPLE=lambda st: k_local(st,APPLE_C)
+HILT=SW_LAND+np.array([0.0,1.12,0.0])                           # the golden sword stands planted in the grass: tip at SW_LAND, hilt at chest height
+def solve_retake():
+    """where he stands, which way he faces and how far he leans to grip the planted sword with his LEFT hand"""
+    best=None
+    for x in np.arange(-0.7,0.01,0.05):
+        for z in np.arange(RZ2-0.2,RZ2+0.36,0.05):
+            if abs(x)<0.64 and abs(z)<0.64: continue
+            if math.hypot(x-SW_LAND[0],z-SW_LAND[2])<0.5: continue
+            yaw=math.atan2(HILT[0]-x,HILT[2]-z)
+            for lean in (0.1,0.2,0.3):
+                st=dict(base=(x,0,z),yaw=yaw,lean=lean); d=np.linalg.norm(np.array(kpoint(st,(-0.22,1.27,0)))-HILT)
+                sc=abs(d-0.5)+0.25*abs(x)+0.25*abs(z-RZ2)
+                if best is None or sc<best[0]: best=(sc,x,z,yaw,lean)
+    return best[1:]
+XR,ZR,YAW_R,LEAN_RE=solve_retake(); XR=round(float(XR),2); ZR=round(float(ZR),2)
+def zbase(t):
+    ZS=RZ-0.5
+    if t<4.0: return RZ
+    if t<14.2: return ZS
+    if t<14.6: return lerp(ZS,RZ,sm(seg01(t,14.2,14.6)))
+    if t<17.35: return RZ
+    return lerp(RZ,RZ2,sm(seg01(t,17.35,17.7)))
 def knight_state(t):
-    z0=RZ if t<17.35 else lerp(RZ,RZ2,sm(seg01(t,17.35,17.7))); B=lambda z=z0,y=0.0:(0.0,y,z)
+    ZS=RZ-0.5; z0=zbase(t); xb=XR if t>=19.15 else (lerp(0.0,XR,sm(seg01(t,18.7,19.15))) if t>=18.7 else 0.0)
+    zr=ZR if t>=19.15 else (lerp(RZ2,ZR,sm(seg01(t,18.7,19.15))) if t>=18.7 else z0)
+    B=lambda z=z0,y=0.0:(xb,y,z if t<18.7 else zr)
     st=dict(base=B(),yaw=0.0,sword='hip',boots=FB.STEEL_D)
     if t<2.0:                                                      # lumbers up to the stump under the weight
-        u=seg01(t,0.0,2.0); return dict(st,base=B(z0-2.0*(1-u)),walk=t*6.5,lean=0.12+0.04*math.sin(t*6.5*2),jig=1.0,ph=t,head=0.12*math.sin(t*3.2))
+        u=seg01(t,0.0,2.0); return dict(st,base=B(RZ-2.0*(1-u)),walk=t*6.5,lean=0.12+0.04*math.sin(t*6.5*2),jig=1.0,ph=t,head=0.12*math.sin(t*3.2))
     if t<HOOK:                                                     # bends and reaches for the apple
         l=sm(seg01(t,2.0,2.8)); k=dict(st,lean=lerp(0.12,LEAN_REACH,l)+0.03*math.sin(t*30)*l,jig=0.5,ph=t)
         rh=lerp3((0.27,0.86,0.04),REACH_APPLE(dict(k,lean=LEAN_REACH)),sm(seg01(t,2.3,HOOK))); return dict(k,rh=rh,head=0.0)
-    if t<T_RECOIL[1]:                                              # OVERENCUMBERED: the weight yanks him backwards
-        u=seg01(t,T_RECOIL[0],T_RECOIL[0]+0.7); z=z0-0.9*sm(u); l=1.0-sm(seg01(t,T_RECOIL[0]+0.05,T_RECOIL[0]+0.5))*0.88
-        rh=lerp3(REACH_APPLE(dict(st,lean=LEAN_REACH)),(0.4,1.2,0.1),sm(seg01(t,T_RECOIL[0],T_RECOIL[0]+0.4)))
-        return dict(st,base=B(z),walk=-t*10 if 0.12<u<1 else 0.0,lean=l*LEAN_REACH+(-0.1*sm(u)),rh=rh,lh=(-0.4,1.2,0.1),jig=1.0,ph=t)
-    if t<T_REAPP[1]:                                               # walks back for a second try
-        u=seg01(t,*T_REAPP); return dict(st,base=B(z0-0.9*(1-sm(u))),walk=t*7 if u<1 else 0.0,lean=0.25,jig=1.0,ph=t)
-    if t<T_TIP[1]:                                                 # bends deeper... the pack tips him over
-        a=seg01(t,*T_TIP); l=lerp(0.25,1.3,sm(seg01(a,0.0,0.45))); tilt=1.45*(sm(seg01(a,0.35,1.0))**1.5)
-        stk=dict(st,lean=l*(1-seg01(a,0.5,1.0)))
-        return dict(stk,tilt=tilt,rh=reach_to(stk,(0.12,0.9,-0.3),1),lh=reach_to(stk,(-0.12,0.9,-0.3),-1),jig=1.0,ph=t)
+    fling=lerp3(REACH_APPLE(dict(st,lean=LEAN_REACH)),(0.4,1.2,0.1),sm(seg01(t,T_RECOIL[0],T_RECOIL[0]+0.3)))
+    if t<T_RECOIL[1]:                                              # OVERENCUMBERED: the weight yanks him backwards...
+        u=seg01(t,*T_RECOIL); z=RZ-0.5*sm(u); l=lerp(LEAN_REACH,-0.25,sm(seg01(t,T_RECOIL[0],T_RECOIL[0]+0.35)))
+        return dict(st,base=B(z),walk=-t*10 if 0.1<u<1 else 0.0,lean=l,rh=fling,lh=(-0.4,1.2,0.1),jig=1.0,ph=t)
+    if t<T_TIP[1]:                                                 # ...straight onto his back (turtle mode)
+        a=seg01(t,*T_TIP); tilt=1.45*(sm(a)**1.4)
+        return dict(st,base=B(ZS),tilt=tilt,lean=-0.25*(1-a),rh=(0.4,1.2,0.1),lh=(-0.4,1.2,0.1),jig=1.0,ph=t)
     if t<T_FLAIL[1]:                                               # on his back, legs and arms flailing
-        u=t-T_FLAIL[0]; return dict(st,tilt=1.45+0.05*math.sin(u*18),walk=t*18,rh=(0.4,1.25+0.3*math.sin(t*14),0.3),lh=(-0.4,1.25+0.3*math.sin(t*14+PI),0.3),jig=1.0,ph=t*2)
+        u=t-T_FLAIL[0]; return dict(st,base=B(ZS),tilt=1.45+0.05*math.sin(u*18),walk=t*18,rh=(0.4,1.25+0.3*math.sin(t*14),0.3),lh=(-0.4,1.25+0.3*math.sin(t*14+PI),0.3),jig=1.0,ph=t*2)
     if t<T_GETUP[1]:                                               # rocks back and forth, then up
-        K=[(7.4,1.45),(7.65,0.9),(7.9,1.45),(8.15,0.55),(8.4,0.0)]
+        K=[(5.6,1.45),(5.85,0.9),(6.1,1.45),(6.35,0.55),(6.6,0.0)]
         for (t0,a0),(t1,a1) in zip(K,K[1:]):
             if t<=t1: tilt=lerp(a0,a1,sm(seg01(t,t0,t1))); break
-        return dict(st,tilt=tilt,walk=t*12 if tilt>0.7 else 0.0,rh=(0.4,1.2,0.3),lh=(-0.4,1.2,0.3),lean=0.0,jig=1.0,ph=t*2)
-    if t<T_MENU[0]:                                                # catches his breath, thinks
-        return dict(st,lean=0.15+0.04*math.sin(t*9),rh=lerp3((0.27,0.86,0.04),(0.1,1.42,0.32),sm(seg01(t,8.7,9.0))),jig=0.4,ph=t,head=0.2*math.sin(t*2))
+        return dict(st,base=B(ZS),tilt=tilt,walk=t*12 if tilt>0.7 else 0.0,rh=(0.4,1.2,0.3),lh=(-0.4,1.2,0.3),lean=0.0,jig=1.0,ph=t*2)
+    if t<T_MENU[0]:                                                # catches his breath, thinks (this pose holds through the cut into the menu)
+        return dict(st,base=B(ZS),lean=0.15,rh=lerp3((0.27,0.86,0.04),(0.1,1.42,0.32),sm(seg01(t,6.7,7.0))),jig=0.0,ph=0.0,head=0.0)
     if t<T_MENU[1]:                                                # (menu is open) hand on his helmet, deciding... then a confident nod
         nod=sm(seg01(t,12.3,12.5))*(1-sm(seg01(t,12.5,12.8)))
-        return dict(st,lean=0.12+0.1*nod,rh=(0.1,1.42,0.32),head=0.15*math.sin(t*1.6),jig=0.2,ph=t)
+        return dict(st,base=B(ZS),lean=0.15+0.1*nod,rh=(0.1,1.42,0.32),head=0.1*math.sin((t-T_MENU[0])*1.6),jig=0.0,ph=0.0)
     if t<T_DROP[1]:                                                # the sword leaves the holster; he feels lighter
         up=sm(seg01(t,SWORD_DROP+0.4,T_DROP[1]))
-        return dict(st,sword='hip' if t<SWORD_DROP else 'none',lean=lerp(0.12,-0.05,up),rh=lerp3((0.1,1.42,0.32),(0.27,0.86,0.04),sm(seg01(t,SWORD_DROP,SWORD_DROP+0.4))),jig=0.6,ph=t,head=0.0)
+        return dict(st,base=B(ZS),sword='hip' if t<SWORD_DROP else 'none',lean=lerp(0.15,-0.05,up),rh=lerp3((0.1,1.42,0.32),(0.27,0.86,0.04),sm(seg01(t,SWORD_DROP,SWORD_DROP+0.4))),jig=0.6,ph=t,head=0.0)
     s0=dict(st,sword='none',jig=0.5,ph=t)
-    if t<T_PICK[1]:                                                # picks the apple up
-        a=seg01(t,*T_PICK); l=sm(seg01(a,0.0,0.4))*(1-sm(seg01(a,0.6,1.0)))*(LEAN_REACH-0.1)+0.1
+    if t<T_PICK[1]:                                                # steps up to the stump and picks the apple up
+        a=seg01(t,14.45,T_PICK[1]); l=sm(seg01(a,0.0,0.4))*(1-sm(seg01(a,0.6,1.0)))*(LEAN_REACH-0.1)+0.1
         rh=lerp3((0.27,0.86,0.04),REACH_APPLE(dict(s0,lean=LEAN_REACH)),sm(seg01(a,0.15,0.5)))
         if a>0.6: rh=lerp3(REACH_APPLE(dict(s0,lean=LEAN_REACH)),(0.12,1.18,0.32),sm(seg01(a,0.6,1.0)))
-        return dict(s0,lean=l,rh=rh,head=0.0)
+        return dict(s0,lean=l if t>=14.45 else 0.1,rh=rh if t>=14.45 else (0.27,0.86,0.04),head=0.0,walk=t*7 if 14.2<t<14.6 else 0.0)
     if t<T_EAT[1]:                                                 # eats it: three bites
         up=sm(seg01(t,T_EAT[0],T_EAT[0]+0.4)); down=sm(seg01(t,17.4,17.7)); bite=max([bounce(t,[b_],0.18) for b_ in BITES])
         rh=lerp3(lerp3((0.12,1.18,0.32),(0.02,1.5,0.3),up),(0.3,0.95,0.2),down)
         return dict(s0,lean=0.1-0.08*bite,rh=rh,head=-0.15*bite,walk=-t*9 if 17.35<t<17.7 else 0.0)
-    if t<T_DANCE[1]:                                               # the victory dance (core still in his right hand)
-        rh,lh,yo,hop=dance_pose(t); u=t-T_DANCE[0]
-        return dict(s0,base=B(z0,hop),yaw=yo,rh=rh,lh=lh,walk=u*9 if (T_DANCE[0]+0.6)<t else 0.0,jig=1.0,ph=t*2,lean=-0.05+0.05*math.sin(u*10))
     core=(0.3,0.95,0.2)
-    if t<T_LAND:                                                   # the ground shakes: he stops dancing and looks around
-        a=seg01(t,*T_TREMOR); return dict(s0,rh=core,lean=0.04*math.sin(t*38)*a,head=0.9*math.sin(t*3.0)*sm(seg01(t,T_TREMOR[0]+0.3,T_TREMOR[0]+0.8)),jig=1.5,ph=t*3)
+    if t<T_RETAKE[1]:                                              # +1 HP joy, a free slot! he goes to take the golden sword back...
+        hopk=abs(math.sin(PI*(t-17.7)/0.25))*0.12 if t<18.2 else 0.0; arms=sm(seg01(t,17.7,17.85))*(1-sm(seg01(t,18.05,18.25)))
+        rh=lerp3(core,(0.3,1.75,0.0),arms); lh=lerp3((-0.27,0.86,0.04),(-0.3,1.75,0.0),arms)
+        head=-0.9*sm(seg01(t,18.3,18.55))*(1-sm(seg01(t,18.65,18.85)))
+        yaw=lerp(0.0,YAW_R,sm(seg01(t,18.7,19.15))); walk=t*8 if 18.7<t<19.15 else 0.0
+        bend=sm(seg01(t,19.15,19.55))*(1-sm(seg01(t,19.75,20.1))); lean=lerp(0.05,LEAN_RE,bend)
+        stb=dict(s0,base=B(z0=None,y=hopk) if False else (xb,hopk,zr),yaw=yaw,lean=lean)
+        if t>=19.15: lh=reach_to(stb,HILT,-1) if bend>0.02 else lh
+        if t>=19.75: lh=lerp3(reach_to(dict(stb,lean=LEAN_RE),HILT,-1),(-0.5,1.2,0.1),sm(seg01(t,19.75,20.05)))
+        return dict(stb,rh=rh if t<19.15 else core,lh=lh,head=head if t<19.15 else (0.8*sm(seg01(t,19.8,20.05))),walk=walk,jig=1.0,ph=t*2)
+    xt=XR; zt=ZR
+    if t<T_LAND:                                                   # the ground shakes: he stops, looks around (still holding the core)
+        a=seg01(t,*T_TREMOR); return dict(s0,base=(xt,0.0,zt),yaw=lerp(YAW_R,0.0,sm(seg01(t,20.15,20.7))),rh=core,lean=0.04*math.sin(t*38)*a,head=0.9*math.sin(t*3.0)*sm(seg01(t,T_TREMOR[0]+0.5,T_TREMOR[0]+1.0)),jig=1.5,ph=t*3)
+    s0=dict(s0,base=(xt,0.0,zt),yaw=0.0)
     if t<T_HOLSTER[0]: sh=sm(seg01(t,T_LAND,T_LAND+0.25))*(1-sm(seg01(t,T_LAND+0.25,T_LAND+0.4))); return dict(s0,rh=core,lean=-0.18*sh,lh=(-0.6,1.1,0.2),head=0.0,jig=1.5,ph=t*3)
     if t<T_HOLSTER[1]:                                             # confident reach for the holster... pat, pat... nothing
         a=seg01(t,*T_HOLSTER); up=sm(seg01(a,0.0,0.3)); sw=sm(seg01(a,0.3,0.45)); pat=0.04*abs(math.sin((a-0.5)*30))*sm(seg01(a,0.5,0.52))*(1-sm(seg01(a,0.9,1.0)))
@@ -300,10 +338,10 @@ def dragon_state(t):
         return dict(st,base=base,fold=fold,flap=flap,head=lerp3(H0,(0,3.05,1.85),r),hpitch=lerp(0.2,-0.5,r),jaw=r,tail=0.5*math.sin(t*5))
     if t<T_SWORDLOOK[0]: return dict(st,base=base,fold=0.25,flap=-0.1,head=H0,hpitch=0.2)
     if t<T_SWORDLOOK[1]:                                           # looks down at the golden sword (eyes turn gold)
-        a=sm(seg01(t,T_SWORDLOOK[0],T_SWORDLOOK[0]+0.9)); return dict(st,base=base,fold=0.25,flap=-0.1,head=lerp3(H0,(1.15,1.2,2.6),a),hpitch=lerp(0.2,0.9,a),hyaw=lerp(0.0,0.25,a),eye=sm(seg01(t,T_SWORDLOOK[0]+0.4,T_SWORDLOOK[0]+1.0)),jaw=0.12*a)
-    if t<T_SILENCE[0]: bob=0.04*math.sin(t*6); return dict(st,base=base,fold=0.25,flap=-0.1,head=(1.15,1.2+bob,2.6),hpitch=0.9,hyaw=0.25,eye=1.0,jaw=0.15)
+        a=sm(seg01(t,T_SWORDLOOK[0],T_SWORDLOOK[0]+0.9)); return dict(st,base=base,fold=0.25,flap=-0.1,head=lerp3(H0,(1.15,1.7,2.5),a),hpitch=lerp(0.2,0.55,a),hyaw=lerp(0.0,0.2,a),eye=sm(seg01(t,T_SWORDLOOK[0]+0.4,T_SWORDLOOK[0]+1.0)),jaw=0.12*a)
+    if t<T_SILENCE[0]: bob=0.04*math.sin(t*6); return dict(st,base=base,fold=0.25,flap=-0.1,head=(1.15,1.7+bob,2.5),hpitch=0.55,hyaw=0.2,eye=1.0,jaw=0.15)
     if t<T_FIRE[0]:                                                # slowly swings round to the knight
-        a=sm(seg01(t,T_SILENCE[0]+0.2,T_SILENCE[1])); return dict(st,base=base,fold=0.25,flap=-0.1,head=lerp3((1.15,1.2,2.6),(0.0,2.0,2.5),a),hpitch=lerp(0.9,0.1,a),hyaw=lerp(0.25,0.0,a),eye=lerp(1.0,0.0,a),jaw=0.1)
+        a=sm(seg01(t,T_SILENCE[0]+0.2,T_SILENCE[1])); return dict(st,base=base,fold=0.25,flap=-0.1,head=lerp3((1.15,1.7,2.5),(0.0,2.0,2.5),a),hpitch=lerp(0.55,0.1,a),hyaw=lerp(0.2,0.0,a),eye=lerp(1.0,0.0,a),jaw=0.1)
     a=seg01(t,*T_FIRE if t<T_FIRE[1] else (T_FIRE[0],T_FIRE[1])); f=sm(a)
     return dict(st,base=base,fold=0.25,flap=-0.1,head=(0.0,2.0,2.5),hpitch=0.1,hyaw=0.0,eye=0.0,jaw=sm(seg01(t,T_FIRE[0],T_FIRE[0]+0.35)),fire=f)
 def sting_dragon(t):
@@ -311,20 +349,21 @@ def sting_dragon(t):
     base=(DRAGON_AT[0],0.0,DRAGON_AT[2]); st=dict(base=base,yaw=PI,fold=0.25,flap=-0.1,tail=0.4*math.sin(t*2),breathe=math.sin(t*3),eye=0.0,fire=0.0)
     if t<29.95: return dict(st,head=(0.0,2.4,2.2),hpitch=0.1,jaw=0.35+0.3*math.sin(t*18))
     if t<STING_BUZZ:
-        a=sm(seg01(t,29.95,30.5)); return dict(st,head=lerp3((0.0,2.4,2.2),(1.15,1.2,2.6),a),hpitch=lerp(0.1,0.9,a),hyaw=lerp(0.0,0.25,a),eye=a,jaw=0.6*sm(seg01(t,30.3,30.55)))
+        a=sm(seg01(t,29.95,30.5)); return dict(st,head=lerp3((0.0,2.4,2.2),(1.15,1.45,2.9),a),hpitch=lerp(0.1,0.6,a),hyaw=lerp(0.0,0.2,a),eye=a,jaw=0.6*sm(seg01(t,30.3,30.55)))
     jolt=sm(seg01(t,STING_BUZZ,STING_BUZZ+0.15)); roll=1.5*sm(seg01(t,STING_BUZZ+0.25,STING_BUZZ+0.85))**1.4+(0.05*math.sin(t*14) if t>STING_BUZZ+0.85 else 0.0)
     back=sm(seg01(t,STING_BUZZ+0.15,STING_BUZZ+0.5))
     rr=min(1.0,roll/1.5); st=dict(st,fold=lerp(0.25,0.05,rr),flap=lerp(-0.1,0.6,rr))           # wings tuck in as it rolls
-    return dict(st,head=lerp3(lerp3((1.15,1.2,2.6),(0.9,1.7,2.4),jolt),(0.0,1.7,2.0),back),hpitch=lerp(lerp(0.9,0.4,jolt),0.2,back),hyaw=0.25*(1-back),eye=1.0-jolt,jaw=0.3,roll=roll)
+    return dict(st,head=lerp3(lerp3((1.15,1.45,2.9),(0.9,1.7,2.4),jolt),(0.0,1.7,2.0),back),hpitch=lerp(lerp(0.6,0.4,jolt),0.2,back),hyaw=0.2*(1-back),eye=1.0-jolt,jaw=0.3,roll=roll)
 STING_BUZZ=30.6
 def sword_state(t):
-    """legendary sword: in the holster (None), falling, lying on the ground"""
+    """legendary sword: in the holster (None), falls point-first, sticks in the grass and wobbles"""
     if t<SWORD_DROP: return None
     ks=knight_state(SWORD_DROP-0.01); hip=np.array(kpoint(ks,(-0.22,0.9,0.08))); u=seg01(t,SWORD_DROP,SWORD_DROP+0.55)
-    land=SW_LAND+np.array([0.0,0.0,-0.5])                       # hilt end of the sword lying on the grass
-    if u>=1.0:
-        bn=0.07*abs(math.sin(PI*seg01(t,SWORD_DROP+0.55,SWORD_DROP+0.85)))*(1-seg01(t,SWORD_DROP+0.55,SWORD_DROP+0.85)); return dict(hilt=tuple(land+np.array([0,bn,0])),dir=(0.0,0.0,1.0))
-    pos=lerp3(tuple(hip),tuple(land),u)+np.array([0,0.15*math.sin(PI*u),0]); d=np.array(lerp3((0.0,-1.0,0.0),(0.0,0.0,1.0),sm(u))); return dict(hilt=tuple(pos),dir=tuple(d/np.linalg.norm(d)))
+    if u<1.0:
+        pos=np.array(lerp3(tuple(hip),tuple(HILT),sm(u)))+np.array([0,0.15*math.sin(PI*u),0]); d=np.array([0.35*math.sin(u*7)*(1-u),-1.0,0.0]); d/=np.linalg.norm(d)
+        return dict(hilt=tuple(pos),dir=tuple(d))
+    tl=t-(SWORD_DROP+0.55); w=0.26*math.exp(-5*tl)*math.sin(26*tl); d=np.array([math.sin(w),-math.cos(w),0.0])
+    return dict(hilt=tuple(np.array(SW_LAND)-d*1.12),dir=tuple(d))
 def apple_state(t):
     """(centre, stage) or None when it is gone"""
     ks=knight_state(t)
@@ -347,18 +386,18 @@ def shake(V):
 def shot(V):
     sh=(0,0)
     if V<HOOK: u=sm(seg01(V,0,HOOK)); kz=knight_state(V)['base'][2]; return dict(cam=lerp3((-2.5,0.8,RZ-3.0),(-2.4,0.9,RZ-1.2),u),tgt=(0.0,1.0,kz+0.2),fov=50)
-    if V<T_RECOIL[1]: return dict(cam=(-2.4,1.2,RZ-0.3),tgt=(0.0,0.75,-0.3),fov=44,shake=shake(V))                                   # insert: hand on the apple
+    if V<T_RECOIL[1]+0.0: return dict(cam=(-2.4,1.2,RZ-0.3),tgt=(0.0,0.75,-0.3),fov=44,shake=shake(V))                                   # insert: hand on the apple
     if V<T_GETUP[1]: return dict(cam=(-3.3,1.3,RZ-0.8),tgt=(0.0,0.7,RZ-0.8),fov=58,shake=shake(V))
-    if V<T_THINK[1]: return dict(cam=(1.5,1.4,RZ+3.3),tgt=(0.0,1.2,RZ),fov=52)
-    if V<T_MENU[1]: return dict(cam=(1.5,1.35,RZ+2.4),tgt=(0.0,1.85,RZ),fov=50)
-    if V<T_DROP[1]: return dict(cam=(-2.9,0.8,RZ-1.6),tgt=(-0.4,0.6,RZ-0.2),fov=56)
+    if V<T_THINK[1]: return dict(cam=(1.5,1.4,RZ+2.9),tgt=(0.0,1.2,RZ-0.5),fov=52)
+    if V<T_MENU[1]: return dict(cam=(1.5,1.35,RZ+1.9),tgt=(0.0,1.85,RZ-0.5),fov=50)
+    if V<T_DROP[1]: return dict(cam=(-2.9,0.8,RZ-2.1),tgt=(-0.4,0.6,RZ-0.7),fov=56)
     if V<T_DANCE[0]: return dict(cam=(1.6,1.25,RZ+2.9),tgt=(0.0,0.9,RZ-0.05),fov=54)
-    if V<T_DANCE[1]: return dict(cam=(-1.9,1.25,RZ2+2.3),tgt=(0.0,1.1,RZ2),fov=58)
-    if V<T_TREMOR[0]+1.4: return dict(cam=(-1.6,1.4,RZ2+2.4),tgt=(0.0,1.35,RZ2),fov=46,shake=shake(V))                              # close: he looks around
+    if V<T_RETAKE[1]: return dict(cam=(XR-2.5,1.3,ZR+0.2),tgt=(XR-0.15,1.1,ZR-0.1),fov=48)
+    if V<T_TREMOR[0]+1.4: return dict(cam=(XR+1.7,1.35,ZR+2.3),tgt=(XR,1.3,ZR),fov=46,shake=shake(V))                              # close: he looks around
     if V<T_HOLSTER[0]: return dict(cam=WIDE_CAM,tgt=WIDE_TGT,fov=58,shake=shake(V))                                               # wide side view: the dragon swoops in and lands
-    if V<T_HOLSTER[1]: return dict(cam=(-2.5,1.2,RZ2),tgt=(0.0,1.15,RZ2),fov=40,shake=shake(V))                                      # profile: his hand pats the empty holster
+    if V<T_HOLSTER[1]: return dict(cam=(XR-2.5,1.2,ZR),tgt=(XR,1.15,ZR),fov=40,shake=shake(V))                                      # profile: his hand pats the empty holster
     if V<T_CORELOOK[0]: return dict(cam=WIDE_CAM,tgt=WIDE_TGT,fov=58)                                                              # wide: the dragon eyes the golden sword
-    if V<T_CORELOOK[1]: return dict(cam=(2.5,1.3,RZ2),tgt=(0.0,1.3,RZ2),fov=40)                                                      # profile: he studies the apple core
+    if V<T_CORELOOK[1]: return dict(cam=(XR+2.5,1.3,ZR),tgt=(XR,1.3,ZR),fov=40)                                                      # profile: he studies the apple core
     if V>=STING[0]: return dict(cam=(-5.0,1.7,1.6),tgt=(0.3,1.3,1.7),fov=58,shake=(4*bounce(V,[STING_BUZZ+0.8],0.5)*math.sin(V*90),0))
     return dict(cam=WIDE_CAM,tgt=WIDE_TGT,fov=58)
 WIDE_CAM=(-6.4,2.0,0.7); WIDE_TGT=(0.2,2.0,0.7)
@@ -412,18 +451,21 @@ def inv_count(V):
     if V<SWORD_DROP+0.4: return 100
     if V<APPLE_GRAB: return 99
     if V<BITES[2]+0.05: return 100
-    return 99
+    if V<CORE_GET: return 99
+    return 100
 def hp_value(V): return 2 if V>=BITES[2]+0.05 else 1
 def hud(d,V):
     if V<HOOK or T_MENU[0]<=V<T_MENU[1] or V>=T_FLASH: return
     n=inv_count(V); full=n>=100; col=RED if full else GRN
-    if full and int(V*4)%2==0 and (T_RECOIL[0]<=V<T_MENU[0]): col=(255,120,100)
+    if full and int(V*4)%2==0 and (T_RECOIL[0]<=V<T_MENU[0] or CORE_GET<=V<RETRY[1]+0.2): col=(255,120,100)
     panel(d,4,5,80,19,col); otext(d,'INV',9,9,WHT); otext(d,f'{n}/100',31,9,col)
     hp=hp_value(V); d.rectangle([4,23,80,32],fill=(12,10,30),outline=(200,200,210)); otext(d,'HP',7,24,WHT)
     d.rectangle([22,25,78,30],fill=(40,20,24))
     d.rectangle([22,25,22+int(56*hp/10),30],fill=RED if hp<3 else GRN)
     if V>=BITES[2]+0.05 and V<BITES[2]+0.9 and int(V*10)%2==0: d.rectangle([22,25,22+int(56*hp/10),30],fill=(255,255,255))
-    if T_RECOIL[1]<=V<T_LAND-0.2 and not (T_TREMOR[0]<=V): otext(d,'QUEST: EAT THE APPLE',4,36,YEL)
+    if BITES[2]+0.05<=V<CORE_GET and int(V*8)%2==0: otext(d,'FREE SLOT!',4,36,GRN)
+    elif T_RECOIL[1]<=V<BITES[2]+0.05: otext(d,'QUEST: EAT THE APPLE',4,36,YEL)
+    elif CORE_GET<=V<T_LAND-0.2 and not (T_TREMOR[0]<=V): otext(d,'QUEST: GET SWORD BACK',4,36,YEL)
 def banner(d,lines,y,col,bg=(40,6,8)):
     wmax=max(font.width(s) for s,_ in lines)+14; x0=(W-wmax)//2; h=len(lines)*11+8
     panel(d,x0,y,x0+wmax,y+h,col,bg)
@@ -473,9 +515,12 @@ def banners(d,V):
         y=int(lerp(-30,52,sm(seg01(V,T_RECOIL[0],T_RECOIL[0]+0.15))));  banner(d,[('INVENTORY: 100/100',YEL)],y,CYAN,(12,10,30))
         if V>=T_RECOIL[0]+0.15 and int(V*7)%2==0: banner(d,[('OVERENCUMBERED!',RED)],y+34,RED)
         elif V>=T_RECOIL[0]+0.15: banner(d,[('OVERENCUMBERED!',(255,150,120))],y+34,(255,90,80))
-    if T_TIP[0]<=V<T_FLAIL[1]+0.5:
-        a=sm(seg01(V,T_TIP[0],T_TIP[0]+0.15)); y=int(lerp(-30,56,a)); banner(d,[('OVERENCUMBERED!',RED if int(V*7)%2 else (255,150,120))],y,RED);
-        if V>=T_FLAIL[0]: banner(d,[('MOVE SPEED: 0%',YEL)],y+24,YEL,(30,24,8))
+    if T_FLAIL[0]-0.2<=V<T_FLAIL[1]+0.4: banner(d,[('MOVE SPEED: 0%',YEL)],110,YEL,(30,24,8))
+    if RETRY[0]<=V<RETRY[0]+1.0:                                          # second try, the core is still an item
+        y=int(lerp(-30,52,sm(seg01(V,RETRY[0],RETRY[0]+0.15)))); banner(d,[('INVENTORY: 100/100',YEL)],y,CYAN,(12,10,30))
+        if V>=RETRY[0]+0.15: banner(d,[('OVERENCUMBERED!',RED if int(V*7)%2 else (255,150,120))],y+34,RED)
+    if CORE_GET<=V<CORE_GET+1.0:
+        a=sm(seg01(V,CORE_GET,CORE_GET+0.15)); y=int(lerp(-30,56,a)); panel(d,30,y,150,y+38,GRN,(8,26,12)); ctext(d,'ITEM GET!',y+6,GRN); ctext(d,'APPLE CORE',y+18,WHT); ctext(d,'INV 100/100',y+28,RED)
     if ITEM_GET[0]<=V<ITEM_GET[1]:
         a=sm(seg01(V,ITEM_GET[0],ITEM_GET[0]+0.15)); y=int(lerp(-30,56,a)); panel(d,30,y,150,y+38,GRN,(8,26,12)); ctext(d,'ITEM GET!',y+6,GRN); ctext(d,'APPLE',y+18,WHT); ctext(d,'INV 100/100',y+28,YEL)
     if BITES[2]+0.05<=V<BITES[2]+1.15:
@@ -500,16 +545,16 @@ def emotes(d,vi,V,ks):
             x,y=int(p[0]),int(p[1]); d.ellipse([x-6,y-12,x+6,y],fill=YEL,outline=(0,0,0)); d.rectangle([x-3,y,x+3,y+4],fill=GRY,outline=(0,0,0))
             for a in range(5): ang=-PI/2+(a-2)*0.5; d.line([x+int(9*math.cos(ang)),y-6+int(9*math.sin(ang)),x+int(13*math.cos(ang)),y-6+int(13*math.sin(ang))],fill=YEL)
     if T_RECOIL[0]<=V<T_RECOIL[0]+0.9 or T_TIP[0]+0.5<=V<T_TIP[1]+0.3 or T_LAND-2.0<=V<T_LAND-1.3: bubble('!',RED)
-    if 8.0<=V<8.45 or T_SILENCE[0]-0.1<=V<T_SILENCE[0]+0.7 or T_HOLSTER[1]<=V<T_HOLSTER[1]+0.8: bubble('?',BLUE if False else BLU)
-    if BULB<=V<BULB+0.5: bulb()
+    if 6.3<=V<6.75 or RETRY[0]+0.55<=V<RETRY[1]+0.3 or T_SILENCE[0]-0.1<=V<T_SILENCE[0]+0.7 or T_HOLSTER[1]<=V<T_HOLSTER[1]+0.8: bubble('?',BLUE if False else BLU)
+    if BULB<=V<BULB+0.5 or 18.3<=V<18.8: bulb()
     for t0 in (T_HOLSTER[1]+0.1,T_CORELOOK[0]+0.3,T_FIRE[0]-0.3):                                      # sweat drops
         if t0<=V<t0+1.1:
             p=R.project(tuple(top-np.array([0,0.25,0])),vi)
             if p:
                 for k in range(2): ph=((V-t0)*1.8+k*0.5)%1.0; x=int(p[0])+(-9 if k else 10); y=int(p[1])+4+int(16*ph); d.rectangle([x,y,x+1,y+3],fill=(150,210,255)); d.point((x,y-1),fill=(150,210,255))
-    if T_DANCE[0]<=V<T_DANCE[1]:                                                                         # music notes
+    if T_RETAKE[0]<=V<T_RETAKE[0]+0.6:                                                                    # happy notes (+1 HP)
         for k in range(3):
-            ph=((V-T_DANCE[0])*1.4+k*0.33)%1.0; p=R.project(tuple(top+np.array([0.5*(k-1),-0.4+1.0*ph,0.0])),vi)
+            ph=((V-T_RETAKE[0])*1.6+k*0.33)%1.0; p=R.project(tuple(top+np.array([0.5*(k-1),-0.4+1.0*ph,0.0])),vi)
             if p: x,y=int(p[0]),int(p[1]); d.line([x,y-6,x,y+2],fill=WHT); d.rectangle([x-3,y+1,x,y+3],fill=WHT); d.line([x,y-6,x+3,y-4],fill=WHT)
     if T_EAT[0]+0.4<=V<BITES[2]+0.05 and V<T_EAT[0]+0.5+0.0: pass
     for b_ in BITES:                                                                                    # crunch text
@@ -521,7 +566,7 @@ def emotes(d,vi,V,ks):
             for a in range(8): ang=a*PI/4+V*3; d.line([x,y,x+int(r*math.cos(ang)),y+int(r*math.sin(ang))],fill=(255,244,170))
             otext(d,'CLANG!',x-17,y-20,YEL)
     if T_SWORDLOOK[0]+0.8<=V<T_CORELOOK[1]+0.5:                                                          # the sword keeps glinting
-        p=R.project(tuple(SW_LAND+np.array([0,0.25,0.4])),vi)
+        p=R.project(tuple(HILT+np.array([0,0.15,0.0])),vi)
         if p and int(V*6)%2==0: x,y=int(p[0]),int(p[1]); d.line([x-4,y,x+4,y],fill=(255,244,170)); d.line([x,y-4,x,y+4],fill=(255,244,170))
 def grade(img,V):
     a=np.asarray(img).astype(np.float32)
@@ -551,15 +596,16 @@ def died(d,V):
     a=sm(seg01(V,T_DIED[0],T_DIED[0]+0.4)); y=int(lerp(110,128,a))
     ctext(d,'YOU DIED',y,(int(60+170*a),int(10+20*a),int(10+20*a)),3)
 def tooltips(d,vi,V,ks):
-    if T_SWORDLOOK[0]+0.5<=V<T_CORELOOK[0]: tooltip(d,vi,SW_LAND+np.array([0,0.1,0.55]),[('GOLDEN SWORD',GOLD),('X99 DMG VS DRAGONS',RED)],GOLD)
+    if T_SWORDLOOK[0]+0.5<=V<T_CORELOOK[0]: tooltip(d,vi,HILT+np.array([0,0.3,0.0]),[('GOLDEN SWORD',GOLD),('X99 DMG VS DRAGONS',RED)],GOLD)
     if T_CORELOOK[0]+0.7<=V<T_CORELOOK[1]: tooltip(d,vi,np.array(khand(ks,1))+np.array([0,0.12,0]),[('APPLE CORE',WHT),('HEALS: 0 HP',RED)],WHT)
 def achievement(d,V):
-    if 6.6<=V<8.3:
-        a=sm(seg01(V,6.6,6.8))*(1-sm(seg01(V,8.1,8.3))); y=int(lerp(330,250,a)); panel(d,16,y,164,y+30,GOLD,(30,22,6)); ctext(d,'ACHIEVEMENT UNLOCKED',y+6,GOLD); ctext(d,'TURTLE MODE',y+17,WHT)
+    if 4.8<=V<6.5:
+        a=sm(seg01(V,4.8,5.0))*(1-sm(seg01(V,6.3,6.5))); y=int(lerp(330,250,a)); panel(d,16,y,164,y+30,GOLD,(30,22,6)); ctext(d,'ACHIEVEMENT UNLOCKED',y+6,GOLD); ctext(d,'TURTLE MODE',y+17,WHT)
 def hook_hp(d,V):
     if V>=HOOK: return
     col=RED if int(V*4)%2 else (120,20,20); panel(d,6,296,76,312,col,(20,8,10)); otext(d,'HP 1/10',12,300,col)
-def frame(V):
+def frame(Vv): return frame_story(story_t(Vv))
+def frame_story(V):
     if V>=BLACK: return Image.new('RGB',(W,H),(0,0,0))
     if T_DIED[0]<=V<STING[0]:
         img=Image.new('RGB',(W,H),(int(40*(1-seg01(V,T_DIED[0],STING[0]))),0,0)); d=ImageDraw.Draw(img); died(d,V); return img
@@ -586,6 +632,7 @@ def _extra(t):
     for sx in (-1,1):                                                                                   # arms never stretch
         sh_=np.array(kpoint(ks,(sx*0.22,1.27,0))); dd=np.linalg.norm(np.array(khand(ks,sx))-sh_)
         if dd>0.66 and not ks.get('tilt'): out.append(('stretch',f'knight arm stretched beyond its length ({dd:.2f} m)'))
+    if abs(t-RETRY[0])<0.5/FPS and np.linalg.norm(np.array(khand(ks,-1))-HILT)>0.22: out.append(('sword',f'his left hand is {np.linalg.norm(np.array(khand(ks,-1))-HILT):.2f} m from the hilt when he tries to take it'))
     if abs(t-HOOK)<0.5/FPS and np.linalg.norm(np.array(khand(ks,1))-APPLE_C)>0.16: out.append(('apple',f'hand is {np.linalg.norm(np.array(khand(ks,1))-APPLE_C):.2f} m from the apple when he touches it'))
     if ap is not None and t>=APPLE_GRAB and np.linalg.norm(np.array(ap[0])-np.array(khand(ks,1)))>0.16: out.append(('apple','apple is not in his hand'))
     if abs(t-(APPLE_GRAB-0.5/FPS))<0.5/FPS and np.linalg.norm(np.array(khand(ks,1))-APPLE_C)>0.2: out.append(('apple',f'his hand is {np.linalg.norm(np.array(khand(ks,1))-APPLE_C):.2f} m from the apple when he grabs it'))
@@ -605,19 +652,19 @@ def _extra(t):
         if dmin<0.35: out.append(('intersect',f'dragon is {dmin:.2f} m from the knight'))
     if t>=T_LAND and t<T_LAND+0.02 and ds is not None and ds['base'][1]>0.05: out.append(('dragon','dragon is still in the air at landing'))
     return out
-QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,
+QA=dict(fps=FPS,dur=DUR,W=W,frame=frame_story,
     chars={'knight':(_kn,knight_full,'sword','hip'),'dragon':(_dr,dragon,'_none',1.0)},
     geom=_geom,extra=_extra,camera=lambda t: shot(t)['cam'],min_cam_dist=0.45,
     camera_ok=lambda p: p[1]>0.12 and not (abs(p[0])<0.5 and abs(p[2])<0.5 and p[1]<STUMP_H+0.05),
     scenes=[dict(id='hook',t0=0.0,t1=HOOK,action='knight lumbers under 99 swords toward the apple and reaches for it'),
             dict(id='touch',t0=HOOK,t1=T_RECOIL[1],action='insert: touches the apple; INVENTORY 100/100; OVERENCUMBERED; yanked back'),
-            dict(id='tip-over',t0=T_RECOIL[1],t1=T_GETUP[1],action='tries again; the pack tips him onto his back; flails; rocks back up'),
+            dict(id='tip-over',t0=T_RECOIL[1],t1=T_GETUP[1],action='the pack tips him onto his back (turtle mode); flails; rocks back up'),
             dict(id='think',t0=T_GETUP[1],t1=T_MENU[0],action='catches his breath; lightbulb'),
-            dict(id='menu',t0=T_MENU[0],t1=T_MENU[1],action='inventory menu; golden sword; ARE YOU SURE; YES'),
+            dict(id='menu',t0=T_MENU[0],t1=T_MENU[1],action='inventory menu; joke sword names; golden sword; ARE YOU SURE x2; YES'),
             dict(id='drop',t0=T_MENU[1],t1=T_DROP[1],action='the golden sword falls from the holster and lands on the grass'),
-            dict(id='pick-eat',t0=T_DROP[1],t1=T_DANCE[0],action='picks up the apple, ITEM GET, three bites, +1 HP'),
-            dict(id='dance',t0=T_DANCE[0],t1=T_DANCE[1],action='victory dance'),
-            dict(id='tremor',t0=T_DANCE[1],t1=T_TREMOR[0]+1.4,action='ground shakes; he looks around'),
+            dict(id='pick-eat',t0=T_DROP[1],t1=T_RETAKE[0],action='steps up, picks up the apple, ITEM GET, three bites, +1 HP'),
+            dict(id='retake',t0=T_RETAKE[0],t1=T_RETAKE[1],action='joy; free slot... but the core fills it: he tries to take the sword back, OVERENCUMBERED'),
+            dict(id='tremor',t0=T_RETAKE[1],t1=T_TREMOR[0]+1.4,action='ground shakes; he looks around'),
             dict(id='dragon',t0=T_TREMOR[0]+1.4,t1=T_HOLSTER[0],action='wide: the dragon swoops in and lands, roars'),
             dict(id='holster',t0=T_HOLSTER[0],t1=T_HOLSTER[1],action='profile: he pats the empty holster'),
             dict(id='sword-look',t0=T_HOLSTER[1],t1=T_CORELOOK[0],action='wide: the dragon eyes the golden sword'),
@@ -626,7 +673,7 @@ QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,
             dict(id='died',t0=T_DIED[0],t1=STING[0],action='YOU DIED'),
             dict(id='stinger',t0=STING[0],t1=DUR,action='dragon chews; DRAGON INV 100/100; reaches for the sword; OVERENCUMBERED; tips over')],
     weapon_events=[('knight',SWORD_DROP,'hip','none')],
-    texts=lambda: [('hook',x,2) for x in HOOK_LINES]+[('ui',s_,1) for s_ in ('INVENTORY: 100/100','OVERENCUMBERED!','MOVE SPEED: 0%','ARE YOU SURE YOU WANT','TO DROP THIS ITEM?','LEGENDARY GOLDEN SWORD','ATK 999   EQUIPPED','DROPPED: GOLDEN SWORD','ITEM GET!','INV 100/100','QUEST: EAT THE APPLE','LARGE ENEMY NEARBY','CRUNCH','CLANG!','ARE YOU SURE SURE?',"IT'S LEGENDARY.",'GOLDEN SWORD','X99 DMG VS DRAGONS','APPLE CORE','HEALS: 0 HP','ACHIEVEMENT UNLOCKED','TURTLE MODE','HP 1/10','+1 KNIGHT','DRAGON INV: 100/100')+tuple(ITEMS)]
+    texts=lambda: [('hook',x,2) for x in HOOK_LINES]+[('ui',s_,1) for s_ in ('INVENTORY: 100/100','OVERENCUMBERED!','MOVE SPEED: 0%','ARE YOU SURE YOU WANT','TO DROP THIS ITEM?','LEGENDARY GOLDEN SWORD','ATK 999   EQUIPPED','DROPPED: GOLDEN SWORD','ITEM GET!','INV 100/100','QUEST: EAT THE APPLE','QUEST: GET SWORD BACK','FREE SLOT!','APPLE CORE','LARGE ENEMY NEARBY','CRUNCH','CLANG!','ARE YOU SURE SURE?',"IT'S LEGENDARY.",'GOLDEN SWORD','X99 DMG VS DRAGONS','APPLE CORE','HEALS: 0 HP','ACHIEVEMENT UNLOCKED','TURTLE MODE','HP 1/10','+1 KNIGHT','DRAGON INV: 100/100')+tuple(ITEMS)]
           +[('ui',s_,2) for s_ in ('+1 HP','WARNING!')]+[('ui','YOU DIED',3),('ui','DRAGON',1)])
 
 TEST=os.environ.get('TEST')
@@ -682,13 +729,15 @@ def build_audio(path):
     for k in range(7): note(M,0.1+k*0.5,[36,43,36,43,34,41,36][k],0.4,0.07,'tri',dec=4)            # heavy tuba march (hook)
     for k in range(7): note(M,0.35+k*0.5,67,0.12,0.02,'sq',0.25,12)
     for k,m in enumerate((57,56,55,54)): note(M,3.55+k*0.17,m,0.2,0.04,'sq',0.5,6)               # sad-trombone-ish after the first bounce
-    jaunty(4.6,8.4,0.45,root=57,step=0.24,minor=True)
+    jaunty(4.6,7.2,0.45,root=57,step=0.24,minor=True)
     for k,m in enumerate([69,72,76,72,69,72,76,81]*5): note(M,T_MENU[0]+0.05+k*0.25,m,0.2,0.016,'sq',0.25,7)      # curious menu arpeggio
     jaunty(13.3,15.7,0.7,step=0.19)
     for k,m in enumerate((72,76,79,84,88,91)): note(M,15.0+k*0.07,m,0.25,0.035,'sq',0.25,6)       # ITEM GET
     jaunty(15.7,17.7,0.6,step=0.17)
-    jaunty(T_DANCE[0],T_DANCE[1],1.3,root=62,step=0.15)                                           # victory dance
-    for k,m in enumerate((72,76,79,84)): note(M,T_DANCE[0]+k*0.09,m,0.25,0.04,'sq',0.25,5)       # ta-da!
+    jaunty(T_RETAKE[0],18.7,1.1,root=62,step=0.15)                                                # +1 HP joy
+    for k,m in enumerate((72,76,79,84)): note(M,T_RETAKE[0]+k*0.09,m,0.25,0.04,'sq',0.25,5)
+    jaunty(18.7,RETRY[0],0.6,root=60,step=0.19)                                                   # hopeful: he goes for the sword
+    for k,m in enumerate((64,63,62,61)): note(M,RETRY[0]+0.35+k*0.14,m,0.2,0.04,'sq',0.5,6)         # ...or not
     for k in range(int((T_TREMOR[1]-T_TREMOR[0])/0.5)): note(M,T_TREMOR[0]+k*0.5,28+(k%2)*2,0.45,0.04+0.01*k,'tri',dec=2)
     for k,tt_ in enumerate(np.arange(23.0,26.5,0.6)): note(M,tt_,31-(k%2),0.55,0.04,'tri',dec=2)
     # ---------- sfx ----------
@@ -698,14 +747,13 @@ def build_audio(path):
     growl(1.5,0.6,0.06,48)                                                                           # stomach
     buzzer(3.55,0.45,0.12); rattle(3.5,0.8,0.05,51); whoosh(3.6,0.35,0.04,52)
     for k in range(4): step_h(3.85+k*0.18,0.05,60+k)
-    for k in range(4): step_h(4.7+k*0.2,0.05,70+k)
-    for k,m in enumerate((79,84,88,91)): note(M,6.65+k*0.07,m,0.2,0.03,'sq',0.25,6)            # achievement
-    buzzer(5.55,0.45,0.1); grunt(5.9,0.09,140,0.4); whoosh(5.6,0.5,0.05,53)
-    clank(6.05,0.16,1); thud(6.1,45,0.4,0.6); rattle(6.05,0.8,0.08,54)                              # the big fall
-    for k in range(int(1.1/0.28)): rattle(6.35+k*0.28,0.25,0.05,80+k); grunt(6.4+k*0.28,0.04,150+10*k)
-    for k in range(4): clank(7.45+k*0.25,0.05,10+k); grunt(7.5+k*0.25,0.06,130)                     # rocking up
-    thud(8.35,60,0.25,0.3); rattle(8.35,0.6,0.07,55)
-    growl(8.5,0.7,0.09,50)                                                                           # stomach
+    grunt(4.05,0.09,140,0.4); whoosh(4.0,0.5,0.05,53)
+    clank(4.45,0.16,1); thud(4.5,45,0.4,0.6); rattle(4.45,0.8,0.08,54)                              # the big fall
+    for k,m in enumerate((79,84,88,91)): note(M,4.85+k*0.07,m,0.2,0.03,'sq',0.25,6)             # ACHIEVEMENT UNLOCKED
+    for k in range(int(1.0/0.28)): rattle(4.65+k*0.28,0.25,0.05,80+k); grunt(4.7+k*0.28,0.04,150+10*k)
+    for k in range(4): clank(5.65+k*0.25,0.05,10+k); grunt(5.7+k*0.25,0.06,130)                     # rocking up
+    thud(6.55,60,0.25,0.3); rattle(6.55,0.6,0.07,55)
+    growl(6.7,0.5,0.09,50)                                                                           # stomach
     for k,m in enumerate((79,84,91)): note(M,BULB+0.05+k*0.05,m,0.2,0.03,'sq',0.25,6)             # lightbulb ding
     whoosh(T_MENU[0],0.3,0.04,90,800,5000); tick(T_MENU[0]+0.1,0.04)
     for k in range(5): tick(T_MENU[0]+0.2+k*HOP+0.25,0.035)                                       # cursor sweep
@@ -726,8 +774,12 @@ def build_audio(path):
     for b_ in BITES: crunch(b_,0.14,int(b_*10))
     chime(BITES[2]+0.05,(76,81,85,88,93),0.04,0.06)                                                 # +1 HP
     for k in range(3): grunt(16.0+k*0.2,0.03,160)                                                   # happy 'mm'
-    for k in range(int((T_DANCE[1]-T_DANCE[0])/0.3)): step_h(T_DANCE[0]+0.3+k*0.3,0.04,120+k); rattle(T_DANCE[0]+0.3+k*0.3,0.12,0.04,130+k)
-    whoosh(19.5,0.6,0.07,97)                                                                        # spin
+    for k in range(2): thud(T_RETAKE[0]+0.12+k*0.25,60,0.1,0.15); rattle(T_RETAKE[0]+0.1+k*0.25,0.15,0.04,130+k)            # two joyful hops
+    chime(CORE_GET,(72,76,79),0.035)                                                                # ITEM GET: apple core (FREE SLOT gone)
+    for k,m in enumerate((79,84,91)): note(M,18.3+k*0.05,m,0.2,0.03,'sq',0.25,6)                   # lightbulb: the sword!
+    for k in range(4): step_h(18.75+k*0.12,0.04,120+k)
+    whoosh(19.15,0.3,0.04,97)
+    buzzer(RETRY[0],0.45,0.13); clank(RETRY[0]+0.02,0.08,131); rattle(RETRY[0]+0.05,0.5,0.06,132); grunt(RETRY[0]+0.25,0.07,140,0.3)  # OVERENCUMBERED again
     # tremor + dragon
     r=np.random.default_rng(8); rum=s.filt_short(s.noise(T_LAND-T_TREMOR[0],77),hi=90)*np.linspace(0.0,1.0,int((T_LAND-T_TREMOR[0])*sr))**1.5*0.5; i0=int(T_TREMOR[0]*sr); s.L[i0:i0+len(rum)]+=rum; s.R[i0:i0+len(rum)]+=rum
     for k in range(14): tick(T_TREMOR[0]+0.4+k*0.17+r.uniform(0,0.05),0.03)
@@ -771,7 +823,12 @@ def build_audio(path):
     pk=max(np.abs(s.L).max(),np.abs(s.R).max()); gv=pk*1.05/np.abs(NB).max()
     s.L=s.L*(0.6+0.4*duck)+NB*gv; s.R=s.R*(0.6+0.4*duck)+NB*gv
     st=np.stack([s.L,s.R],1); st[int(BLACK*sr):]*=np.linspace(1,0.0,len(st)-int(BLACK*sr))[:,None]**0.5
-    st=st/np.max(np.abs(st))*0.9; _sf.write(path,st,sr,subtype='PCM_16'); return path
+    keep=[]; prev=0
+    for a_,b_ in SKIPS: keep.append(st[int(prev*sr):int(a_*sr)]); prev=b_
+    keep.append(st[int(prev*sr):]); x=int(0.03*sr); out=keep[0]
+    for sg in keep[1:]:
+        w=np.linspace(0,1,x)[:,None]; out=np.concatenate([out[:-x],out[-x:]*(1-w)+sg[:x]*w,sg[x:]])
+    st=out/np.max(np.abs(out))*0.9; _sf.write(path,st,sr,subtype='PCM_16'); return path
 if __name__=='__main__' and os.environ.get('PART')=='audio':
     print(build_audio(os.path.join(OUT,'one_apple.wav'))); sys.exit()
 if __name__=='__main__' and os.environ.get('PART'):
