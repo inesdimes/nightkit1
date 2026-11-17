@@ -125,16 +125,17 @@ Observations only, not rules. Numbers marked ~ are read off charts.
 |---|---|---|---|---|---|
 | Never Trust The Last Save Point (posted 15 Nov 20:04) | YouTube Shorts | ~1.0K (1,094 in 48 h) | 18 likes, +1 sub, 5.1 h watch time | stayed **58.2 %** / swiped 41.8 %; curve falls to ~40 % by ~0:10, flat to ~0:55, small drop at the end | 13–17 male; US 17 %, TR 4 %, DE 2 %; Shorts feed 1.0K, other YouTube features 63, other 16 |
 | Never Trust The Last Save Point | Instagram Reels | 620 (508 viewers) | 9 likes, 0 comments, 1 save, 0 shares | — | 100 % non-followers |
+| Never Trust The Last Save Point ("This is me. And that... is also me.") | TikTok | 303 (21 min total play time) | 0 likes, 0 comments, 0 shares, 0 saves, 0 new followers | average watch **4.19 s** (7 % of 61 s); fully watched **1.6 %**; most viewers left at **0:01** | For You 98.4 %, profile 1.0 %, other 0.6 % |
 | He Picked The Wrong NPC (posted 15 Nov 22:07) | YouTube Shorts | 492 (all in the first 48 h, most in the first hours) | 14 likes, +1 sub, 2.1 h watch time | stayed **56.2 %** / swiped 43.8 %; curve falls to ~50 % by ~0:10, then declines slowly to ~10 % at 1:00 | 13–17 male; US 38 %, UK 6 %, NL 3 %; Shorts feed 464, other 28 |
 | He Picked The Wrong NPC ("One stranger said no. Then the whole street did.") | TikTok | 374 (33 min total play time) | 3 likes, 0 comments, 1 share, 1 save, 0 new followers | average watch **4.79 s** (8 % of 61 s); fully watched **1.2 %**; most viewers left at **0:02** | For You 94.7 %, other 5.3 % |
 | He Picked The Wrong NPC | Instagram Reels | 122 (102 viewers) | 0 likes, 0 comments, 0 saves, 0 shares | — | — |
 
 Reading:
 - **YouTube:** both 61 s story videos keep 56–58 % "stayed", more than the 15–45 % of the shorter videos in section 9. Both curves drop to ~40–50 % in the first ~10 s and then hold, the same pattern as the Rat King (section 10): once a viewer is past the first ~10 s, most stay.
-- **TikTok:** the same video holds viewers far worse: the median viewer is gone at 0:02, 1.2 % finish. The For You page does distribute it (94.7 % of views), so the first 2 s decide, and a 61 s runtime has little chance. This is the reason the TikTok versions are now 15 s with the hook in frame 0.
+- **TikTok:** both videos hold viewers far worse than on YouTube: the median viewer is gone at 0:01–0:02 (Save Point: 4.19 s average, 1.6 % finish; NPC: 4.79 s, 1.2 %). The For You page does distribute it (94.7 % of views), so the first 2 s decide, and a 61 s runtime has little chance. This is the reason the TikTok versions are now 15 s with the hook in frame 0.
 - **Instagram:** the horror video got 5× the views of the NPC video (620 vs 122); on YouTube the ratio is ~2× (1,094 vs 492). The Instagram NPC reel got no interaction at all. One possible reason (hypothesis): frame 0 of the NPC video is a wide street with two small characters and subtitle text, while the Save Point frame 0 is a close, dark corridor with a red HP bar ("DANGER"). Matches the earlier first-frame observation in section 8.
 - **Conversion is ~0 everywhere:** +1 subscriber on each YouTube video, 0 followers on TikTok and Instagram. Reach alone does not build the channel yet.
 - **Audience:** YouTube is mostly English-speaking 13–17 male (US 17–38 %); the Save Point video also reached TR (4 %).
 - Single videos, small numbers, three different platforms: nothing here is a rule. Re-check with the 16 Nov posts (Guard Forgets A, Final Boss B) and the new 15 s TikTok cuts.
 
-Missing: Last Save Point on TikTok, and the 16 Nov posts' 48 h numbers.
+Missing: the 16 Nov posts' 48 h numbers (Enes will post them after 48 h are up).
