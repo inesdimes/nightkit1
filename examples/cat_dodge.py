@@ -83,9 +83,9 @@ def cat_model(base,yaw=0.0,walk=0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=0.0,lid=0.5
         D+=box(-0.118,0.118,0.012+dy,0.07+dy,0.095,0.103,BLACKC,xf=Hd)+box(-0.015,0.015,0.05+dy,0.062+dy,0.095,0.104,BLACKC,xf=Hd)
         D+=box(-0.095,-0.055,0.05+dy,0.062+dy,0.1035,0.1045,(250,250,255),xf=Hd,emit=True)+box(0.03,0.07,0.05+dy,0.062+dy,0.1035,0.1045,(250,250,255),xf=Hd,emit=True)
         for sx in (-1,1): D+=box(sx*0.118,sx*0.124,0.03+dy,0.045+dy,-0.08,0.1,BLACKC,xf=Hd)
-    if cheese>0.01:                                                                          # pizza on the face
-        D+=box(-0.07,0.07,-0.03,0.04+0.02*cheese,0.139,0.15,CHEESE,xf=Hd)+box(-0.05,-0.02,0.0,0.03,0.151,0.158,PEPP,xf=Hd)+box(0.03,0.06,-0.02,0.01,0.151,0.158,PEPP,xf=Hd)
-        D+=box(-0.115,-0.085,0.06,0.1,0.09,0.1,CHEESE,xf=Hd)
+    if cheese>0.01:                                                                          # pizza on the muzzle and forehead (eyes stay clear)
+        D+=box(-0.05,0.05,-0.05,-0.005+0.02*cheese,0.139,0.148,CHEESE,xf=Hd)+box(-0.035,-0.01,-0.045,-0.02,0.149,0.153,PEPP,xf=Hd)+box(0.012,0.04,-0.04,-0.015,0.149,0.153,PEPP,xf=Hd)
+        D+=box(-0.015,0.025,0.072,0.097,0.0905,0.0925,PEPP,xf=Hd)
     tag(D,Wd(HP)); return Q,D
 def head_world(st):
     """world position + rough half size of the cat's head, for QA clearance checks"""

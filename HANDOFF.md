@@ -26,6 +26,7 @@ Paste this file (or the repo link) at the start of a new chat so Claude can cont
 | The One Apple Problem v4 (30.6 s: only the golden sword is droppable, core fills the slot, dragon stinger) | one_apple.py (locked: 99-sword pack on the channel knight, apple, stump, golden sword, dragon, meadow, UI; hook narration only) | rendered (kept locally) |
 | The One Apple Problem — 15 s cut (15.25 s, TikTok) | one_apple_15.py (imports one_apple.py assets; brief beats only: freeze, menu + throw, eat +1 HP, dragon lands, empty holster, look to camera, YOU DIED) | rendered (kept locally) |
 | Cat Dodge Boss (15 s) | cat_dodge.py (locked: woman = face_track.girl(legs=...), orange tabby with pixel shades, bedroom, pizza + plate; boss-fight comedy: foot vs head dodge, MISS x3, bite = the mistake, face in the pizza, CAT WINS) | **dropped by Enes (17 Nov)**; code kept (cat, bedroom, pizza are reusable) |
+| Cat POV (15 s, TikTok) | cat_pov.py (POV clip recreated as a stealth parody: foot = cover, cat peeks, LINE OF SIGHT meter, SPOTTED!, foot gives up, cat dashes, face in the lens, MISSION FAILED / CAT WINS) | rendered (kept locally) |
 | The Rat King, AUTO-TRACK (face_track.py), earlier GTA/streamer remakes | see examples | done |
 
 ## Analytics
