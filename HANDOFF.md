@@ -23,6 +23,7 @@ Paste this file (or the repo link) at the start of a new chat so Claude can cont
 | Guard Forgets — Experiment A (30.6 s) | guard_forgets.py (locked: thief, guard, note/cuffs/crown, corridor, alert/memory meter, mission banner; hook 0–3.3 s + punchline shared with the 60 s B) | rendered (kept locally) |
 | Guard Forgets — Experiment B (59.6 s) | guard_forgets_b.py (imports A; 0–3.3 s = A frames+audio; writing/swap/cuffs/crown grab = A's animation re-timed) | rendered (kept locally) |
 | Safe Zone v2 (52.3 s, extra lines + dead time cut) | safe_zone.py (locked: skeleton, shopkeeper, shop, barrier, payment terminal; channel knight with brown boots) | rendered (kept locally) |
+| The One Apple Problem (30.2 s) | one_apple.py (locked: 99-sword pack on the channel knight, apple, stump, golden sword, dragon, meadow, UI; hook narration only) | rendered (kept locally) |
 | The Rat King, AUTO-TRACK (face_track.py), earlier GTA/streamer remakes | see examples | done |
 
 ## Analytics
