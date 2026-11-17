@@ -108,3 +108,12 @@ Reading:
 - Guard Forgets A (15 % stayed, first hours only) sits near the cat's level; first-frame framing is one possible reason. Too early to tell.
 
 (Observations only, not rules: keep producing and re-check as more data comes in.)
+
+## 10. Rat King, first 14 s (re-rendered from the code, 17 Nov; no narration in this render)
+Observations only, not rules.
+- 0–5 s, hook: from frame 0 the Rat King (LV 99) fills the frame, red eyes; the sword slams at 0.35 s with a screen shake and the boss bar appears at ~1 s.
+- At 5.0 s there is a hard cut to a bright forest, "LEVEL 1" (flashback): colour, place and stakes all reset at once.
+- 5–9 s: the knight walks in and takes the cheese (+1 CHEESE at ~9 s). Little happens before the steal.
+- 10–14 s: the small rat sits alone, small in a wide shot, then a close-up on its sad face.
+- The retention curve falls from 100 % to ~45 % in the first ~10 s, then stays flat to the end. That fall overlaps the flashback cut and the slow steal.
+- Possible things to test later (one per video): a shorter flashback setup (steal by ~6 s); keeping a hint of the boss / the stakes on screen during the flashback.
