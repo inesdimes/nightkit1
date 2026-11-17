@@ -27,6 +27,11 @@ Paste this file (or the repo link) at the start of a new chat so Claude can cont
 ## Analytics
 - See `ANALYTICS.md` (16 Nov 2026): data, diagnosis, editing checklist, A/B plan for NEW videos (no re-cuts of posted ones), lessons, review rhythm.
 
+## Working agreement (Enes)
+- Posted videos are never re-edited or re-uploaded.
+- Every NEW video uses what we have learned so far (ANALYTICS.md, sections 9–10: observations, not fixed rules),
+  e.g. a big, close, moving character in frame 0 and a quick setup. Keep producing; re-check as data grows.
+
 ## Production process
 - Follow `PIPELINE.md` (asset lock, scene manifest `QA`, previews + `tools/qa/scene_qa.py`, final render, full review).
 
