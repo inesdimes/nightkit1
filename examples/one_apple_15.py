@@ -227,7 +227,7 @@ def emotes(d,vi,V,ks):
     if APPLE_GRAB<=V<APPLE_GRAB+0.6:
         a=sm(seg01(V,APPLE_GRAB,APPLE_GRAB+0.12)); y=int(lerp(-30,56,a)); panel(d,40,y,140,y+26,GRN,(8,26,12)); ctext(d,'ITEM GET!',y+5,GRN); ctext(d,'APPLE',y+16,WHT)
 def died(d,V):
-    a=sm(seg01(V,T_DIED,T_DIED+0.35)); y=int(lerp(118,128,a)); ctext(d,'YOU DIED',y,(int(60+170*a),int(10+20*a),int(10+20*a)),3)
+    a=sm(seg01(V,T_DIED,T_DIED+0.06)); y=int(lerp(124,128,a)); ctext(d,'YOU DIED',y,(int(60+170*a),int(10+20*a),int(10+20*a)),3)
 def frame(V):
     if V>=T_DIED:
         img=Image.new('RGB',(W,H),(int(40*(1-seg01(V,T_DIED,DUR))),0,0)); d=ImageDraw.Draw(img); died(d,V); return img
