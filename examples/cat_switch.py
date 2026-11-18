@@ -176,7 +176,7 @@ def subtitles(d,t):
                 for wd in l.split(' '): otext(d,wd,x,y0+i*17,YEL if wd in hil else WHT,2); x+=font.width(wd,2)+12
 def hud(d,vi,t,cs):
     n=sum(1 for tl in T_LAND if t>=tl)
-    if 3.0<=t<T_ALL:                                                                  # BUTTON n/3 counter
+    if T_LAND[0]<=t<T_ALL:                                                            # BUTTON n/3 counter (appears with the first click)
         s_=f'BUTTON {n} / 3'; pop=1.0+0.0*seg01(t,T_LAND[n-1],T_LAND[n-1]+0.2) if n else 1.0
         panel(d,14,8,166,30,CYAN); ctext(d,s_,13,YEL if n and t<T_LAND[n-1]+0.4 and int(t*10)%2 else WHT,2)
         for k in range(3): d.rectangle([66+k*18,34,78+k*18,40],fill=GRN if k<n else (50,46,70),outline=WHT)

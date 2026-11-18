@@ -15,7 +15,7 @@ Read first: `HANDOFF.md` (channel, rules, video table), `PIPELINE.md` (productio
 pip install scipy soundfile kokoro-onnx
 mkdir -p tts/v3 && cp tools/tts/scripts/v3.json tts/v3/script.json   # face_track.py (the woman) reads it at import
 mkdir -p tts && cd tts && for f in kokoro-v1.0.int8.onnx voices-v1.0.bin; do curl -sSL -o $f https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/$f; done; cd ..
-python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb>.py      # regenerate the voice lines a script needs
+python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|cs>.py      # regenerate the voice lines a script needs
 ```
 (For Final Boss B also run A's `PART=audio` first; same for Guard Forgets B.)
 
@@ -34,6 +34,7 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb>.py      # regenerate the voic
 | The Smallest Umbrella (15 s, wholesome) | examples/umbrella.py (voice `tools/tts/um.py`; own duckling, dog, umbrella, rainy street) | rendered, not posted |
 | The Camera Under My Bed (30 s, PS1 horror) | examples/camera_bed.py (voices `tools/tts/cb.py`; own man model, bedroom, CRT feed compositing) | **dropped by Enes (18 Nov): too many errors**, do not post |
 | One Apple 15 s cut (15.25 s) | examples/one_apple_15.py (imports v4 assets; voice `tools/tts/ap15.py`) | rendered, not posted; for **TikTok** |
+| Why Do Cats Knock Things Over? (15 s) | examples/cat_switch.py (voice `tools/tts/cs.py`; imports cat/room from cat_dodge.py, cat got an optional `paw` pose param) | rendered 18 Nov, not posted; captions `captions/cat_switch.md` |
 
 Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`, `captions/safe_zone.md`, `captions/smallest_umbrella.md`, `captions/camera_under_bed.md`.
 
