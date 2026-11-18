@@ -108,5 +108,7 @@ Observations to apply in storyboards and to look for in critique rounds, not har
   - a hanging or swinging object drawn with a single line can read as a hanging: show the full structure
   - a sign lit from the side goes grey and unreadable: give text faces an unlit material
   - a rail or bar at chest height crossing a character reads as bars through the torso: move the lens or the rail
-- **Final-file check idea (not implemented yet):** per-frame scan for black, white, frozen and sudden-pop frames, ignoring
-  planned flashes and crossfades (the outside repo does this in `short_qa.py`); would extend `tools/qa/check.py`.
+- **Final-file check (implemented):** `tools/qa/check.py` now also scans every frame for black frames, unplanned white frames,
+  frozen spans of 12+ frames and unplanned frame-difference pops. They print as `WARN` (a horror short may flicker or hold on
+  purpose) and do not change the exit code; `--strict-frames` makes them fail, `--no-frames` skips the scan. With `--script`,
+  scene starts count as planned cuts. Judge each WARN by eye: an intended blackout or hold is fine.
