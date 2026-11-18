@@ -63,7 +63,8 @@ def robot(pose,base=RB,yaw=YAW):
     pose keys: aW/aO = shoulder angle of the arm nearer the camera / the mirror (0 hanging, pi/2 sideways, pi up), bW/bO = elbow bend, hop, roll/hyaw/hp = head roll/yaw/pitch,
     eyes 0..1, happy, smile. returns (quads, face decals)"""
     p=pose; b=np.array(base,float); Rb=Ry(yaw)
-    def Wd(q): return tuple(b+np.array([0,p['hop'],0])+Rb@np.array(q,float))
+    sq=p.get('sq',0.0)                                                                 # optional squash & stretch (v2 cut); 0 = the locked proportions
+    def Wd(q): q=np.array(q,float); q=np.array([q[0]*(1+0.10*sq),q[1]*(1-0.18*sq),q[2]*(1+0.10*sq)]); return tuple(b+np.array([0,p['hop'],0])+Rb@q)
     N_=np.array([0,NECK,0]); Rh=Ry(p['hyaw'])@Rx(p['hp'])@Rz(p['roll'])
     def Hd(q): return Wd(N_+Rh@(np.array(q,float)-N_))
     Q=[]; D=[]; Dc=[]
@@ -75,7 +76,8 @@ def robot(pose,base=RB,yaw=YAW):
         ex=sx*0.075; ey=0.88
         if p['happy']: D+=box(ex-0.035,ex+0.035,ey+0.0,ey+0.016,fz,fz+0.002,BLK,xf=Hd)+box(ex-0.035,ex-0.02,ey-0.02,ey+0.0,fz,fz+0.002,BLK,xf=Hd)+box(ex+0.02,ex+0.035,ey-0.02,ey+0.0,fz,fz+0.002,BLK,xf=Hd)
         else: D+=box(ex-0.034,ex+0.034,ey-eh/2,ey+eh/2,fz,fz+0.002,BLK,xf=Hd)
-    D+=box(-0.06,0.06,0.77,0.79,fz,fz+0.002,BLK,xf=Hd)
+    if p.get('mouth_o'): D+=box(-0.035,0.035,0.745,0.815,fz,fz+0.002,BLK,xf=Hd)                        # surprised 'o' mouth (v2 cut)
+    else: D+=box(-0.06,0.06,0.77,0.79,fz,fz+0.002,BLK,xf=Hd)
     if p['smile']: D+=box(-0.075,-0.06,0.79,0.81,fz,fz+0.002,BLK,xf=Hd)+box(0.06,0.075,0.79,0.81,fz,fz+0.002,BLK,xf=Hd)
     tag(D,Hd((0,0.86,0)))
     Dc+=box(-0.055,0.055,0.44,0.55,0.1315,0.1335,BLUE,xf=Wd); tag(Dc,Wd((0,0.5,0)))
@@ -196,6 +198,16 @@ def reflection(d,pose,cam,fov):
 
 # ======================= render =======================
 R=Renderer(W,H,fog=(10,14,34))
+def glint(im,a,cam,fov,pts):
+    """two banded diagonal glints on the glass (2D). Masked to the mirror rectangle AND to pixels that still show the bare mirror panel, so they never cross the robot"""
+    x0,x1=MX-MW/2,MX+MW/2; v2=R.view(cam,fov); m=Image.new('L',(W,H),0); dm=ImageDraw.Draw(m)
+    for k in range(2):
+        q=[R.project((x0+(0.15+0.28*k)*MW+dx,y,ZM),v2) for dx,y in ((0,MY1),(0.07,MY1),(0.07-0.45,MY0+0.2),(-0.45,MY0+0.2))]
+        dm.polygon([(a_[0],a_[1]) for a_ in q],fill=255)
+    clip=Image.new('L',(W,H),0); ImageDraw.Draw(clip).polygon([(p_[0],p_[1]) for p_ in pts],fill=255)
+    bare=(np.abs(a-np.array(MIRBG,np.float32)*np.array([0.88,0.94,1.1],np.float32)).max(axis=2)<10).astype(np.uint8)*255
+    mask=np.minimum(np.minimum(np.asarray(m),np.asarray(clip)),bare); im.paste(Image.new('RGB',(W,H),(22,32,60)),(0,0),Image.fromarray(mask))
+
 def render(t):
     cp,tg,fov=cam_shot(t); cpa=np.array(cp); cam=Camera.look(cp,tg); st=real_pose(t)
     rq,rd=robot(st); rd[:]=[x for x in rd if np.linalg.norm(x['c']-cpa)<np.linalg.norm(x['hc']-cpa)]
@@ -205,9 +217,7 @@ def render(t):
     a=np.asarray(img).astype(np.float32)*np.array([0.88,0.94,1.1],np.float32)
     im=Image.fromarray(np.clip(a,0,255).astype(np.uint8)); d=ImageDraw.Draw(im)
     x0,x1=MX-MW/2,MX+MW/2; vi2=R.view(cam,fov); pts=[R.project((x,y,ZM),vi2) for x,y in ((x0,MY0),(x1,MY0),(x1,MY1),(x0,MY1))]
-    for k in range(2):                                                                      # banded static glint on the glass (2D)
-        q=[R.project((x0+(0.15+0.28*k)*MW+dx,y,ZM),vi2) for dx,y in ((0,MY1),(0.07,MY1),(0.07-0.45,MY0+0.2),(-0.45,MY0+0.2))]
-        d.polygon([(a_[0],a_[1]) for a_ in q],fill=(22,32,60))
+    glint(im,a,cam,fov,pts)
     sp=Image.new('RGBA',(W,H),(0,0,0,0)); reflection(ImageDraw.Draw(sp),ref_pose(t),cam,fov)         # sprite on its own layer, clipped to the glass
     clip=Image.new('L',(W,H),0); ImageDraw.Draw(clip).polygon([(p_[0],p_[1]) for p_ in pts],fill=255)
     al=np.minimum(np.asarray(sp)[...,3],np.asarray(clip)); sp.putalpha(Image.fromarray(al)); im.paste(sp,(0,0),sp)

@@ -45,9 +45,14 @@
   "0.9": "bb9b708936ee382c04f078faa7aafa90"
  },
  "examples/mirror_copy.py": {
-  "0.1": "be917643da3c21ab2832838161d71116",
-  "0.5": "9484cc0f957b5930bc1dae4643a53d7e",
-  "0.9": "df6e84ca78ea2e3d4d5344f68754b76e"
+  "0.1": "1125378b4d45e34e5c0d9b1e219cc972",
+  "0.5": "6d3b3f33e2536ea754b38c82ed42a0ce",
+  "0.9": "e15665f8994f6f8e3d1d0d998466eba2"
+ },
+ "examples/mirror_copy_v2.py": {
+  "0.1": "a62f0eb4c0dc4d4b749a645f49e334e1",
+  "0.5": "a8f2e41a3f9ae3e5f97be1eebcaa46bf",
+  "0.9": "1b03e66181bc4c1cd494c50e08dcd877"
  },
  "examples/one_apple.py": {
   "0.1": "28146333208f1af1574efa698ac1f645",
