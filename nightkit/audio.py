@@ -89,3 +89,15 @@ class Sound:
         if rotate_seconds: st=np.roll(st,-int(rotate_seconds*self.sr),axis=0)
         w=wave.open(path,'wb'); w.setnchannels(2); w.setsampwidth(2); w.setframerate(self.sr); w.writeframes((st*32767).astype(np.int16).tobytes()); w.close()
         return path
+
+def duck_envelope(n,sr,windows,depth_db=-3.0,attack=0.05,release=0.25,pre=0.05):
+    """Gain curve (length n) that dips by `depth_db` while the voice speaks. `windows` = [(t0,t1),...] in seconds, taken from
+    the voice lines' real timings (key it from the script, not from the audio). Smooth edges: `attack` s down, `release` s up.
+    Usage: music*duck_envelope(len(music),48000,[(t,t+dur) for ...],-4). Added 18 Nov 2026."""
+    g=np.ones(n); lo=10**(depth_db/20)
+    for a,b in windows: g[max(0,int((a-pre)*sr)):min(n,int(b*sr))]=lo
+    k1,k2=max(1,int(attack*sr)),max(1,int(release*sr)); up=np.where(g<1)[0]
+    if len(up)==0: return g
+    x=g.copy()
+    for i in range(1,n): x[i]=x[i-1]+(g[i]-x[i-1])/(k1 if g[i]<x[i-1] else k2)
+    return x

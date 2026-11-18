@@ -112,3 +112,12 @@ Observations to apply in storyboards and to look for in critique rounds, not har
   frozen spans of 12+ frames and unplanned frame-difference pops. They print as `WARN` (a horror short may flicker or hold on
   purpose) and do not change the exit code; `--strict-frames` makes them fail, `--no-frames` skips the scan. With `--script`,
   scene starts count as planned cuts. Judge each WARN by eye: an intended blackout or hold is fine.
+
+## Added 18 Nov 2026: tools adapted from the outside pipeline
+- **`python tools/qa/script_lint.py <script.json | narration.txt> [--seconds N]`** (before any rendering): pace in words/s, hook
+  length, longest sentence, pivot line, question beat, short last sentence, longest gap between voice lines. Hints only, exit code 0.
+  Our sparse comic narration scores low on pace by design; read the hints, do not chase them.
+- **`nightkit.motion`:** `glide` (smootherstep), `creep` + `dolly` (a hold that pushes in 0.15-0.35 %/frame, optional punch on a
+  word), `kick` (impact shake, sign flips each frame, decays over 7 frames; feed it to `render(shake=...)`).
+- **`nightkit.audio.duck_envelope`:** music gain that dips while the voice speaks, keyed from the voice lines' timings.
+- Not adopted: the Remotion/three.js renderer, toon-card characters, ink/lens-blur passes (different engine and look).

@@ -7,6 +7,7 @@ description: Production order for a new Insert Disc 2 short (or a revision) in t
 Read `CONTINUE.md` and `PIPELINE.md` first. Reuse existing models, sets and tools; never rewrite what did not change.
 Stop at every gate marked STOP, show the result in a few lines and wait for Enes.
 
+0. **Script lint** - `python tools/qa/script_lint.py <narration>`; read the hints (pace, hook, pivot, last line).
 1. **Plan** - a short feasibility plan: what is reused, what is new (models, set), cameras, timing, audio. STOP.
 2. **Asset lock** - one function per character / prop / set (PIPELINE phase 1). Preview them yourself with
    `TEST=t1,t2 python examples/<script>.py` (writes test.png).
@@ -15,7 +16,7 @@ Stop at every gate marked STOP, show the result in a few lines and wait for Enes
 4. **Draft render** - `PART=a:b` in parallel + `PART=audio`, concat, mux with `loudnorm=I=-14:TP=-1.5`.
 5. **Critique** - `python tools/qa/critique.py <draft.mp4> --name <script> --round N`, look at the sheet, fill the
    scores in `reviews/<script>.md`. Fix the top 3, re-render, next round. All scores >= 8, at most 3 rounds. STOP.
-6. **Final check** - `python tools/qa/check.py <final.mp4> --script examples/<script>.py` must pass.
+6. **Final check** - `python tools/qa/check.py <final.mp4> --script examples/<script>.py` must pass; read its frame-scan WARN lines (black, frozen, pops) by eye.
 7. **Deliver** - send the MP4 (videos are not committed), commit the script + tools + review log, update the video
    table in `CONTINUE.md`. If a shared model changed: `python tools/qa/regress.py compare`, report what changed.
 
