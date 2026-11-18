@@ -34,7 +34,7 @@ STONE=[(58,64,92),(50,56,84),(64,70,100),(46,52,78)]; STONE_W=[(66,72,102),(58,6
 V_WALK=0.2                                           # janitor walking speed (m/s)
 T_STOP=(20.4,21.2); T_GO=(38.3,38.9); T_HALT=(39.6,40.2)
 T_BOO=44.0; T_JUMP=(44.25,45.05); T_CUT7=46.0
-T_KNOCK=(15.0,15.6,16.2); T_FLICK=((23.2,23.38),(24.4,24.66))
+T_KNOCK=(15.15,15.7,16.25); T_FLICK=((23.2,23.38),(24.4,24.66))
 T_SCARE_CUT=46.0
 SHOT_CUTS=[21.0,38.0,46.0,53.0]
 J_B=-1.5                                             # janitor x while he stands (shots 4-5)
@@ -61,7 +61,7 @@ LANTERN_FLOOR=(XS-0.2,0.0,JZ-0.32)                   # established drop spot
 def ghost(base,yaw,hover=0.12,arms=((0.0,0.0),(0.0,0.0)),eye=1.0,mouth='neutral',lean=0.0,hyaw=0.0,squash=0.0,tremble=0.0,closed=False,t=0.0,shade=0.0,tipx=0.0,**_):
     """pale blue-white ghost, ~1.0 m tall, stacked boxes, no legs. arms: ((pitch,spread) for the character's LEFT arm, same for the RIGHT arm);
     spread 0 = hanging, pi/2 = out sideways, pi = straight up; pitch = swing forward(+z). local forward +z. returns (quads, face decals)"""
-    b=np.array(base,float); Rb=Ry(yaw); k=1-0.35*shade; c=lambda col: tuple(int(v*k) for v in col)
+    b=np.array(base,float); Rb=Ry(yaw+hyaw); k=1-0.35*shade; c=lambda col: tuple(int(v*k) for v in col)
     sq=1-0.28*squash; jit=np.array([tremble*0.012*math.sin(t*61),0,tremble*0.008*math.cos(t*53)])
     def Wd(p):
         p=np.array(p,float); p=np.array([p[0]+lean*p[1]*0.35,p[1]*sq,p[2]]); return tuple(b+jit+np.array([0,hover*(1-0.9*squash),0])+Rb@p)
@@ -71,9 +71,8 @@ def ghost(base,yaw,hover=0.12,arms=((0.0,0.0),(0.0,0.0)),eye=1.0,mouth='neutral'
     Q+=box(-0.28,0.28,0.16,0.42,-0.21,0.21,c(GH),xf=Wd)+box(-0.31,0.31,0.42,0.68,-0.22,0.22,c(GH),xf=Wd)
     Q+=box(-0.27,0.27,0.68,0.86,-0.21,0.21,c(GH_L),xf=Wd)+box(-0.20,0.20,0.86,0.96,-0.17,0.17,c(GH_L),xf=Wd)+box(-0.12,0.12,0.96,1.0,-0.12,0.12,c(GH_L),xf=Wd)
     # face is on the head rows (yaw of the face only: hyaw)
-    Hc=np.array([0,0.78,0]); Rh=Ry(hyaw)
-    def Hd(p): return Wd(Hc+Rh@(np.array(p,float)-Hc))
-    fz=0.2115
+    Hc=np.array([0,0.78,0]); Hd=Wd
+    fz=0.2245                                                                             # in front of the widest row (0.22)
     es=0.13*(0.8+0.55*eye) if not closed else 0.13
     for sx in (-1,1):
         ex=sx*0.125
@@ -93,7 +92,7 @@ def ghost_hand(st,side):
     """world position of the ghost's hand (side -1/+1 as in ghost())"""
     pit,spr=st['arms'][0 if side<0 else 1]; sh=np.array([side*0.34,0.55,0.0]); d=Rx(-pit)@np.array([side*math.sin(spr),-math.cos(spr),0.0]); p=sh+d*0.28
     sq=1-0.28*st.get('squash',0.0); p=np.array([p[0]+st.get('lean',0.0)*p[1]*0.35,p[1]*sq,p[2]])
-    return np.array(st['base'])+np.array([0,st['hover']*(1-0.9*st.get('squash',0.0)),0])+Ry(st['yaw'])@p
+    return np.array(st['base'])+np.array([0,st['hover']*(1-0.9*st.get('squash',0.0)),0])+Ry(st['yaw']+st.get('hyaw',0.0))@p
 
 # ======================= LOCKED ASSET: the janitor =======================
 def janitor(base,yaw,walk=0.0,run=0.0,hyaw=0.0,rarm=None,larm=None,lift=0.0,crouch=0.0,shrug=0.0,lean=0.0,fear=0.0,t=0.0,shade=0.0,lantern_lit=True,**_):
@@ -206,7 +205,7 @@ def jan(t):
 # ======================= animation: ghost =======================
 def gx_follow(t):
     """shots 1-3: the ghost floats beside the janitor's path, drifting closer; world x"""
-    return jx_walk(t)-lerp(1.05,0.78,sm(seg01(t,0.0,5.0)))
+    return jx_walk(t)-lerp(1.3,1.15,sm(seg01(t,0.0,5.0)))       # never so close that the held lantern covers its face
 def ghost_state(t):
     bob=0.05*math.sin(t*2.2)
     st=dict(base=(0,0,GZ),yaw=PI,hover=0.14+bob,arms=((0.0,0.1),(0.0,0.1)),eye=1.0,mouth='neutral',lean=0.0,hyaw=0.0,squash=0.0,tremble=0.0,closed=False,t=t,shade=0.0)
@@ -219,7 +218,7 @@ def ghost_state(t):
         st['hyaw']=-0.4
     elif t<13.0:
         # shot 2: floats closer, polite "Excuse me?" gesture, disappointed
-        u=sm(seg01(t,5.0,6.0)); X=jx_walk(t)-lerp(0.78,0.62,u); yaw=PI-0.6
+        u=sm(seg01(t,5.0,6.0)); X=jx_walk(t)-lerp(1.15,0.95,u); yaw=PI-0.6
         st['hyaw']=-0.5
         g=sm(seg01(t,5.3,5.9))*(1-sm(seg01(t,7.3,7.7)))
         arms[1]=(0.9*g,0.1+1.0*g+0.1*math.sin(t*8)*g)                                 # tiny whisper gesture: hand up beside the mouth
@@ -227,14 +226,14 @@ def ghost_state(t):
         dr=sm(seg01(t,7.7,8.5)); st['lean']=-0.25*dr; st['squash']=0.12*dr; st['eye']=1.0-0.35*dr; X=X-0.06*dr
     elif t<21.0:
         # shot 3: moves beside the wall and knocks three times
-        u=sm(seg01(t,13.3,14.8)); Z=0.75*(1-sm(seg01(t,19.2,20.9)))+0.3*sm(seg01(t,19.2,20.9)); X=gx_follow(t)+0.0 if t<13.0 else jx_walk(t)-lerp(0.7,0.95,u)
-        yaw=lerp(PI-0.6,PI-0.75,u); st['hyaw']=0.3*u
+        u=sm(seg01(t,13.3,14.8)); Z=lerp(0.75,0.88,u)*(1-sm(seg01(t,19.2,20.9)))+0.3*sm(seg01(t,19.2,20.9)); X=jx_walk(t)-lerp(1.01,1.0,u)
+        yaw=lerp(PI-0.6,PI-0.3,u); st['hyaw']=0.0
         k=0.0
         for tk in T_KNOCK:
             k=max(k,math.sin(PI*seg01(t,tk-0.12,tk+0.14)))
         # the arm toward the wall (character's LEFT, local -x) hammers
-        arms[0]=(0.0,1.15+0.35*k) if 14.6<t<16.8 else (0.0,0.1)
-        arms[0]=(-0.2*k,1.25-0.4*k) if 14.6<t<16.8 else arms[0]
+        up=sm(seg01(t,14.55,14.9))*(1-sm(seg01(t,16.5,16.9)))                         # screen-left arm (away from the lantern) raised against the wall, taps 3x
+        arms[1]=(lerp(0.0,-0.35-0.25*k,up),lerp(0.1,2.25-0.3*k,up))
         if 16.4<t<18.3: st['eye']=1.35; st['mouth']='happy'; arms[1]=(0.0,0.3+0.2*math.sin(t*6));
         if t>=18.3:
             dr=sm(seg01(t,18.9,19.6)); st['eye']=lerp(1.35,0.7,dr); st['mouth']='neutral'; st['lean']=-0.2*dr
@@ -269,7 +268,7 @@ def ghost_state(t):
         yaw=lerp(PI-0.35,PI-0.7,sm(seg01(t,42.9,43.6))); st['hyaw']=0.0
         st['hover']=0.14+0.05*math.sin(t*2.2)+0.12*math.sin(PI*b)
         if t>=43.0:
-            rr=sm(seg01(t,43.1,43.7)); arms=[(0.2*rr,0.1+2.9*rr),(0.2*rr,0.1+2.9*rr)]; st['eye']=1.5; st['mouth']='afraid' if t<43.95 else 'happy'
+            rr=sm(seg01(t,43.1,43.7)); arms=[(-0.15*rr,0.1+2.6*rr),(-0.15*rr,0.1+2.6*rr)]; st['eye']=1.5; st['mouth']='afraid' if t<43.95 else 'happy'
         if t<42.9 and t>=38.3: st['tremble']=0.5; st['mouth']='afraid'; st['eye']=1.2
         if t>=T_BOO:
             lu=math.sin(PI*seg01(t,T_BOO,T_BOO+0.32)); X=XS-1.0+0.14*lu; st['mouth']='afraid'; st['eye']=1.7; st['squash']=-0.08*lu
@@ -296,7 +295,7 @@ def ghost_state(t):
         st['closed']=t>=56.6 and not (58.9<=t<59.1)
         st['hyaw']=-0.3*(1-rest)
         X=-2.55-0.0*rest
-    st['hyaw']=max(PI-0.3,min(PI+0.3,yaw+st['hyaw']))-yaw                              # the face always stays turned toward the camera side
+    st['hyaw']=max(PI-0.6,min(PI+0.6,yaw+st['hyaw']))-yaw                              # the face always stays turned toward the camera side
     st.update(base=(X,0.0,Z),yaw=yaw,arms=(tuple(arms[0]),tuple(arms[1])))
     st['shade']=0.0
     return st
@@ -325,7 +324,7 @@ def lantern_state(t):
 def cam_shot(t):
     """A: static medium-wide, follows the janitor's walk with a constant-velocity glide in shots 1-3 | B: ghost medium close-up | C: low static"""
     if t<21.0:
-        cx=jx_walk(t)-0.45; return (cx,0.95,-3.4),(cx,0.62,0.0),32.0
+        cx=jx_walk(t)-0.6; return (cx,0.95,-3.4),(cx,0.62,0.0),32.0
     if t<38.0: cx=-2.15; return (cx,0.85,-2.8),(cx,0.50,0.0),32.0
     if t<53.0: cx=-2.45; return (cx,0.95,-3.4),(cx,0.62,0.0),32.0
     return (-2.3,0.45,-3.0),(-2.3,0.50,0.0),32.0
@@ -360,8 +359,8 @@ def render(t):
 ACC=(255,214,70); WHT=(244,240,228)
 HIL={'BOO':1,"'BOO'":1,"'BOO'?":1,"'BOO'.":1,'LANTERN':1,'LANTERN.':1,'PANICKED.':1,'PANICKED':1,'DARK.':1,'DARK':1,'NIGHTLIGHT.':1,'NIGHTLIGHT':1,"BOO'":1}
 LINES=[('N1',0.15,'Why do ghosts always say \'boo\'?'),('N2',2.75,'This little ghost had a problem.'),('G1',6.0,'Excuse me?'),('N3',8.0,'He tried asking nicely. Nobody listened.'),
-       ('N4',14.0,'So he tried knocking. Still nothing.'),('N5',22.3,'Then the lantern flickered... and the ghost panicked.'),('N6',30.2,"He wasn't trying to haunt anyone. He just hated the dark."),
-       ('N7',40.8,'So he tried one last thing...'),('G2',44.0,'BOO!'),('N8',47.0,'The janitor ran... and left his lantern behind.'),('N9',53.2,"Turns out, 'boo' wasn't a threat."),('N10',57.0,'He just wanted a nightlight.')]
+       ('N4a',13.3,'So he tried knocking.'),('N4b',18.2,'Still nothing.'),('N5',22.3,'Then the lantern flickered... and the ghost panicked.'),('N6',31.2,"He wasn't trying to haunt anyone. He just hated the dark."),
+       ('N7',39.2,'So he tried one last thing...'),('G2',44.0,'BOO!'),('N8',47.0,'The janitor ran... and left his lantern behind.'),('N9',53.2,"Turns out, 'boo' wasn't a threat."),('N10',57.0,'He just wanted a nightlight.')]
 def sub_chunks():
     """split every line into short chunks (<= 2 rows of ~15 chars), timed by character share over the measured voice length"""
     out=[]
@@ -400,8 +399,17 @@ def ui(d,t):
     if 44.3<=t<46.0 and int(t*12)%2==0 or 44.3<=t<44.8: ui_box(d,['SCARE','SUCCESS!'],8,ACC)
     if 57.4<=t<60.0:
         pulse=1 if int(t*6)%2 else 0; ui_box(d,['NIGHTLIGHT','UNLOCKED'],8,(255,226,120) if pulse else ACC)
+def knock_marks(d,t,gs,cam,fov):
+    for tk in T_KNOCK:
+        u=(t-tk)/0.22
+        if 0<=u<1:
+            h=ghost_hand(gs,1); pr=R.project(tuple(h),R.view(cam,fov))
+            if not pr: continue
+            r=3+6*u; c=(int(220*(1-u)+60),int(220*(1-u)+60),int(255*(1-u)+80))
+            for ang in range(0,360,45):
+                a=math.radians(ang); x0,y0=pr[0]+math.cos(a)*r*0.5,pr[1]+math.sin(a)*r*0.5; d.line([x0,y0,pr[0]+math.cos(a)*r,pr[1]+math.sin(a)*r],fill=c,width=1)
 def frame(t):
-    img,gs,js,ls,cam,fov=render(t); d=ImageDraw.Draw(img)
+    img,gs,js,ls,cam,fov=render(t); d=ImageDraw.Draw(img); knock_marks(d,t,gs,cam,fov)
     if t>=60.0-1e-9: return Image.new('RGB',(W,H),(0,0,0))
     ui(d,t); subtitles(d,t); return img
 
@@ -453,6 +461,8 @@ def _steps_walk():
         i=int(np.searchsorted(_CUM,d)); ev.append(float(_TS[min(i,len(_TS)-1)])); k+=1
     return [t for t in ev if t<46.0]
 def build_audio(path):
+    """mix: synthesized retro mystery music (never drops out), corridor bed, foley, NON-VERBAL ghost noises that fill every gap
+    (no extra dialogue), retro UI sounds, then the voices. The BOO gets a clear window: everything else ducks under it and the sting follows it."""
     import soundfile as _sf
     s=Sound(DUR,loop=False,seed=61); sr=s.sr; n=s.n; M=np.zeros(n); AMB=np.zeros(n); X=np.zeros(n)
     def hz(m): return 440*2**((m-69)/12)
@@ -460,65 +470,119 @@ def build_audio(path):
         tt=s.T(d); f=hz(m); ph=2*np.pi*f*tt
         x={'sin':np.sin(ph),'tri':(2/np.pi)*np.arcsin(np.sin(ph)),'bell':np.sin(ph)+0.35*np.sin(2*ph)+0.12*np.sin(3.01*ph),'saw':sum(np.sin(ph*(k+1))/(k+1) for k in range(5))*0.6,'sq':np.sign(np.sin(ph))*0.5}[wave]
         env=np.minimum(1,tt/att)*np.exp(-tt*dec); i=int(t0*sr); j=min(n,i+len(tt)); buf[i:j]+=(x*env*v)[:j-i]
-    def tone(t0,f0,f1,d,v,vib=0.0,harm=(1.0,0.5,0.25),att=0.01,dec=0.0):
-        tt=s.T(d); fr=f0+(f1-f0)*(tt/d); fr=fr*(1+vib*np.sin(2*np.pi*7*tt)); ph=np.cumsum(fr)/sr
-        x=sum(h*np.sin(2*np.pi*ph*(k+1)) for k,h in enumerate(harm)); env=np.minimum(1,tt/att)*np.sin(np.pi*np.clip(tt/d,0,1))**0.6*np.exp(-tt*dec); s.place(x*env,t0,v)
+    def tone(t0,f0,f1,d,v,vib=0.0,harm=(1.0,0.5,0.25),att=0.01,dec=0.0,buf=None,vr=7.0):
+        tt=s.T(d); fr=f0+(f1-f0)*(tt/d); fr=fr*(1+vib*np.sin(2*np.pi*vr*tt)); ph=np.cumsum(fr)/sr
+        x=sum(h*np.sin(2*np.pi*ph*(k+1)) for k,h in enumerate(harm)); env=np.minimum(1,tt/att)*np.sin(np.pi*np.clip(tt/d,0,1))**0.6*np.exp(-tt*dec)
+        if buf is None: s.place(x*env,t0,v)
+        else: i=int(t0*sr); j=min(n,i+len(tt)); buf[i:j]+=(x*env*v)[:j-i]
     def nb(t0,d,lo,hi,v,seed,shape=2): s.place(s.filt_short(s.noise(d,seed),lo=lo,hi=hi)*np.sin(np.pi*s.T(d)/d)**shape,t0,v)
     def thud(t0,f=70,v=0.1,d=0.2): tt=s.T(d); s.place(np.sin(2*np.pi*f*tt*(1-0.3*tt/d))*np.exp(-tt*16),t0,v)
-    def step(t0,v=0.045,seed=0): thud(t0,85,v,0.12); nb(t0+0.005,0.06,600,3200,v*0.6,seed,1)
-    def knock(t0,v=0.22): tt=s.T(0.22); s.place((np.sin(2*np.pi*150*tt)+0.5*np.sin(2*np.pi*310*tt))*np.exp(-tt*26),t0,v); nb(t0,0.03,800,4000,v*0.4,int(t0*77),1)
-    def zap(t0,d,v=0.05): tt=s.T(d); s.place(np.sign(np.sin(2*np.pi*(110+400*np.random.default_rng(int(t0*10)).random())*tt))*np.exp(-tt*18)*np.abs(s.noise(d,int(t0*13))),t0,v)
-    # --- ambience: dark corridor bed, distant drips ---
-    AMB+=s.filt(s.rng.normal(0,1,n),lo=40,hi=300)*0.05+s.filt(s.rng.normal(0,1,n),lo=1800,hi=5000)*0.002
-    for tt0 in (2.3,7.7,12.6,18.4,26.2,33.5,36.9,49.2,52.0): tt=s.T(0.18); s.place(np.sin(2*np.pi*(1500-900*tt/0.18)*tt)*np.exp(-tt*30),tt0,0.012)
-    # --- music: A-minor pizzicato (playful suspense) ---
-    B=0.6; bass=[45,45,52,45,48,48,43,47]; mel=[69,72,76,72,71,67,69,0]
-    for k in range(int(21/ (B/2))):
-        t0=0.1+k*B/2; 
-        if t0>=21: break
-        note(M,t0,bass[(k//1)%8]+0,0.5,0.045,'tri',5.0) if k%2==0 else None
-        m=mel[(k//1)%8]
-        if m and k%2==1: note(M,t0,m,0.3,0.02,'bell',7.0)
-    # 21-38 darker: drone + tremolo pad + tritone stabs, with the flicker moments
-    for k in range(int(17/1.2)): t0=21+k*1.2; note(M,t0,38 if k%2==0 else 39,1.2,0.04,'sin',1.2,0.2); note(M,t0+0.6,57 if k%3 else 56,0.5,0.014,'bell',4.0)
-    tone(21,70,70,17,0.03,vib=0.01,harm=(1.0,0.6,0.4),att=1.5)
-    # 38-46 comic tension: ascending chromatic ostinato that speeds up, then the sting
-    t0=38.0; k=0; m0=45
-    while t0<44.0: note(M,t0,m0+(k%12)*0.5*2,0.12,0.03,'sq',14.0); note(M,t0,m0+12+(k%12),0.1,0.012,'bell',14.0); t0+=lerp(0.34,0.1,(t0-38)/6); k+=1
-    for m in (57,60,63,66): note(M,44.0,m,0.5,0.05,'saw',3.5,0.003)                                           # diminished-chord sting
-    thud(44.0,60,0.35,0.5); nb(44.0,0.4,500,5000,0.08,901,0.7)
-    for i,m in enumerate((55,53,51,48)): note(M,44.7+i*0.2,m,0.35,0.03,'sq',4.0)                              # comic wah-wah: the janitor flees
-    # 46-53: lighter tiptoe, the ghost approaches
-    for k in range(int(7/0.5)): t0=46.3+k*0.5; note(M,t0,52+[0,3,7,3][k%4],0.3,0.02,'bell',6.0); note(M,t0,40 if k%2==0 else 47,0.4,0.03,'tri',5.0) if k%2==0 else None
-    # 53-60: warm major, gentle music box + pad, resolving chord
-    for k,m in enumerate((72,76,79,84,79,76,72,76,79,84,88,84)): note(M,53.2+k*0.4,m,1.0,0.03,'bell',2.6)
-    for m in (48,55,60,64): note(M,53.0,m,4.4,0.02,'sin',0.5,0.6)
-    for m in (48,55,60,64,67,72): note(M,57.5,m,2.5,0.028,'sin',0.9,0.01)
-    # --- sfx ---
-    for i,t0 in enumerate(_steps_walk()): step(t0,0.035,i)
-    for i,t0 in enumerate((46.12,46.34,46.62,46.8,46.99,47.17)): step(t0,0.07,200+i)
+    def step(t0,v=0.06,seed=0): thud(t0,85,v,0.12); nb(t0+0.005,0.06,600,3200,v*0.6,seed,1)
+    def knock(t0,v=0.3): tt=s.T(0.25); s.place((np.sin(2*np.pi*150*tt)+0.5*np.sin(2*np.pi*310*tt))*np.exp(-tt*24),t0,v); nb(t0,0.03,800,4000,v*0.4,int(t0*77),1)
+    def zap(t0,d,v=0.08): tt=s.T(d); s.place(np.sign(np.sin(2*np.pi*(110+400*np.random.default_rng(int(t0*10)).random())*tt))*np.exp(-tt*18)*np.abs(s.noise(d,int(t0*13))),t0,v)
+    # ---- ghost: small non-verbal voice (formant-ish 'oo' tones), always soft ----
+    def oo(t0,f0,f1,d,v=0.06,vib=0.03): tone(t0,f0,f1,d,v,vib=vib,harm=(1.0,0.45,0.18,0.06),att=0.04)
+    def squeak(t0,v=0.06): tone(t0,1200,2600,0.1,v,harm=(1.0,0.4),att=0.004); tone(t0+0.11,2600,1800,0.1,v*0.8,harm=(1.0,0.4),att=0.004)
+    def sigh(t0,d=0.7,v=0.05): nb(t0,d,300,2200,v,int(t0*31),1.2); oo(t0+0.05,520,360,d*0.8,v*0.6,0.01)
+    def breath_in(t0,d=0.5,v=0.04): nb(t0,d,900,5000,v,int(t0*37),0.8)
+    def whoosh(t0,d=0.45,v=0.07):
+        x=s.noise(d,int(t0*41)); tt=s.T(d); y=np.zeros_like(x)
+        for k_,(lo,hi) in enumerate(((300,900),(600,1800),(1200,3600))): y+=s.filt_short(x,lo=lo,hi=hi)*np.exp(-((tt/d-0.25-0.25*k_)**2)/0.02)
+        s.place(y*np.sin(np.pi*tt/d),t0,v)
+    def chirp(t0,v=0.06,up=True): tone(t0,700 if up else 1100,1100 if up else 700,0.16,v,harm=(1.0,0.4,0.15),att=0.01)
+    def ui_fail(t0): [note(X,t0+i*0.16,m,0.22,0.05,'sq',6.0) for i,m in enumerate((67,63,58))]
+    def ui_success(t0): [note(X,t0+i*0.07,m,0.3,0.045,'sq',5.0) for i,m in enumerate((72,76,79,84))]
+    # ---- corridor bed: low air + distant drips + soft wind swell ----
+    AMB+=s.filt(s.rng.normal(0,1,n),lo=40,hi=300)*0.07+s.filt(s.rng.normal(0,1,n),lo=1800,hi=5000)*0.003
+    for tt0 in (2.3,7.7,12.6,18.4,20.3,26.2,29.4,33.5,36.9,41.6,49.2,52.0,55.6): tt=s.T(0.18); s.place(np.sin(2*np.pi*(1500-900*tt/0.18)*tt)*np.exp(-tt*30),tt0,0.02)
+    # ---- lantern hum: a soft warm buzz whenever the lantern is lit and on screen (drops out on each flicker) ----
+    tt=s.t; hum=(np.sin(2*np.pi*120*tt)+0.4*np.sin(2*np.pi*240*tt)+0.15*np.sin(2*np.pi*360*tt))*(1+0.25*np.sin(2*np.pi*0.8*tt))
+    g=np.ones(n)*0.010
+    for a_,b_ in T_FLICK: g[int(a_*sr):int(b_*sr)]=0
+    g[int(21.0*sr):int(38.0*sr)]*=1.8                                                          # close-up: louder
+    g[int(53.0*sr):]*=1.6
+    AMB+=hum*np.convolve(g,np.ones(480)/480,'same')
+    # ================= MUSIC (continuous, 100 bpm) =================
+    B=0.6
+    # 0-21: playful suspense: walking pizzicato bass, bell motif, soft hats
+    bass=[45,48,52,48,45,47,52,47, 41,45,48,45,40,44,47,44]; mel=[76,0,72,74,76,0,79,77, 76,0,72,71,69,0,0,0]
+    for k in range(int(21/(B/2))):
+        t0=0.05+k*B/2
+        if k%2==0: note(M,t0,bass[(k//2)%16],0.5,0.06,'tri',5.0)
+        m=mel[k%16]
+        if m: note(M,t0,m,0.4,0.026,'bell',6.0)
+        nb(t0,0.03,6000,12000,0.006 if k%2 else 0.004,500+k,1)
+    # 21-38: darker: slow minor pulse + tremolo pad + heartbeat while it panics
+    for k in range(int(17/(B))): t0=21+k*B; note(M,t0,[38,38,41,40][(k//2)%4],0.55,0.06,'tri',3.5)
+    pad=np.zeros(n); tone(21.0,hz(50),hz(50),17.0,0.03,vib=0.004,harm=(1.0,0.5,0.3),att=1.0,buf=pad)
+    tone(21.0,hz(53),hz(53),17.0,0.022,vib=0.004,harm=(1.0,0.4),att=1.5,buf=pad); trem=1+0.35*np.sin(2*np.pi*5*s.t); M+=pad*trem
+    for t0 in np.arange(23.2,26.6,0.5): thud(t0,55,0.07,0.15); thud(t0+0.16,50,0.05,0.12)
+    for k,m in enumerate((69,72,76,74,72,69,68,0,69,72,76,79,77,76,74,0)):
+        if m and 30.0+k*0.5<38.0: note(M,30.0+k*0.5,m,0.5,0.018,'bell',4.0)
+    # 38-44: comic tension: chromatic ostinato that speeds up
+    t0=38.0; k=0
+    while t0<43.95: note(M,t0,45+(k%12),0.12,0.035,'sq',14.0); note(M,t0,57+(k%12),0.1,0.014,'bell',14.0); t0+=lerp(0.34,0.09,(t0-38)/6); k+=1
+    tone(41.5,80,160,2.45,0.03,harm=(1.0,0.5),att=0.3)                                                       # rising swell into the scare
+    # 44.0-44.72: SILENT window for the BOO (only the voice). Sting right after it
+    for m in (57,60,63,66): note(M,44.72,m,0.5,0.05,'saw',3.5,0.003)
+    thud(44.72,60,0.3,0.5); nb(44.72,0.4,500,5000,0.07,901,0.7)
+    for i,m in enumerate((55,53,51,48)): note(M,45.0+i*0.22,m,0.35,0.035,'sq',4.0)                             # comic wah-wah
+    # 46-53: tiptoe (the ghost approaches)
+    for k in range(int(7/0.3)):
+        t0=46.3+k*0.3
+        if k%2==0: note(M,t0,[40,47,45,47][(k//2)%4],0.35,0.05,'tri',5.0)
+        if k%4==1: note(M,t0,[64,67,71,72][(k//4)%4],0.3,0.025,'bell',6.0)
+    # 53-60: warm major music box + pad, resolving chord
+    for k,m in enumerate((72,76,79,84,79,76,72,76,79,84,88,84,91)): note(M,53.1+k*0.35,m,1.0,0.034,'bell',2.6)
+    for m in (48,55,60,64): note(M,53.0,m,4.6,0.025,'sin',0.5,0.6)
+    for m in (48,55,60,64,67,72): note(M,57.5,m,2.5,0.032,'sin',0.9,0.01)
+    # ================= SFX / FOLEY =================
+    for i,t0 in enumerate(_steps_walk()): step(t0,0.06,i)
+    for i,t0 in enumerate((46.12,46.34,46.62,46.8,46.99,47.17)): step(t0,0.09,200+i)
     for t0 in T_KNOCK: knock(t0)
-    for a,b in T_FLICK: zap(a,0.1,0.07); zap(b,0.14,0.07); nb(a,b-a,2500,9000,0.015,int(a*7),1)
-    tone(23.3,1200,2600,0.1,0.05,harm=(1.0,0.4),att=0.004); tone(23.42,2600,1800,0.1,0.04,harm=(1.0,0.4),att=0.004)  # tiny frightened squeak
-    tone(24.5,1300,2400,0.09,0.04,harm=(1.0,0.4),att=0.004)
-    tone(44.3,170,110,0.3,0.1,harm=(1.0,0.6,0.3),att=0.01)                                                           # janitor's startled 'uh!'
-    thud(45.0,70,0.1,0.2); nb(44.3,0.5,200,1800,0.03,909,1)                                                          # landing / clothes rustle
-    tt=s.T(0.35); s.place((np.sin(2*np.pi*1900*tt)+0.6*np.sin(2*np.pi*2870*tt))*np.exp(-tt*22),46.0,0.08); thud(46.0,60,0.1,0.15)   # lantern resting on the floor: tin clink
-    tt=s.T(0.3); s.place((np.sin(2*np.pi*1400*tt)+0.5*np.sin(2*np.pi*2100*tt))*np.exp(-tt*16),54.5,0.03)               # lantern lifted
-    for i,m in enumerate((84,88,91,96)): note(X,57.5+i*0.09,m,0.9,0.05,'bell',3.0)                                    # tiny happy UI chime
-    note(X,57.5,100,1.2,0.03,'bell',3.5)
+    for a_,b_ in T_FLICK: zap(a_,0.1); zap(b_,0.14); nb(a_,b_-a_,2500,9000,0.02,int(a_*7),1)
+    tone(44.78,170,110,0.3,0.1,harm=(1.0,0.6,0.3),att=0.01)                                                          # janitor 'uh!' (after the BOO)
+    thud(45.05,70,0.12,0.2); nb(44.78,0.45,200,1800,0.035,909,1)
+    tt=s.T(0.35); s.place((np.sin(2*np.pi*1900*tt)+0.6*np.sin(2*np.pi*2870*tt))*np.exp(-tt*22),46.0,0.1); thud(46.0,60,0.12,0.15)  # lantern on the floor
+    tt=s.T(0.3); s.place((np.sin(2*np.pi*1400*tt)+0.5*np.sin(2*np.pi*2100*tt))*np.exp(-tt*16),54.05,0.05)              # lifted
+    tt=s.T(0.3); s.place((np.sin(2*np.pi*1700*tt)+0.5*np.sin(2*np.pi*2500*tt))*np.exp(-tt*20),55.95,0.06); thud(55.95,90,0.05,0.1)  # set down
+    # ghost: floating shimmer while it moves, and its little noises (no words) in every gap
+    for t0 in (0.0,5.0,13.3,42.9,48.6): whoosh(t0,0.6,0.05)
+    oo(0.7,420,520,0.6,0.045); chirp(3.6,0.05)                                       # hum, then a small 'hm!' as it raises its hand
+    oo(7.4,620,420,0.7,0.06,0.05)                                                     # disappointed 'aww'
+    sigh(11.6,0.8,0.05); oo(12.5,380,330,0.5,0.035)
+    chirp(16.55,0.065); chirp(16.8,0.05)                                              # hopeful 'oh! oh!'
+    sigh(19.2,0.9,0.06); oo(20.2,400,350,0.6,0.035)
+    squeak(23.25,0.07); squeak(24.45,0.06)
+    oo(24.8,700,760,1.2,0.04,0.09); oo(25.5,760,700,0.9,0.035,0.1)                   # trembling whimper
+    sigh(26.65,0.8,0.06); oo(27.6,480,620,0.5,0.045); oo(28.3,560,640,0.45,0.04)      # relieved, then a happy little 'mm-mm'
+    oo(29.2,600,520,0.5,0.03)
+    oo(30.4,520,470,1.0,0.04,0.08)                                                    # uneasy whimper at the dark corner
+    chirp(32.9,0.05)                                                                  # sees the lantern again
+    oo(34.1,450,700,0.9,0.045)                                                        # reaching 'nnngh'
+    oo(35.6,600,420,0.6,0.04)                                                         # lowers its arms
+    breath_in(36.4,0.9,0.06)                                                          # gathers courage
+    oo(38.4,560,520,1.4,0.035,0.08); breath_in(42.2,0.5,0.045); breath_in(43.3,0.6,0.06)
+    chirp(47.4,0.06,False); oo(47.7,500,760,0.5,0.045)                                # surprised 'oh?'
+    oo(49.6,480,560,0.5,0.035); oo(51.0,520,600,0.5,0.035); oo(52.3,560,700,0.6,0.04)
+    oo(53.5,480,600,0.35,0.045); oo(54.1,500,620,0.4,0.05)                            # 'hup' lifting
+    oo(56.1,600,700,0.6,0.045); sigh(56.9,1.0,0.045); oo(58.8,560,620,0.7,0.035)      # contented hum, sleepy sigh
+    ui_fail(10.6); ui_fail(19.0); ui_success(44.95)
+    for i,m in enumerate((84,88,91,96)): note(X,57.45+i*0.09,m,0.9,0.06,'bell',3.0)    # happy UI chime
+    note(X,57.45,100,1.2,0.035,'bell',3.5)
     s.L+=AMB; s.R+=np.roll(AMB,900)
-    # --- voices (duck the music under them) ---
+    # ================= VOICES =================
     NB=np.zeros(n); duck=np.ones(n)
     for key,t0,_ in LINES:
         a,ar=_sf.read(os.path.join(TTS_DIR,'gb',key+'.wav')); a=a if a.ndim==1 else a.mean(1)
-        act=a[np.abs(a)>0.02]; g=0.2/(np.sqrt((act**2).mean())+1e-9)*(0.8 if key=='G2' else 1.0); a=a*g
-        i=int(t0*sr); j=min(n,i+len(a)); NB[i:j]+=a[:j-i]; duck[max(0,i-int(0.08*sr)):min(n,j+int(0.15*sr))]=0.45
+        act=a[np.abs(a)>0.02]; g=0.2/(np.sqrt((act**2).mean())+1e-9)*{'G2':1.35,'G1':1.1}.get(key,1.0); a=a*g
+        i=int(t0*sr); j=min(n,i+len(a)); NB[i:j]+=a[:j-i]; duck[max(0,i-int(0.08*sr)):min(n,j+int(0.15*sr))]=0.6
     duck=np.convolve(duck,np.ones(2400)/2400,'same')
-    s.L+=M*duck*2.0+X; s.R+=np.roll(M,300)*duck*2.0+X
+    s.L+=M*duck*3.4+X; s.R+=np.roll(M,300)*duck*3.4+X
     s.reverb(0.12,length=1.0,decay=4.0)
-    pk=max(np.abs(s.L).max(),np.abs(s.R).max()); gv=pk/np.abs(NB).max()*0.9
-    s.L=s.L*(0.75+0.25*duck)+NB*gv; s.R=s.R*(0.75+0.25*duck)+NB*gv
+    clear=np.ones(n); clear[int(43.95*sr):int(44.72*sr)]=0.2; clear=np.convolve(clear,np.ones(960)/960,'same')         # the BOO window
+    pk=max(np.abs(s.L).max(),np.abs(s.R).max()); gv=pk/np.abs(NB).max()*0.95
+    s.L=s.L*clear*(0.8+0.2*duck)+NB*gv; s.R=s.R*clear*(0.8+0.2*duck)+NB*gv
     st=np.stack([s.L,s.R],1); k=int(0.05*sr); st[-k:]*=np.linspace(1,0,k)[:,None]
     st=st/np.max(np.abs(st))*0.9; _sf.write(path,st,sr,subtype='PCM_16'); return path
 if __name__=='__main__' and os.environ.get('PART')=='audio':
