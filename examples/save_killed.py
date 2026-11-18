@@ -60,6 +60,17 @@ T_CONF=we('8',1)-0.05; T_WIPE=T0['9']-LEAD; T_WIPED=we('9',0)
 T_NEW=ws('9',1)-LEAD                          # "He survived."  -> NEW GAME, HP 100
 T_BOSS=ws('9',2)+0.3-LEAD                     # "The final BOSS got a second chance."
 CUTS=[0.0,ws('3',1)-0.05,T0['5']-0.1,PAUSE,DUR]               # 4 cameras, 3 hard cuts
+# named beat times (a variant, e.g. save_killed_15.py, overrides these; None = beat not in that cut)
+VOICE_DIR='sk'
+WALK_AWAY=True                                # odd loops: tries to step away from the crystal
+T_REACH=T_SAVE                                # hand arrives at the crystal (<=0: already on it in frame 0)
+T_SAVING=None                                 # start of a SAVING... progress bar (None = instant save)
+T_LOOK=ws('4',1)-LEAD                         # "And the poison was still there": looks himself over
+T_STILL=(ws('4',1)-LEAD,we('4',1))            # POISON: STILL ACTIVE label
+T_TOOSLOW=(ws('5',3)-LEAD,D[2])
+T_WAIT=(ws('6',0)-LEAD,ws('6',1)+0.6)
+T_PANEL=T0['7']-LEAD                          # save file panel
+T_HL=ws('7',0)+1.45-LEAD                      # "...saved his POISON too": highlight HP + POISON
 SAVED_LVL=0.14                                # the poison bar at the moment of the save (= what every respawn restores)
 def life_index(t):
     """-1 before the first death; k = in life after respawn k-1 ... (None while dead)"""
@@ -142,7 +153,7 @@ def kstate(t):
     breathe=0.03*math.sin(t*2.2)
     if t>=PAUSE and t<T_NEW: t=PAUSE                                   # paused: frozen
     if t<D[0]:                                                         # hook: reaches for the crystal, saves, stands
-        u=sm(seg01(t,-1.2,T_SAVE))
+        u=sm(seg01(t,-1.2,T_REACH)) if T_REACH>0 else 1.0
         d['rh']=lerp3((0.22,1.02,0.32),(0.06,1.3,0.62),u) if t<T_SAVE+0.5 else lerp3((0.06,1.3,0.62),(0.27,0.86,0.04),sm(seg01(t,T_SAVE+0.5,T_SAVE+1.0)))
         d['lean']=0.08*u+breathe; d['head']=-0.15
         if t>D[0]-0.7: d['lean']=0.15+0.08*math.sin(t*30)*(1-seg01(t,D[0]-0.7,D[0]))   # poison shudder
@@ -156,11 +167,11 @@ def kstate(t):
     tr=R[li]
     if li==0:                                                          # first respawn: looks himself over, then runs
         d['lean']=0.12+breathe
-        if t>=ws('4',1)-LEAD: d['head']=0.5*math.sin(PI*seg01(t,ws('4',1)-LEAD,ws('4',1)+1.4))
-        if t>=T_RUN:
+        if T_LOOK is not None and t>=T_LOOK: d['head']=0.5*math.sin(PI*seg01(t,T_LOOK,T_LOOK+1.4+LEAD))
+        if T_RUN is not None and t>=T_RUN:
             u=seg01(t,T_RUN,D[1]); yaw=lerp(Y_C,-PI,sm(seg01(t,T_RUN,T_RUN+0.35))); base=lerp3(P_SAVE,RUN_END,min(1.0,max(0.0,(t-T_RUN-0.08)/(D[1]-T_RUN-0.08))))
             d.update(run=1.0,walk=t*14,lean=0.0)
-    elif li==1:                                                        # the potion: walks over, crouches, reaches - too slow
+    elif li==1 and T_POT is not None:                                  # the potion: walks over, crouches, reaches - too slow
         if t<T_POT: d['lean']=0.1
         else:
             u=seg01(t,T_POT,T_POT+0.75); base=lerp3(P_SAVE,STAND_POT,sm(u))
@@ -168,7 +179,7 @@ def kstate(t):
             c=sm(seg01(t,T_POT+0.7,T_POT+1.25)); d.update(sit=0.4*c,lean=0.55*c,rh=lerp3((0.27,0.86,0.04),(0.1,0.6,0.66),c))
     else:                                                              # later loops: stands, stares at the crystal, tries to step away
         d['lean']=0.1+breathe; d['head']=0.35*sm(seg01(t,tr+0.3,tr+0.9))
-        if li%2==1:
+        if li%2==1 and WALK_AWAY:
             u=seg01(t,tr+0.9,tr+1.9); yaw=lerp(Y_C,-PI,sm(seg01(t,tr+0.8,tr+1.15))); base=lerp3(P_SAVE,(0.0,0.0,6.1),sm(u)); d['walk']=t*8 if 0<u<1 else 0.0
     if t>=T_NEW:                                                       # new game: stands up straight ... then the shoulders drop
         d.update(lean=0.0,head=0.0,rh=None,lh=None)
@@ -257,21 +268,22 @@ def hud(d,t):
     k=dead_at(t)
     if k is not None and t>=D[k]+0.35:
         d.rectangle([0,128,W,168],fill=(10,0,0)); ctext(d,'YOU DIED',136,RED,3)
-    if T0['4']<=t<we('4',1) and ws('4',1)-LEAD<=t and int(t*5)%2==0: ctext(d,'POISON: STILL ACTIVE',54,PUR_L,1)
-    if R[0]-F<=t<R[0]+1.6: ctext(d,'RESPAWNED AT SAVE',54 if t<ws('4',1)-LEAD else 66,WHT,1)
-    if ws('5',3)-LEAD<=t<D[2] : ctext(d,'TOO SLOW',112,YEL,2)
-    if ws('6',0)-LEAD<=t<ws('6',1)+0.6: ctext(d,'WAIT.',64,YEL,3)
-    if T0['7']-LEAD<=t<PAUSE: save_panel(d,t)
+    if T_STILL and T_STILL[0]<=t<T_STILL[1] and int(t*5)%2==0: ctext(d,'POISON: STILL ACTIVE',54,PUR_L,1)
+    if R[0]-F<=t<R[0]+1.6: ctext(d,'RESPAWNED AT SAVE',54 if not T_STILL or t<T_STILL[0] else 66,WHT,1)
+    if T_TOOSLOW and T_TOOSLOW[0]<=t<T_TOOSLOW[1]: ctext(d,'TOO SLOW',112,YEL,2)
+    if T_WAIT and T_WAIT[0]<=t<T_WAIT[1]: ctext(d,'WAIT.',64,YEL,3)
+    if T_SAVING is not None and T_SAVING<=t<T_SAVE: saving_bar(d,t)
+    if T_PANEL<=t<PAUSE: save_panel(d,t)
     if PAUSE<=t<T_NEW: pause_menu(d,t)
     if t>=T_NEW: ctext(d,'NEW GAME',62,WHT,2); ctext(d,'PLAYTIME 00:00:00',82,GRAY,1)
     if t>=T_BOSS:
         ctext(d,'BOSS: ALIVE',104,WHT if t<T_BOSS+0.12 else RED,2)
 def save_panel(d,t):
     """what the save file really holds (the replay of the save moment)"""
-    t0=T0['7']-LEAD; x0,y0,x1,y1=20,40,160,132
+    t0=T_PANEL; x0,y0,x1,y1=20,40,160,132
     d.rectangle([x0,y0,x1,y1],fill=(18,10,28),outline=PUR_L); ctext(d,'SAVE FILE 1',y0+5,PUR_L,1)
     rows=[('BOSS DEFEATED',GOLD),('PLAYTIME 30:12:45',WHT),('HP 1/100',RED),('POISON ACTIVE',PUR_L)]
-    hl=ws('7',0)+1.45-LEAD                                              # "...saved his POISON too"
+    hl=T_HL
     for i,(s_,c) in enumerate(rows):
         if t<t0+0.25+0.3*i: continue
         y=y0+20+i*16
@@ -280,6 +292,11 @@ def save_panel(d,t):
             if i==3: otext(d,'>',x0+8,y,YEL)
         ctext(d,s_,y,c,1)
     if t>=hl+0.8: ctext(d,'LOADED EVERY RESPAWN',y1+6,YEL,1)
+def saving_bar(d,t):
+    """hand already on the crystal: the save fills while the poison drains (used by the 15 s cut)"""
+    u=seg01(t,T_SAVING,T_SAVE); y=196
+    d.rectangle([24,y-4,W-24,y+22],fill=(40,14,64),outline=PUR_L); ctext(d,'SAVING'+'.'*(int(t*4)%4),y,WHT,1)
+    d.rectangle([32,y+11,W-32,y+17],outline=GRAY); d.rectangle([33,y+12,33+int((W-66)*u),y+16],fill=PUR_L)
 def pause_menu(d,t):
     x0,y0,x1,y1=26,56,154,168
     d.rectangle([x0,y0,x1,y1],fill=(12,10,16),outline=WHT); ctext(d,'PAUSED',y0+6,WHT,2)
@@ -429,16 +446,18 @@ def build_audio(path):
         for g in range(3):
             q=s.noise(0.03,70+k*3+g); q=np.round(q*2)/2; put(FX,q,r+0.03+g*0.05,0.018)
     # ---- footsteps
-    for k in range(6): step(T_RUN+0.12+k*0.16,0.06,100+k)
-    for k in range(3): step(T_POT+0.1+k*0.25,0.045,120+k)
+    if T_RUN is not None:
+        for k in range(6): step(T_RUN+0.12+k*0.16,0.06,100+k)
+    if T_POT is not None:
+        for k in range(3): step(T_POT+0.1+k*0.25,0.045,120+k)
     for li in range(2,len(R)):
         if li%2==1:
             for k in range(3): step(R[li]+1.0+k*0.32,0.04,140+li*5+k)
     # ---- save file panel: low diagnostic pulse + row blips
-    t7=T0['7']-LEAD
+    t7=T_PANEL
     for k in range(4): tone(t7+0.25+0.3*k,84,0.06,0.03,'sq',dec=30)
     for k in range(7): put(FX,np.sin(2*np.pi*110*s.T(0.35))*np.sin(np.pi*s.T(0.35)/0.35),t7+0.1+0.55*k,0.05)
-    tone(ws('7',0)+1.45-LEAD,64,0.3,0.04,'sq',dec=6); tone(ws('7',0)+1.6-LEAD,61,0.4,0.04,'sq',dec=5)
+    tone(T_HL,64,0.3,0.04,'sq',dec=6); tone(T_HL+0.15,61,0.4,0.04,'sq',dec=5)
     # ---- pause menu
     tone(PAUSE,84,0.08,0.05,'sq',dec=20); tone(PAUSE+0.08,72,0.15,0.05,'sq',dec=12)
     for tc in T_CUR[1:]: tone(tc,88,0.04,0.035,'sq',dec=40)
@@ -454,7 +473,7 @@ def build_audio(path):
     # ---- voice
     NB=np.zeros(n); wins=[]
     for k_,t0 in LINES:
-        a,ar=_sf.read(os.path.join(TTS_DIR,'sk',f'{k_}.wav')); a=a if a.ndim==1 else a.mean(1)
+        a,ar=_sf.read(os.path.join(TTS_DIR,VOICE_DIR,f'{k_}.wav')); a=a if a.ndim==1 else a.mean(1)
         a=np.interp(np.arange(int(len(a)*sr/ar))/sr,np.arange(len(a))/ar,a); put(NB,a,t0); wins.append((t0,t0+len(a)/sr))
     g=duck_envelope(n,sr,wins,-6.0,0.05,0.25); bed=BED*g; fx=FX*(0.55+0.45*g)
     L=bed+fx; R_=np.roll(bed,700)+np.roll(fx,200); pk=max(np.abs(L).max(),np.abs(R_).max()); gv=pk*1.6/np.abs(NB).max()
