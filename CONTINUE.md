@@ -64,6 +64,9 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 ## Tools added after reviewing an outside pipeline (18 Nov)
 - `tools/qa/script_lint.py`, frame scan in `tools/qa/check.py`, `nightkit.motion` glide/creep/dolly/kick, `nightkit.audio.duck_envelope`; details in the last section of PIPELINE.md. Story shape is in CHANNEL_PROMPT.md.
 
+## In progress: The Lightning Missed (series: What Happens Next?)
+- Enes approved a NEW series inside Insert Disc 2 (real science fact + retro-game logic joke; do not repeat old formats). Voice locked (80 words, ~32.8 s), decisions in `briefs/lightning_missed.md`. Next: asset lock (courtyard, shield, poses) -> `examples/lightning_missed.py`.
+
 ## Next steps
 1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
 2. Caption for Loot Restocker (Safe Zone, One Apple and Cat POV captions are done, all three platforms).
