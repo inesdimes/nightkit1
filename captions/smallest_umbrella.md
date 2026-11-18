@@ -1,27 +1,29 @@
-# The Smallest Umbrella — captions (15 s)
+# The Smallest Umbrella — captions (15 s, revised cut)
 
 Source: `examples/umbrella.py` (voice `tools/tts/um.py`, warm female narrator). Fully original procedural animation and sound.
+Narration: "This tiny duck saw a dog freezing in the rain. So he offered his umbrella. There was just one problem... It only covered his nose! So the dog gave him a ride. Best friends!"
 
 ## TikTok
-He had the world's smallest umbrella ☔🐥
-It covered one nose. It was enough. 🐶💛
-Who would you share your umbrella with? 👇
+This tiny duck saw a dog freezing in the rain ☔🐥
+He offered his umbrella. It only covered his nose. 🐶😂
+Best friends! 💛 Who would you share your umbrella with? 👇
 #ps1 #retrogaming #wholesome #cute #duckling #dog #rainyday #lowpoly #pleaseinsertdisc2
 
 ## YouTube Shorts
 **Title:** The Smallest Umbrella ☔🐥
 
 **Description:**
-A tiny duckling. A huge, soaked dog. One very small red umbrella. 🐥🐶
-Kindness doesn't have to be big to be enough.
-A 15-second PS1-style short for rainy days. Would you share yours? 👇
+A tiny duck saw a dog freezing in the rain, so he offered his umbrella.
+There was just one problem… it only covered his nose! 🐶
+So the dog gave him a ride. Best friends. 💛
+A 15-second PS1-style story for rainy days. Would you share yours? 👇
 
 💿 New disc every day — Please Insert Disc 2
 #ps1 #retrogaming #wholesome #cute #lowpoly #shorts #pleaseinsertdisc2
 
 ## Instagram Reels
-The umbrella was too small.
-The kindness wasn't. ☔🐥🐶
+The umbrella only covered his nose.
+The friendship covered everything else. ☔🐥🐶
 
 💿 Tiny stories from retro games that never existed.
 Tag someone who'd share their umbrella 👇

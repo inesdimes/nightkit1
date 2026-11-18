@@ -29,15 +29,16 @@ DROP=(170,205,255)
 
 # ======================= timeline (seconds) =======================
 X_DOG=0.45                                         # the dog's body centre (x), it faces -x
-T_WALK_DUCK=(3.1,4.6); T_RAISE=(4.4,5.3); T_HEADDOWN=(4.6,6.0)
-T_LIE=(9.0,10.2); T_CLIMB=(9.9,11.5); T_RISE=(11.3,12.3); T_WALK=12.3; T_ZOOM=(12.2,14.8)
-BLINKS=[1.9,6.6,8.7]
+T_NOTICE=(0.7,1.3); T_WALK_DUCK=(1.9,3.6); T_RAISE=(3.4,4.4); T_HEADDOWN=(4.4,5.4); T_APPROACH=(6.0,8.4)
+T_LIE=(10.7,11.4); T_CLIMB=(10.8,11.95); T_RISE=(11.9,12.5); T_WALK=12.5; T_CUT=12.1; T_ZOOM=(12.1,14.8)
+BLINKS=[1.2,6.2,10.3]
 DUCK_R=0.21; UP_LEN=0.36
 
 # ======================= LOCKED ASSET: the dog =======================
 POSE={
  'sit':  dict(fsh=0.12,R=(0,0.24,-0.34),F=(0,0.80,0.10),Hc=(0,1.07,0.36),hp=0.0, fp=((-0.13,0.0,0.22),(0.13,0.0,0.22)),hk=((-0.20,0.20,0.02),(0.20,0.20,0.02)),hpw=((-0.15,0.0,0.10),(0.15,0.0,0.10)),tail=(0,0.05,-0.80),ear=0.0),
  'head': dict(fsh=0.12,R=(0,0.24,-0.34),F=(0,0.80,0.10),Hc=(0,0.47,0.40),hp=0.5, fp=((-0.13,0.0,0.22),(0.13,0.0,0.22)),hk=((-0.20,0.20,0.02),(0.20,0.20,0.02)),hpw=((-0.15,0.0,0.10),(0.15,0.0,0.10)),tail=(0,0.05,-0.80),ear=0.0),
+ 'bow':  dict(fsh=0.18,R=(0,0.30,-0.34),F=(0,0.38,0.18),Hc=(0,0.36,0.46),hp=0.25,fp=((-0.22,0.04,0.55),(0.22,0.04,0.55)),hk=((-0.20,0.20,0.02),(0.20,0.20,0.02)),hpw=((-0.15,0.0,0.10),(0.15,0.0,0.10)),tail=(0,0.05,-0.80),ear=0.2),
  'lie':  dict(fsh=0.25,R=(0,0.22,-0.40),F=(0,0.27,0.12),Hc=(0,0.30,0.52),hp=0.2, fp=((-0.30,0.06,0.70),(0.30,0.06,0.70)),hk=((-0.24,0.12,-0.10),(0.24,0.12,-0.10)),hpw=((-0.22,0.0,-0.55),(0.22,0.0,-0.55)),tail=(0,0.06,-0.90),ear=0.1),
  'stand':dict(fsh=0.12,R=(0,0.64,-0.36),F=(0,0.68,0.22),Hc=(0,0.62,0.36),hp=0.6, fp=((-0.12,0.0,0.22),(0.12,0.0,0.22)),hk=((-0.15,0.30,-0.46),(0.15,0.30,-0.46)),hpw=((-0.12,0.0,-0.34),(0.12,0.0,-0.34)),tail=(0,0.88,-0.72),ear=0.0)}
 def mix(a,b,u):
@@ -109,8 +110,11 @@ def duckling(base,yaw,walk=0.0,flap=0.0,hp=0.0,hy=0.0,ut=0.0,ulen=UP_LEN,blink=F
         ph=walk+(0.0 if sx>0 else PI); dz=0.02*math.sin(ph) if walk else 0.0; lf=0.012*max(0.0,math.cos(ph)) if walk else 0.0
         Q+=transform(seg((sx*0.022,0.045,0.0),(sx*0.022,0.008+lf,dz),0.012,c(BEAK),0.012)+box(sx*0.022-0.018,sx*0.022+0.018,lf,lf+0.008,dz-0.012,dz+0.045,c(BEAK)),Wd)
     Q+=box(-0.045,0.045,0.04+bob,0.04+bob+0.075*sq,-0.055,0.05,c(DUCK),xf=Wd)+box(-0.036,0.036,0.04+bob+0.075*sq,0.04+bob+0.09*sq,-0.045,0.04,c(DUCK),xf=Wd)+box(-0.012,0.012,0.09+bob,0.12+bob,-0.075,-0.055,c(DUCK_D),xf=Wd)
+    sxh=1 if math.sin(yaw)>=0 else -1; gp=np.array([0.07*math.sin(yaw),0.075+bob,0.03])
     for sx in (-1,1):                                                                                                                       # wings
-        S=np.array([sx*0.047,0.105+bob,0.0]); f=flap if (sx*math.sin(yaw)>0 or flap>0.9) else 0.15
+        S=np.array([sx*0.047,0.105+bob,0.0])
+        if sx==sxh: Q+=transform(seg(tuple(S),tuple(gp),0.014,c(DUCK_D),0.034),Wd); continue                                             # the near wing holds the umbrella pole
+        f=max(flap,0.15)
         Q+=box(-0.006,0.006,-0.05,0.0,-0.03,0.03,c(DUCK_D),xf=lambda p,S=S,sx=sx,f=f: Wd(S+Rz(sx*f)@np.array(p)))
     HC=np.array([0,0.15+bob,0.04]); Rh=Ry(hy)@Rx(hp)
     def Hd(p): p=np.array(p,float); return Wd(HC+Rh@p)
@@ -161,22 +165,23 @@ def dog_state(t):
     ph=0.0
     if t<T_LIE[0]:
         hl=sm(seg01(t,*T_HEADDOWN)); P=mix(POSE['sit'],POSE['head'],hl)
-        if 8.9<=t<T_LIE[0]: pass
-    elif t<T_RISE[0]:
-        u=sm(seg01(t,*T_LIE)); P=mix(POSE['head'],POSE['lie'],u)
+    elif t<T_RISE[0]:                                                    # a gentle play-bow first (front down), then the hips fold: no collapse
+        a=sm(seg01(t,T_LIE[0],T_LIE[0]+0.4)); b=sm(seg01(t,T_LIE[0]+0.3,T_LIE[1])); P=mix(mix(POSE['head'],POSE['bow'],a),POSE['lie'],b)
     else:
         u=sm(seg01(t,*T_RISE)); P=mix(POSE['lie'],POSE['stand'],u)
+    sniff=0.03*math.sin(t*17)*sm(seg01(t,6.2,6.6))*(1-sm(seg01(t,8.2,8.6)))                    # nose twitch while the umbrella creeps closer
+    P=dict(P,hp=P['hp']+sniff)
     walk=0.0
     if t>=T_WALK: walk=(t-T_WALK)*9.0*sm(seg01(t,T_WALK,T_WALK+0.5))
-    wag=math.sin(t*(3.0 if t<9 else 9.0)) if (t>=8.4) else 0.25*math.sin(t*2.2)
-    shiver=0.004*math.sin(t*34)*(1-sm(seg01(t,2.4,3.0))) if t<3.0 else 0.0
+    wag=math.sin(t*(3.0 if t<10.4 else 9.0)) if (t>=10.4) else 0.25*math.sin(t*2.2)
+    shiver=0.004*math.sin(t*34)*(1-sm(seg01(t,2.0,2.6))) if t<2.6 else 0.0
     blink=any(abs(t-b)<0.1 for b in BLINKS)
-    lid=1.0 if blink else (0.3 if t<8.6 else 0.45)
-    if T_LIE[0]-0.2<=t<T_LIE[1]: lid=max(lid,0.5)
-    smile=sm(seg01(t,8.7,9.2)) if t<T_RISE[0] else 1.0
-    hroll=0.28*math.sin(PI*seg01(t,3.5,4.5))*(1 if t<4.6 else 0)
+    lid=1.0 if blink else (0.3 if t<10.4 else 0.45)
+    if 6.4<=t<8.6: lid=min(lid,0.08)                                       # wide, curious eyes on the umbrella
+    smile=sm(seg01(t,10.4,10.9)) if t<T_RISE[0] else 1.0
+    hroll=0.2*math.sin(PI*seg01(t,3.7,4.5))+0.16*math.sin(PI*seg01(t,10.2,10.9))
     earsw=0.1*math.sin(t*3)+(0.12*math.sin(walk*2) if walk else 0.0)
-    nose_dry=(5.8<=t<T_LIE[0]) or (t>=T_WALK+0.4)
+    nose_dry=(8.4<=t<T_LIE[0]) or (t>=T_WALK+0.4)
     return dict(base=(dog_x(t)+shiver,0.0,0.0),yaw=-PI/2,P=P,walk=walk,wag=wag,lid=lid,smile=smile,hroll=hroll,earsw=earsw,t=t,dry_nose=nose_dry,shade=sm(seg01(t,13.3,14.8)))
 def dog_model(**st):
     return dog(**st)[0]
@@ -189,53 +194,57 @@ def stand_x():
 X_STAND=stand_x()                                                  # duckling stands so the canopy edge covers only the very tip of the nose
 def leg_surface(z):                                                # top of the dog's near foreleg while lying (dog-local z -> y)
     return lerp(0.222,0.192,seg01(z,0.10,0.70))
+X_APP=X_STAND-0.22
 def duck_state(t):
     d=dog_state(t); dx=d['base'][0]
-    st=dict(base=(-0.80,0.0,0.0),yaw=PI/2,walk=0.0,flap=0.2,hp=0.0,hy=0.0,ut=0.0,ulen=UP_LEN,blink=False,beak=0.0,squash=0.0,shade=d['shade'])
-    ut=0.25*sm(seg01(t,*T_RAISE)); st['ut']=ut
-    if t<T_WALK_DUCK[0]:
-        st.update(squash=0.4*abs(math.sin(t*3)),hp=0.1*math.sin(t*1.7)+(0.4*sm(seg01(t,0.8,1.2))*(1-sm(seg01(t,1.8,2.2)))),blink=(t%2.3)<0.1)           # shivers a little, looks up at the dog
+    st=dict(base=(-0.98,0.0,0.0),yaw=PI/2,walk=0.0,flap=0.2,hp=0.0,hy=0.0,ut=0.0,ulen=UP_LEN,blink=False,beak=0.0,squash=0.0,shade=d['shade'])
+    st['ut']=0.25*sm(seg01(t,*T_RAISE)); st['blink']=any(abs(t-b)<0.08 for b in (2.6,5.0,8.7))
+    if t<T_WALK_DUCK[0]:                                                     # sees the freezing dog: looks up, a small startled hop, then decides
+        hop=0.03*math.sin(PI*seg01(t,1.25,1.5)); st.update(base=(-0.98,hop,0.0),squash=0.35*abs(math.sin(t*3))*(1-sm(seg01(t,1.2,1.5))),hp=0.5*sm(seg01(t,*T_NOTICE))*(1-0.4*sm(seg01(t,1.6,1.9))),flap=0.2+0.8*math.sin(PI*seg01(t,1.25,1.5)))
+        return st
+    if t<T_APPROACH[0]:
+        a=sm(seg01(t,*T_WALK_DUCK)); st.update(base=(lerp(-0.98,X_APP,a),0.0,0.0),walk=t*9.0 if 0<a<1 else 0.0,hp=0.3+0.1*sm(seg01(t,3.4,4.4)))
+        if t>=T_RAISE[0]: st['flap']=0.2+0.9*sm(seg01(t,*T_RAISE))*(1-sm(seg01(t,4.4,4.9)))
         return st
     if t<T_CLIMB[0]:
-        a=sm(seg01(t,*T_WALK_DUCK)); x=lerp(-0.80,X_STAND,a); st.update(base=(x,0.0,0.0),walk=t*9.0 if 0<a<1 else 0.0)
-        if t<T_RAISE[1]: st.update(flap=0.2+0.9*sm(seg01(t,*T_RAISE))*(1-sm(seg01(t,5.0,5.5))),hp=0.4*sm(seg01(t,4.2,4.8)))
-        if 6.9<=t<9.5:                                                    # realises the umbrella is hilariously too small
-            if t<7.5: st.update(hp=lerp(0.4,0.9,sm(seg01(t,6.9,7.4))),beak=0.0)
-            elif t<7.9: st.update(hp=0.9,hy=0.0,beak=1.0*(1 if 7.55<t<7.75 else 0))
-            elif t<9.0: st.update(hp=lerp(0.9,-0.25,sm(seg01(t,7.9,8.4))),squash=0.5*sm(seg01(t,7.9,8.4))*(1-sm(seg01(t,8.6,9.0))))
-            else: st.update(hp=lerp(-0.25,0.4,sm(seg01(t,9.0,9.4))))
-        st['blink']=any(abs(t-b)<0.08 for b in (6.2,8.3))
+        a=sm(seg01(t,*T_APPROACH)); st.update(base=(lerp(X_APP,X_STAND,a),0.0,0.0),walk=t*6.5 if 0<a<1 else 0.0,hp=0.45)        # the slow, careful approach (anticipation)
+        if t>=8.4: st.update(hp=0.45 if t<9.0 else lerp(0.45,0.9,sm(seg01(t,9.0,9.8))),squash=0.3*sm(seg01(t,8.4,8.7))*(1-sm(seg01(t,8.8,9.2))))
+        if t>=9.8: st.update(hp=lerp(0.9,-0.2,sm(seg01(t,9.8,10.3))),squash=0.5*sm(seg01(t,10.0,10.4)))                              # looks up at the big dog... and droops: it only covers the nose
         return st
     # ---- the climb: ground -> paw -> along the foreleg -> back ----
-    zlat=-0.34; ulen=lerp(UP_LEN,0.46,sm(seg01(t,T_CLIMB[0],10.3)))
-    st.update(ulen=ulen,ut=0.0)
+    zlat=-0.34; ulen=lerp(UP_LEN,0.46,sm(seg01(t,T_CLIMB[0],11.1)))
+    st.update(ulen=ulen,ut=0.0,hp=0.2)
     p_start=np.array([X_STAND,0.0,0.0]); p_ground=np.array([dx-0.88,0.0,zlat]); p_paw=np.array([dx-0.69,leg_surface(0.69),zlat]); p_elb=np.array([dx-0.17,leg_surface(0.17),-0.255])
-    dsd=dog_state(11.45); pv=np.array(dsd['base'])+Ry(dsd['yaw'])@perch(dsd['P'])
-    if t<10.5:
-        a=sm(seg01(t,T_CLIMB[0],10.5)); pos=p_start+(p_ground-p_start)*a; st.update(base=tuple(pos),walk=t*9.0,yaw=lerp(PI/2,PI/2,a))
-    elif t<10.75:                                                         # hop 1: onto the paw
-        a=seg01(t,10.5,10.75); pos=p_ground+(p_paw-p_ground)*sm(a); pos[1]+=0.22*math.sin(PI*a); st.update(base=tuple(pos),flap=1.1,squash=0.5*(1-a) if a<0.2 else 0.0)
-    elif t<11.2:                                                          # waddles up the forearm
-        a=sm(seg01(t,10.75,11.2)); pos=p_paw+(p_elb-p_paw)*a; pos[1]=leg_surface(0.69-(0.69-0.17)*a); pos[2]=lerp(zlat,-0.255,a*a); st.update(base=tuple(pos),walk=t*10.0)
+    if t<11.2:
+        a=sm(seg01(t,T_CLIMB[0],11.2)); pos=p_start+(p_ground-p_start)*a; st.update(base=tuple(pos),walk=t*9.0)
+    elif t<11.4:                                                          # hop 1: onto the paw
+        a=seg01(t,11.2,11.4); pos=p_ground+(p_paw-p_ground)*sm(a); pos[1]+=0.2*math.sin(PI*a); st.update(base=tuple(pos),flap=1.1)
+    elif t<11.75:                                                         # waddles up the forearm
+        a=sm(seg01(t,11.4,11.75)); pos=p_paw+(p_elb-p_paw)*a; pos[1]=leg_surface(0.69-(0.69-0.17)*a); pos[2]=lerp(zlat,-0.255,a*a); st.update(base=tuple(pos),walk=t*10.0)
     else:                                                                 # hop 2: onto the back, then turns to face forward
         P_now=dog_state(t); pn=np.array(P_now['base'])+Ry(P_now['yaw'])@perch(P_now['P'])
-        if t<11.45:
-            a=seg01(t,11.2,11.45); pos=p_elb+(pn-p_elb)*sm(a); pos[1]+=0.2*math.sin(PI*a); st.update(base=tuple(pos),flap=1.1)
-        else:
-            st.update(base=tuple(pn));
-        st['yaw']=lerp(PI/2,-PI/2,sm(seg01(t,11.5,11.95)))
-        st['ut']=0.8*sm(seg01(t,12.0,12.8)); st['ulen']=lerp(0.46,UP_LEN,sm(seg01(t,12.0,12.6)))
+        if t<11.95:
+            a=seg01(t,11.75,11.95); pos=p_elb+(pn-p_elb)*sm(a); pos[1]+=0.2*math.sin(PI*a); st.update(base=tuple(pos),flap=1.1)
+        else: st.update(base=tuple(pn))
+        st['yaw']=lerp(PI/2,-PI/2,sm(seg01(t,11.95,12.35)))
+        st['ut']=0.8*sm(seg01(t,12.1,12.8)); st['ulen']=lerp(0.46,UP_LEN,sm(seg01(t,12.1,12.7)))
         if t>=T_WALK: st.update(squash=0.15*abs(math.sin((t-T_WALK)*9.0)),walk=0.0,hp=0.1*math.sin(t*4))
-        st['flap']=0.2+0.5*(1 if t>=12.3 else 0)*abs(math.sin(t*5)) if t>11.45 else st['flap']
+        st['flap']=(0.2+0.5*abs(math.sin(t*5))) if t>=12.0 else st['flap']
     return st
 def duck_model(**st): return duckling(**st)[0]+duckling(**st)[2]
 
 # ======================= camera =======================
 CAM_Y=0.78; TGT_Y=0.62
 def cam_shot(t):
-    dxs=dog_x(t); follow=sm(seg01(t,T_WALK,T_WALK+1.0)); cx=lerp(-0.17,dxs-0.22,follow)
-    D=2.25+0.015*math.sin(t*0.7); zoom=sm(seg01(t,*T_ZOOM)); D=lerp(D,3.7,zoom)
-    return (cx,CAM_Y+0.3*zoom,-D),(cx,TGT_Y+0.1*zoom,0.0),lerp(44,42,zoom)
+    """A 0-3 wide push-in | B 3-6 medium | C 6-9 CLOSE-UP on the umbrella and the nose | D 9-10.7 pull-out reveal | E climb | F final walking shot (cut at T_CUT)"""
+    if t<3.0: u=sm(seg01(t,0,3.0)); D=lerp(2.45,2.15,u); cx=lerp(-0.25,-0.32,u); cy,ty,fov=CAM_Y,TGT_Y,44
+    elif t<6.0: u=sm(seg01(t,3.0,6.0)); D=lerp(2.15,1.75,u); cx=lerp(-0.32,-0.30,u); cy,ty,fov=CAM_Y,TGT_Y,44
+    elif t<9.0: D=1.2-0.1*seg01(t,6.0,9.0); cx=-0.42; cy,ty,fov=0.5,0.42,40
+    elif t<10.7: u=sm(seg01(t,9.0,10.7)); D=lerp(1.35,1.95,u); cx=-0.12; cy,ty,fov=lerp(0.6,0.78,u),lerp(0.5,0.62,u),42
+    elif t<T_CUT: D=2.2; cx=-0.17; cy,ty,fov=CAM_Y,TGT_Y,44
+    else:
+        zoom=sm(seg01(t,*T_ZOOM)); D=lerp(2.5,3.7,zoom); cx=dog_x(t)-0.22; cy,ty,fov=CAM_Y+0.3*zoom,TGT_Y+0.1*zoom,lerp(44,42,zoom)
+    return (cx,cy,-D),(cx,ty,0.0),fov
 
 # ======================= render =======================
 R=Renderer(W,H,fog=(52,42,90))
@@ -255,7 +264,8 @@ def rain(d,t):
     for x0,y0,sp in RAIN:
         y=(y0+t*sp*230)%(H+24)-8; x=x0-y*0.09; L=int(5+5*sp); col=(int(150+60*sp),int(176+50*sp),int(230+20*sp))
         d.line([x,y,x-0.09*L,y+L],fill=col,width=1)
-SUBS=[(0.3,2.85,['HE HAD THE WORLD\'S','SMALLEST UMBRELLA...'],{'SMALLEST'}),(3.2,5.8,['...BUT HE STILL','WANTED TO SHARE.'],{'SHARE.'}),(12.3,14.7,['AND SOMEHOW...','IT WAS ENOUGH.'],{'ENOUGH.'})]
+SUBS=[(0.2,2.85,['THIS TINY DUCK SAW A DOG','FREEZING IN THE RAIN.'],{'FREEZING'}),(3.0,4.6,['SO HE OFFERED','HIS UMBRELLA.'],{'UMBRELLA.'}),(6.0,7.6,['THERE WAS JUST','ONE PROBLEM...'],{'PROBLEM...'}),
+      (9.0,10.6,['IT ONLY COVERED','HIS NOSE!'],{'NOSE!'}),(11.0,12.7,['SO THE DOG','GAVE HIM A RIDE.'],{'RIDE.'}),(13.1,14.2,['BEST FRIENDS!'],{'BEST','FRIENDS!'})]
 def subtitles(d,t):
     for t0,t1,lines,hil in SUBS:
         if t0<=t<t1:
@@ -273,16 +283,16 @@ def _extra(t):
         for nm,p in (('dog',np.array(ds['base'])+np.array([0,0.6,0])),('duckling',np.array(us['base'])+np.array([0,0.1,0]))):
             cp,tg,fov=cam_shot(t); pr=R.project(tuple(p),R.view(Camera.look(cp,tg),fov))
             if not pr or not (0<pr[0]<W and 0<pr[1]<H): out.append(('camera',f'{nm} is not in the first frame'))
-    if abs(t-6.5)<0.5/FPS:
-        nw=nose_world(dog_state(6.5)); cx=us['base'][0]+0.03+UP_LEN*math.sin(us['ut']); edge=cx+DUCK_R
+    if abs(t-9.0)<0.5/FPS:
+        nw=nose_world(dog_state(9.0)); cx=us['base'][0]+0.03+UP_LEN*math.sin(us['ut']); edge=cx+DUCK_R
         if not (nw[0]-0.02<edge<nw[0]+0.12): out.append(('umbrella',f'canopy edge {edge:.2f} vs nose tip {nw[0]:.2f}: it must cover only the very tip of the nose'))
     return out
 QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,chars={'dog':(dog_state,dog_model,'_none',1.0),'duckling':(duck_state,duck_model,'_none',1.0)},
     geom=lambda t,name,st,V: [('floor',f'{name} under the floor')] if V[:,1].min()<-0.04 else [],extra=_extra,camera=lambda t: cam_shot(t)[0],min_cam_dist=0.4,
     camera_ok=lambda p: -4.0<p[2]<-0.5 and abs(p[0])<5.0 and 0.3<p[1]<1.6,
-    scenes=[dict(id='contrast',t0=0.0,t1=3.0,action='tiny duckling under a tiny red umbrella next to a huge soaked dog'),dict(id='kind-gesture',t0=3.0,t1=6.0,action='the duckling waddles closer and raises the umbrella; the dog lowers its head'),
-            dict(id='too-small',t0=6.0,t1=9.0,action='the umbrella covers only the tip of the nose; the dog blinks; squeak'),dict(id='kindness-returned',t0=9.0,t1=12.0,action='the dog lies down; the duckling climbs on and the dog stands up'),
-            dict(id='payoff',t0=12.0,t1=15.0,action='they walk along the rainy street under the tiny umbrella; wide ending')],
+    scenes=[dict(id='freezing',t0=0.0,t1=3.0,action='tiny duckling notices the soaked huge dog (slow push-in)'),dict(id='offer',t0=3.0,t1=6.0,action='the duckling walks to the dog and raises the umbrella; the dog lowers its head once'),
+            dict(id='problem',t0=6.0,t1=9.0,action='CLOSE-UP: the tiny umbrella creeps toward the big nose'),dict(id='punchline',t0=9.0,t1=10.7,action='pull-out: it only covers the nose; squeak; the dog blinks and smiles'),
+            dict(id='climb',t0=10.7,t1=T_CUT,action='play-bow, the duckling climbs paw-forearm-back, the dog rises'),dict(id='ride',t0=T_CUT,t1=15.0,action='walking shot: the duckling rides, umbrella over both; wide ending')],
     weapon_events=[],texts=lambda: [('ui',l,1) for _,_,ls,_ in SUBS for l in ls])
 
 TEST=os.environ.get('TEST')
@@ -325,32 +335,36 @@ def build_audio(path):
             note(M,t,m,0.9,0.034*v,'bell',2.6)
             if k%4==0: note(M,t,ch[2]+lift,1.4,0.05*v,'sin',1.6,0.02)
             k+=1; t+=st
-    phrase(0.1,2.0,0.7); phrase(2.1,7.0,0.9)
-    for t0,m in ((7.3,79),(7.7,76)): note(M,t0,m,1.0,0.02,'bell',3.0)                                                                       # the pause: just two soft notes + rain
-    phrase(8.4,12.0,1.0)
-    phrase(12.0,14.3,1.15,lift=0)
+    phrase(0.1,3.0,0.85); phrase(3.0,6.0,0.95)
+    for k,m in enumerate((72,74,76,78,79,81,82,84)): note(M,6.0+k*0.3+(0.0 if k<4 else 0.1*(k-3)),m,0.5,0.03,'bell',4.0)                    # curiosity: tiptoeing notes
+    tone(6.0,150,330,2.4,0.03,harm=(1.0,0.4),att=0.6)                                                                                        # a soft rising pad: what will happen?
+    note(M,8.6,79,0.8,0.03,'bell',3.0)
+    phrase(9.0,10.7,0.7)
+    phrase(10.7,12.1,1.05); phrase(12.1,14.2,1.15)
     for m,t0 in ((60,14.2),(64,14.2),(67,14.2),(72,14.2),(74,14.2)): note(M,t0,m,0.8,0.035,'sin',0.5,0.4)                                  # the warm resolving chord (C add9)
     for k,m in enumerate((84,88,91,96,100)): note(M,14.25+k*0.07,m,0.9,0.02,'bell',3.0)                                                   # sparkle
     # ---------- animal voices ----------
-    for t0,f,r in ((0.55,3000,1.25),(1.5,3100,1.2),(2.25,3000,1.15),(3.15,3200,1.3),(3.95,3000,1.2),(4.5,3100,1.25),(5.3,3000,1.2),(5.4,3250,1.2)): peep(t0,0.045,f,r)
-    peep(7.0,0.05,2800,1.5,0.1); peep(8.35,0.035,2200,0.8,0.12)                                                                             # surprised '?', then a sheepish falling peep
-    peep(9.5,0.04); peep(10.45,0.05,3100,1.3); peep(11.1,0.05,3200,1.3); peep(11.55,0.045); peep(11.7,0.045,3300,1.2); peep(12.9,0.045); peep(13.8,0.04,3300,1.25)
-    squeak(7.6)                                                                                                                              # the one soft, funny squeak
-    whimper(1.2,0.6,0.055); whimper(2.55,0.5,0.04,420,320)
-    tone(3.7,200,300,0.35,0.05,vib=0.02,harm=(1.0,0.5),att=0.05)                                                                             # curious 'hm?'
-    snuffle(6.4); tone(8.9,230,260,0.3,0.04,harm=(1.0,0.4),att=0.08)                                                                         # happy 'mm'
-    nb(9.25,0.7,300,1500,0.03,77,1.2)                                                                                                        # a sigh as he lies down
-    tone(11.75,150,190,0.4,0.05,harm=(1.0,0.5),att=0.1); woof(12.35,0.08); pant(13.0,1.6,0.018)
+    for t0,f,r in ((0.45,3000,1.2),(1.3,3300,1.5),(2.0,3100,1.25),(2.8,3000,1.2),(3.5,3200,1.3),(4.1,3000,1.2),(4.25,3250,1.2),(5.0,3100,1.2),(6.6,2900,1.15),(7.4,3000,1.2),(8.5,3200,1.3)): peep(t0,0.045,f,r)
+    peep(9.9,0.05,2800,1.5,0.1); peep(10.35,0.035,2200,0.8,0.12)                                                                            # 'pip?' then a sheepish falling peep
+    for t0,f,r in ((11.0,3100,1.3),(11.25,3200,1.3),(11.5,3000,1.2),(11.8,3300,1.3),(12.15,3100,1.25),(12.3,3300,1.2),(13.25,3200,1.25),(13.6,3300,1.3),(14.25,3200,1.2)): peep(t0,0.05,f,r)
+    squeak(10.15); note(M,10.2,88,0.3,0.03,'bell',6.0)                                                                                       # 'nose!': the one soft, funny squeak
+    whimper(0.9,0.6,0.055); whimper(2.0,0.5,0.04,420,320)
+    tone(3.9,200,300,0.35,0.05,vib=0.02,harm=(1.0,0.5),att=0.05)                                                                             # curious 'hm?'
+    snuffle(6.9); snuffle(7.8,0.035)                                                                                                         # the nose twitches as the umbrella creeps closer
+    tone(10.45,210,290,0.3,0.045,harm=(1.0,0.4),att=0.05); tone(10.8,230,260,0.3,0.04,harm=(1.0,0.4),att=0.08)                                # a gentle 'huh?', then a happy 'mm'
+    nb(11.0,0.6,300,1500,0.03,77,1.2)                                                                                                        # a sigh as he bows down
+    tone(12.1,150,190,0.4,0.05,harm=(1.0,0.5),att=0.1); woof(12.7,0.08); pant(13.0,1.7,0.018)
     # ---------- steps ----------
-    for k in range(7): tick(T_WALK_DUCK[0]+0.1+k*0.22,0.015,3400); 
-    for t0 in (10.0,): thud(t0,55,0.1,0.25); nb(t0,0.3,200,900,0.03,78,1)                                                                    # the dog settles on the cobbles
-    for k in range(3): tick(9.95+k*0.18,0.015,3400)
-    for k in range(5): tick(10.8+k*0.1,0.014,3400)
-    thud(11.3,90,0.05,0.12); thud(11.45,90,0.04,0.12)
-    for k in range(int((DUR-12.45)/0.34)): step_dog(12.45+k*0.34,0.05,200+k)                                                              # soft wet steps
+    for k in range(8): tick(1.95+k*0.21,0.015,3400)
+    for k in range(7): tick(6.1+k*0.34,0.012,3400)                                                                                           # slow, careful tiptoes
+    thud(11.1,55,0.1,0.25); nb(11.1,0.3,200,900,0.03,78,1); thud(11.35,60,0.06,0.2)                                                          # the dog bows and settles
+    for k in range(4): tick(10.85+k*0.12,0.015,3400)
+    for k in range(5): tick(11.45+k*0.08,0.014,3400)
+    nb(11.9,0.5,200,1200,0.02,79,1); thud(12.3,90,0.05,0.12)
+    for k in range(int((DUR-12.75)/0.34)): step_dog(12.75+k*0.34,0.05,200+k)                                                              # soft wet steps
     s.L+=AMB; s.R+=np.roll(AMB,700)
     NB=np.zeros(n); duck=np.ones(n)
-    for key,t0 in (('N1',0.25),('N2',3.15),('N3',12.25)):
+    for key,t0 in (('N1',0.15),('N2',3.0),('N3',6.0),('N4',9.0),('N5',11.0),('N6',13.1)):
         a,ar=_sf.read(os.path.join(TTS_DIR,'um',key+'.wav')); a=a if a.ndim==1 else a.mean(1)
         a=np.interp(np.arange(int(len(a)*sr/ar))/sr,np.arange(len(a))/ar,a); act=a[np.abs(a)>0.02]; a=a/(np.sqrt((act**2).mean())+1e-9)*0.2
         i=int(t0*sr); j=min(n,i+len(a)); NB[i:j]+=a[:j-i]; duck[max(0,i-int(0.08*sr)):min(n,j+int(0.15*sr))]=0.45
