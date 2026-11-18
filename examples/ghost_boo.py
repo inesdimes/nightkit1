@@ -358,9 +358,30 @@ def render(t):
 # ======================= subtitles and UI (2D overlays only) =======================
 ACC=(255,214,70); WHT=(244,240,228)
 HIL={'BOO':1,"'BOO'":1,"'BOO'?":1,"'BOO'.":1,'LANTERN':1,'LANTERN.':1,'PANICKED.':1,'PANICKED':1,'DARK.':1,'DARK':1,'NIGHTLIGHT.':1,'NIGHTLIGHT':1,"BOO'":1}
-LINES=[('N1',0.15,'Why do ghosts always say \'boo\'?'),('N2',2.75,'This little ghost had a problem.'),('G1',6.0,'Excuse me?'),('N3',8.0,'He tried asking nicely. Nobody listened.'),
-       ('N4a',13.3,'So he tried knocking.'),('N4b',18.2,'Still nothing.'),('N5',22.3,'Then the lantern flickered... and the ghost panicked.'),('N6',31.2,"He wasn't trying to haunt anyone. He just hated the dark."),
+LINES=[('N1',0.15,'Why do ghosts always say \'boo\'?'),('N2',2.45,'This little ghost had a problem.'),('G1',6.0,'Excuse me?'),('N3',8.0,'He tried asking nicely. Nobody listened.'),
+       ('N4a',13.3,'So he tried knocking.'),('N4b',18.2,'Still nothing.'),('N5',22.3,'Then the lantern flickered... and the ghost panicked.'),('N6',30.9,"He wasn't trying to haunt anyone. He just hated the dark."),
        ('N7',39.2,'So he tried one last thing...'),('G2',44.0,'BOO!'),('N8',47.0,'The janitor ran... and left his lantern behind.'),('N9',53.2,"Turns out, 'boo' wasn't a threat."),('N10',57.0,'He just wanted a nightlight.')]
+# ======================= EDIT: time remap (v3, shorter + faster) =======================
+# Story time (all animation, QA, UI cues) stays 0-60 s. Output time plays the important parts at 1x (every voice line, the knocks,
+# the flicker, BOO + hop, the lantern drop / flee, the payoff) and the dead stretches in between at FAST x. No jump cuts inside a shot.
+FAST=3.0
+def _keep():
+    K=[(0.0,5.0),(14.9,16.5),(23.0,25.0),(42.8,45.3),(46.0,47.3),(53.0,56.1),(57.3,60.0)]
+    for key,t0,_ in LINES: K.append((max(0.0,t0-0.1),t0+(SCR['dur'][key] if SCR else 2.0)+0.2))
+    K.sort(); out=[]
+    for a,b in K:
+        if out and a<=out[-1][1]: out[-1]=(out[-1][0],max(out[-1][1],b))
+        else: out.append((a,b))
+    return out
+KEEP=_keep()
+_BS=[0.0]; _BO=[0.0]
+for _a,_b in KEEP:
+    if _a>_BS[-1]: _BO.append(_BO[-1]+(_a-_BS[-1])/FAST); _BS.append(_a)
+    _BO.append(_BO[-1]+(_b-_a)); _BS.append(_b)
+if _BS[-1]<DUR: _BO.append(_BO[-1]+(DUR-_BS[-1])/FAST); _BS.append(DUR)
+N_OUT=int(math.ceil(_BO[-1]*FPS)); DUR_OUT=N_OUT/FPS
+def SRC(to): return float(np.interp(to,_BO,_BS))
+def OUTT(ts): return float(np.interp(ts,_BS,_BO))
 def sub_chunks():
     """split every line into short chunks (<= 2 rows of ~15 chars), timed by character share over the measured voice length"""
     out=[]
@@ -372,7 +393,7 @@ def sub_chunks():
         if cur: chunks.append(cur)
         pos=0
         for ch in chunks:
-            L=sum(len(x)+1 for x in ch); a=t0+dur*pos/n; b=t0+dur*(pos+L)/n; pos+=L
+            L=sum(len(x)+1 for x in ch); o0=OUTT(t0); a=o0+dur*pos/n; b=o0+dur*(pos+L)/n; pos+=L                # output time
             rows=[]; r=[]
             for w in ch:
                 if r and sum(len(x)+1 for x in r)+len(w)>14: rows.append(r); r=[]
@@ -408,10 +429,12 @@ def knock_marks(d,t,gs,cam,fov):
             r=3+6*u; c=(int(220*(1-u)+60),int(220*(1-u)+60),int(255*(1-u)+80))
             for ang in range(0,360,45):
                 a=math.radians(ang); x0,y0=pr[0]+math.cos(a)*r*0.5,pr[1]+math.sin(a)*r*0.5; d.line([x0,y0,pr[0]+math.cos(a)*r,pr[1]+math.sin(a)*r],fill=c,width=1)
-def frame(t):
+def frame(t,to=None):
+    """t = story time; to = output time (subtitles follow the voices, which play in output time)"""
+    to=OUTT(t) if to is None else to
+    if to>=DUR_OUT-1e-9: return Image.new('RGB',(W,H),(0,0,0))
     img,gs,js,ls,cam,fov=render(t); d=ImageDraw.Draw(img); knock_marks(d,t,gs,cam,fov)
-    if t>=60.0-1e-9: return Image.new('RGB',(W,H),(0,0,0))
-    ui(d,t); subtitles(d,t); return img
+    ui(d,t); subtitles(d,to); return img
 
 # ======================= QA manifest =======================
 def _verts(Q): return np.array([p for q in Q for p in q['p']])
@@ -464,12 +487,13 @@ def build_audio(path):
     """mix: synthesized retro mystery music (never drops out), corridor bed, foley, NON-VERBAL ghost noises that fill every gap
     (no extra dialogue), retro UI sounds, then the voices. The BOO gets a clear window: everything else ducks under it and the sting follows it."""
     import soundfile as _sf
-    s=Sound(DUR,loop=False,seed=61); sr=s.sr; n=s.n; M=np.zeros(n); AMB=np.zeros(n); X=np.zeros(n)
+    s=Sound(DUR_OUT,loop=False,seed=61); sr=s.sr; n=s.n; M=np.zeros(n); AMB=np.zeros(n); X=np.zeros(n)
+    _pl=s.place; s.place=lambda x,t0,v=1.0,pan=0.0: _pl(x,OUTT(t0),v,pan)                    # every SFX is cued in story time -> output time
     def hz(m): return 440*2**((m-69)/12)
     def note(buf,t0,m,d,v,wave='tri',dec=3.0,att=0.005):
         tt=s.T(d); f=hz(m); ph=2*np.pi*f*tt
         x={'sin':np.sin(ph),'tri':(2/np.pi)*np.arcsin(np.sin(ph)),'bell':np.sin(ph)+0.35*np.sin(2*ph)+0.12*np.sin(3.01*ph),'saw':sum(np.sin(ph*(k+1))/(k+1) for k in range(5))*0.6,'sq':np.sign(np.sin(ph))*0.5}[wave]
-        env=np.minimum(1,tt/att)*np.exp(-tt*dec); i=int(t0*sr); j=min(n,i+len(tt)); buf[i:j]+=(x*env*v)[:j-i]
+        env=np.minimum(1,tt/att)*np.exp(-tt*dec); i=int((OUTT(t0) if buf is X else t0)*sr); j=min(n,i+len(tt)); buf[i:j]+=(x*env*v)[:j-i]   # music notes are in output time, UI notes in story time
     def tone(t0,f0,f1,d,v,vib=0.0,harm=(1.0,0.5,0.25),att=0.01,dec=0.0,buf=None,vr=7.0):
         tt=s.T(d); fr=f0+(f1-f0)*(tt/d); fr=fr*(1+vib*np.sin(2*np.pi*vr*tt)); ph=np.cumsum(fr)/sr
         x=sum(h*np.sin(2*np.pi*ph*(k+1)) for k,h in enumerate(harm)); env=np.minimum(1,tt/att)*np.sin(np.pi*np.clip(tt/d,0,1))**0.6*np.exp(-tt*dec)
@@ -498,44 +522,42 @@ def build_audio(path):
     # ---- lantern hum: a soft warm buzz whenever the lantern is lit and on screen (drops out on each flicker) ----
     tt=s.t; hum=(np.sin(2*np.pi*120*tt)+0.4*np.sin(2*np.pi*240*tt)+0.15*np.sin(2*np.pi*360*tt))*(1+0.25*np.sin(2*np.pi*0.8*tt))
     g=np.ones(n)*0.010
-    for a_,b_ in T_FLICK: g[int(a_*sr):int(b_*sr)]=0
-    g[int(21.0*sr):int(38.0*sr)]*=1.8                                                          # close-up: louder
-    g[int(53.0*sr):]*=1.6
+    for a_,b_ in T_FLICK: g[int(OUTT(a_)*sr):int(OUTT(b_)*sr)]=0
+    g[int(OUTT(21.0)*sr):int(OUTT(38.0)*sr)]*=1.8                                              # close-up: louder
+    g[int(OUTT(53.0)*sr):]*=1.6
     AMB+=hum*np.convolve(g,np.ones(480)/480,'same')
-    # ================= MUSIC (continuous, 100 bpm) =================
-    B=0.6
-    # 0-21: playful suspense: walking pizzicato bass, bell motif, soft hats
+    # ================= MUSIC (continuous, 120 bpm, written in OUTPUT time so the tempo stays steady through the speed-ups) =================
+    o21,o30,o38,o44,o447,o46,o53,o575=[OUTT(x) for x in (21.0,30.0,38.0,43.95,44.72,46.3,53.0,57.5)]
+    def mpl(x,to,v): i=int(to*sr); j=min(n,i+len(x)); M[i:j]+=(x*v)[:j-i]
+    def hat(to,v,seed): d=0.03; mpl(s.filt_short(s.noise(d,seed),lo=6000,hi=12000)*np.sin(np.pi*s.T(d)/d),to,v)
+    B=0.5
     bass=[45,48,52,48,45,47,52,47, 41,45,48,45,40,44,47,44]; mel=[76,0,72,74,76,0,79,77, 76,0,72,71,69,0,0,0]
-    for k in range(int(21/(B/2))):
+    for k in range(int(o21/(B/2))):                                                    # playful suspense
         t0=0.05+k*B/2
-        if k%2==0: note(M,t0,bass[(k//2)%16],0.5,0.06,'tri',5.0)
+        if k%2==0: note(M,t0,bass[(k//2)%16],0.45,0.06,'tri',5.0)
         m=mel[k%16]
-        if m: note(M,t0,m,0.4,0.026,'bell',6.0)
-        nb(t0,0.03,6000,12000,0.006 if k%2 else 0.004,500+k,1)
-    # 21-38: darker: slow minor pulse + tremolo pad + heartbeat while it panics
-    for k in range(int(17/(B))): t0=21+k*B; note(M,t0,[38,38,41,40][(k//2)%4],0.55,0.06,'tri',3.5)
-    pad=np.zeros(n); tone(21.0,hz(50),hz(50),17.0,0.03,vib=0.004,harm=(1.0,0.5,0.3),att=1.0,buf=pad)
-    tone(21.0,hz(53),hz(53),17.0,0.022,vib=0.004,harm=(1.0,0.4),att=1.5,buf=pad); trem=1+0.35*np.sin(2*np.pi*5*s.t); M+=pad*trem
-    for t0 in np.arange(23.2,26.6,0.5): thud(t0,55,0.07,0.15); thud(t0+0.16,50,0.05,0.12)
+        if m: note(M,t0,m,0.35,0.026,'bell',6.0)
+        hat(t0,0.006 if k%2 else 0.004,500+k)
+    for k in range(int((o38-o21)/B)): note(M,o21+k*B,[38,38,41,40][(k//2)%4],0.5,0.06,'tri',3.5)          # darker pulse + tremolo pad
+    pad=np.zeros(n); tone(o21,hz(50),hz(50),o38-o21,0.03,vib=0.004,harm=(1.0,0.5,0.3),att=1.0,buf=pad)
+    tone(o21,hz(53),hz(53),o38-o21,0.022,vib=0.004,harm=(1.0,0.4),att=1.2,buf=pad); M+=pad*(1+0.35*np.sin(2*np.pi*5*s.t))
+    for t0 in np.arange(23.2,26.6,0.5): thud(t0,55,0.07,0.15); thud(t0+0.16,50,0.05,0.12)                     # heartbeat (story time)
     for k,m in enumerate((69,72,76,74,72,69,68,0,69,72,76,79,77,76,74,0)):
-        if m and 30.0+k*0.5<38.0: note(M,30.0+k*0.5,m,0.5,0.018,'bell',4.0)
-    # 38-44: comic tension: chromatic ostinato that speeds up
-    t0=38.0; k=0
-    while t0<43.95: note(M,t0,45+(k%12),0.12,0.035,'sq',14.0); note(M,t0,57+(k%12),0.1,0.014,'bell',14.0); t0+=lerp(0.34,0.09,(t0-38)/6); k+=1
-    tone(41.5,80,160,2.45,0.03,harm=(1.0,0.5),att=0.3)                                                       # rising swell into the scare
-    # 44.0-44.72: SILENT window for the BOO (only the voice). Sting right after it
-    for m in (57,60,63,66): note(M,44.72,m,0.5,0.05,'saw',3.5,0.003)
+        if m and o30+k*0.4<o38: note(M,o30+k*0.4,m,0.45,0.018,'bell',4.0)
+    t0=o38; k=0                                                                         # comic tension: chromatic ostinato speeding up
+    while t0<o44: note(M,t0,45+(k%12),0.12,0.035,'sq',14.0); note(M,t0,57+(k%12),0.1,0.014,'bell',14.0); t0+=lerp(0.3,0.09,(t0-o38)/(o44-o38)); k+=1
+    tone(OUTT(41.5),80,160,o44-OUTT(41.5),0.03,harm=(1.0,0.5),att=0.3,buf=M)
+    for m in (57,60,63,66): note(M,o447,m,0.5,0.05,'saw',3.5,0.003)                    # sting right AFTER the BOO
     thud(44.72,60,0.3,0.5); nb(44.72,0.4,500,5000,0.07,901,0.7)
-    for i,m in enumerate((55,53,51,48)): note(M,45.0+i*0.22,m,0.35,0.035,'sq',4.0)                             # comic wah-wah
-    # 46-53: tiptoe (the ghost approaches)
-    for k in range(int(7/0.3)):
-        t0=46.3+k*0.3
-        if k%2==0: note(M,t0,[40,47,45,47][(k//2)%4],0.35,0.05,'tri',5.0)
+    for i,m in enumerate((55,53,51,48)): note(M,o447+0.28+i*0.2,m,0.32,0.035,'sq',4.0)  # comic wah-wah
+    for k in range(int((o53-o46)/0.25)):                                                # tiptoe
+        t0=o46+k*0.25
+        if k%2==0: note(M,t0,[40,47,45,47][(k//2)%4],0.3,0.05,'tri',5.0)
         if k%4==1: note(M,t0,[64,67,71,72][(k//4)%4],0.3,0.025,'bell',6.0)
-    # 53-60: warm major music box + pad, resolving chord
-    for k,m in enumerate((72,76,79,84,79,76,72,76,79,84,88,84,91)): note(M,53.1+k*0.35,m,1.0,0.034,'bell',2.6)
-    for m in (48,55,60,64): note(M,53.0,m,4.6,0.025,'sin',0.5,0.6)
-    for m in (48,55,60,64,67,72): note(M,57.5,m,2.5,0.032,'sin',0.9,0.01)
+    for k,m in enumerate((72,76,79,84,79,76,72,76,79,84,88,84,91)):                    # warm music box + pad, resolving chord
+        if o53+0.05+k*0.3<DUR_OUT: note(M,o53+0.05+k*0.3,m,1.0,0.034,'bell',2.6)
+    for m in (48,55,60,64): note(M,o53,m,o575-o53+0.5,0.025,'sin',0.5,0.6)
+    for m in (48,55,60,64,67,72): note(M,o575,m,2.5,0.032,'sin',0.9,0.01)
     # ================= SFX / FOLEY =================
     for i,t0 in enumerate(_steps_walk()): step(t0,0.06,i)
     for i,t0 in enumerate((46.12,46.34,46.62,46.8,46.99,47.17)): step(t0,0.09,200+i)
@@ -576,11 +598,11 @@ def build_audio(path):
     for key,t0,_ in LINES:
         a,ar=_sf.read(os.path.join(TTS_DIR,'gb',key+'.wav')); a=a if a.ndim==1 else a.mean(1)
         act=a[np.abs(a)>0.02]; g=0.2/(np.sqrt((act**2).mean())+1e-9)*{'G2':1.35,'G1':1.1}.get(key,1.0); a=a*g
-        i=int(t0*sr); j=min(n,i+len(a)); NB[i:j]+=a[:j-i]; duck[max(0,i-int(0.08*sr)):min(n,j+int(0.15*sr))]=0.6
+        i=int(OUTT(t0)*sr); j=min(n,i+len(a)); NB[i:j]+=a[:j-i]; duck[max(0,i-int(0.08*sr)):min(n,j+int(0.15*sr))]=0.6
     duck=np.convolve(duck,np.ones(2400)/2400,'same')
     s.L+=M*duck*3.4+X; s.R+=np.roll(M,300)*duck*3.4+X
     s.reverb(0.12,length=1.0,decay=4.0)
-    clear=np.ones(n); clear[int(43.95*sr):int(44.72*sr)]=0.2; clear=np.convolve(clear,np.ones(960)/960,'same')         # the BOO window
+    clear=np.ones(n); clear[int(OUTT(43.95)*sr):int(OUTT(44.72)*sr)]=0.2; clear=np.convolve(clear,np.ones(960)/960,'same')         # the BOO window
     pk=max(np.abs(s.L).max(),np.abs(s.R).max()); gv=pk/np.abs(NB).max()*0.95
     s.L=s.L*clear*(0.8+0.2*duck)+NB*gv; s.R=s.R*clear*(0.8+0.2*duck)+NB*gv
     st=np.stack([s.L,s.R],1); k=int(0.05*sr); st[-k:]*=np.linspace(1,0,k)[:,None]
@@ -592,5 +614,5 @@ if __name__=='__main__' and os.environ.get('PART'):
     import subprocess
     p=subprocess.Popen(['ffmpeg','-nostdin','-v','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W*S}x{H*S}','-r',str(FPS),'-i','-','-c:v','libx264','-crf','19','-preset','medium','-pix_fmt','yuv420p',os.path.join(OUT,f'gb_{a:05d}.mp4')],stdin=subprocess.PIPE)
     vhs=post.VHS(W*S,H*S,S,grade='none',chroma=1,scan_dark=0.96,vignette=0.25,grain=1.5,band_period=1e9)
-    for f in range(a,min(b,N)): p.stdin.write(vhs(post.upscale(frame(f/FPS),S),f,f/FPS).tobytes())
+    for f in range(a,min(b,N_OUT)): p.stdin.write(vhs(post.upscale(frame(SRC(f/FPS),f/FPS),S),f,f/FPS).tobytes())
     p.stdin.close(); p.wait(); print('part done',a,b); sys.exit()

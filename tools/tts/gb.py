@@ -8,7 +8,7 @@ k=Kokoro(f'{TTS_DIR}/kokoro-v1.0.int8.onnx',f'{TTS_DIR}/voices-v1.0.bin')
 L={'N1':("Why do ghosts always say boo?",3.0),'N2':("This little ghost had a problem.",2.1),'G1':("Excuse me?",1.4),'N3':("He tried asking nicely. Nobody listened.",4.0),'N4a':("So he tried knocking.",1.6),'N4b':("Still nothing.",1.4),
    'N5':("Then the lantern flickered... and the ghost panicked.",6.0),'N6':("He wasn't trying to haunt anyone. He just hated the dark.",7.0),'N7':("So he tried one last thing...",4.0),'G2':("BOO!",1.0),
    'N8':("The janitor ran... and left his lantern behind.",5.0),'N9':("Turns out, boo wasn't a threat.",4.0),'N10':("He just wanted a nightlight.",3.0)}   # (text, window in s)
-SP=float(sys.argv[1]) if len(sys.argv)>1 else 0.92
+SP=float(sys.argv[1]) if len(sys.argv)>1 else 1.0
 dur={}; txt={}
 for key,(t,win) in L.items():
     g=key.startswith('G'); a,sr=k.create(t.rstrip('.') if t.endswith('...') is False else t,voice='af_sky' if g else 'bm_george',speed=(0.8 if key=='G2' else 0.9) if g else SP,lang='en-gb' if not g else 'en-us')
