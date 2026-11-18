@@ -43,8 +43,8 @@ GUARD_Z=-0.78; GUARD_Y=0.72
 CAT_Y=BED_Y; ZC0=-1.65; ZC_STOP=-1.15
 
 # ======================= LOCKED ASSET: the cat =======================
-def cat_model(base,yaw=0.0,walk=0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=0.0,lid=0.5,pupil=0.0,tail=0.0,crouch=0.0,ears=0.0,mouth=0.0,bpitch=0.0,shades=0.0,cheese=0.0,smug=0.0,wl=1.0,wu=0.0,**_):
-    """orange tabby, local forward +z. hx: sideways head shift (the main gag). crouch/bpitch: pounce. returns (quads, face decals)"""
+def cat_model(base,yaw=0.0,walk=0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=0.0,lid=0.5,pupil=0.0,tail=0.0,crouch=0.0,ears=0.0,mouth=0.0,bpitch=0.0,shades=0.0,cheese=0.0,smug=0.0,wl=1.0,wu=0.0,paw=0.0,paw_to=(-0.15,0.1,0.3),**_):
+    """orange tabby, local forward +z. hx: sideways head shift (the main gag). crouch/bpitch: pounce. paw/paw_to: left front paw reach (0 = off). returns (quads, face decals)"""
     b=np.array(base,float); Rb=Ry(yaw); piv=np.array([0,0.2,-0.05])
     def Wd(p): p=np.array(p,float); p=piv+Rx(bpitch)@(p-piv); return tuple(b+Rb@p)
     Q=[]; D=[]; cy=-0.07*crouch
@@ -52,6 +52,7 @@ def cat_model(base,yaw=0.0,walk=0.0,hx=0.0,hyaw=0.0,hroll=0.0,hpitch=0.0,lid=0.5
         for zz,front in ((0.13,True),(-0.17,False)):
             ph=walk+(0.0 if (sx>0)==front else PI); sw=0.06*math.sin(ph) if walk else 0.0; lift=0.035*max(0.0,math.cos(ph)) if walk else 0.0
             top=(sx*0.065,0.16+cy+(0.02*crouch if not front else 0.0),zz); ft=(sx*0.065,lift,zz+sw)
+            if paw and sx<0 and front: ft=lerp3(ft,paw_to,paw)                               # paw reach / swipe (left front leg, local coords)
             Q+=transform(seg(top,ft,0.05,ORANGE,0.05)+box(ft[0]-0.03,ft[0]+0.03,ft[1],ft[1]+0.028,ft[2]-0.03,ft[2]+0.05,CREAM),Wd)
     Q+=box(-0.10,0.10,0.10+cy+0.02*crouch,0.29+cy+0.03*crouch,-0.26,-0.04,ORANGE,xf=Wd)+box(-0.085,0.085,0.11+cy,0.29+cy,-0.04,0.17,ORANGE,xf=Wd)
     Q+=box(-0.05,0.05,0.10+cy,0.115+cy,-0.2,0.15,CREAM,xf=Wd)
