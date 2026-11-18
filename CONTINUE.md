@@ -37,6 +37,12 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb>.py      # regenerate the voic
 
 Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`, `captions/safe_zone.md`, `captions/smallest_umbrella.md`, `captions/camera_under_bed.md`.
 
+## Newest work (18 Nov 2026)
+- The Smallest Umbrella (15 s, revised cut): rendered, not posted (`examples/umbrella.py`).
+- Cat POV (15 s, TikTok): rendered, not posted (`examples/cat_pov.py`). Cat Dodge Boss and The Camera Under My Bed were dropped by Enes.
+- MISS (archer + goblin, `miss/`): standalone project (numpy + Pillow + ffmpeg only), both cuts render with `python render.py --cut master|extended`; steps 1-6 done, README.md and NOTES.md (DEVIATIONS) are step 7 and not written yet. Narration is skipped (no offline TTS on that machine).
+- NEW: `WORKFLOW.md` (GPT + Claude division of work) and `CHANNEL_PROMPT.md` (briefing prompt for GPT).
+
 ## Next steps
 1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
 2. Caption for Loot Restocker (Safe Zone, One Apple and Cat POV captions are done, all three platforms).
