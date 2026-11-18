@@ -9,13 +9,14 @@ k=Kokoro(f'{TTS_DIR}/kokoro-v1.0.int8.onnx',f'{TTS_DIR}/voices-v1.0.bin')
 L=[('1a',"Why do lighthouses blink?",1.0),('1b',"One wrong choice almost sent this captain straight into the rocks.",1.05),
    ('2a',"Lost in thick fog, he spotted two lights.",1.0),('2b',"He followed the brighter, closer one.",1.0),
    ('3a',"But the fog suddenly cleared.",1.05),('3b',"A wall of jagged rocks filled his entire path.",1.05),
-   ('4a',"He spun the wheel.",1.1),('4b',"The boat was still drifting, and the rocks were getting closer.",1.05),
-   ('5a',"Then he remembered his chart.",1.0),('5b',"The lights looked similar, but their blinking patterns were different.",1.0),
-   ('6a',"On his chart, one flash marked the dangerous headland.",1.0),('6b',"Two flashes marked the harbor on the right.",1.0),
+   ('4a',"He spun the wheel.",1.1),('4b',"The boat drifted. The rocks drew closer.",1.05),
+   ('5a',"Then he remembered his chart.",1.0),('5b',"The lights looked alike. Their patterns were not.",1.0),
+   ('6a',"On his chart, one flash marked the headland.",1.0),('6b',"Two flashes marked the harbor on the right.",1.0),
    ('7a',"He counted the nearer light's flashes.",1.0),('7b',"Just one.",0.85),('7c',"He'd been following the wrong lighthouse.",1.0),
    ('8a',"Through the fog, the other light flickered.",1.0),('8b',"Once.",0.8),('8c',"Twice.",0.8),('8d',"There was still a chance.",1.0),
-   ('9a',"He steered onto the harbor approach marked on his chart, barely slipping past the rocks.",1.05),
-   ('10a',"Those flashes weren't decoration.",0.95),('10b',"They told him which lighthouse he was seeing.",0.92)]
+   ('9a',"He steered onto the charted approach, barely slipping past the rocks.",1.05),
+   ('10a',"Those flashes weren't decoration.",0.95),('10b',"They told him which lighthouse he was seeing.",0.92),
+   ('11a',"But no light warns you about what's below.",0.9)]
 SP=float(sys.argv[1]) if len(sys.argv)>1 else 1.0
 dur={}; txt={}
 for key,t,sp_ in L:

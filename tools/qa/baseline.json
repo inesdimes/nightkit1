@@ -40,9 +40,9 @@
   "0.9": "8384dd8bbc3f956b0934211257d3d720"
  },
  "examples/lighthouse.py": {
-  "0.1": "7928b4f0fe97b794fe1d2b8641fcfa7f",
-  "0.5": "2614fa1e820905464657dd7ec412e6da",
-  "0.9": "58f9944a99d56af1a7536ce92f9447d2"
+  "0.1": "59fddd1c123b2f9d80c958dd0bf19e04",
+  "0.5": "f34a48ffc1dfa2632f44b2cef8624ead",
+  "0.9": "767c75c2b9415e19eeca392b0a9cfc59"
  },
  "examples/loot_restocker.py": {
   "0.1": "0d16667637fd6ec9b0b39b612952ee35",

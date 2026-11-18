@@ -26,28 +26,30 @@ try: SCR=json.load(open(os.path.join(TTS_DIR,'lh','script.json')))
 except Exception: SCR=None
 
 # ======================= narration schedule (MEASURED sentence lengths) =======================
-ORDER=['1a','1b','2a','2b','3a','3b','4a','4b','5a','5b','6a','6b','7a','7b','7c','8a','8b','8c','8d','9a','10a','10b']
+ORDER=['1a','1b','2a','2b','3a','3b','4a','4b','5a','5b','6a','6b','7a','7b','7c','8a','8b','8c','8d','9a','10a','10b','11a']
 TEXT={'1a':"Why do lighthouses blink?",'1b':"One wrong choice almost sent this captain straight into the rocks.",'2a':"Lost in thick fog, he spotted two lights.",'2b':"He followed the brighter, closer one.",
-      '3a':"But the fog suddenly cleared.",'3b':"A wall of jagged rocks filled his entire path.",'4a':"He spun the wheel.",'4b':"The boat was still drifting, and the rocks were getting closer.",
-      '5a':"Then he remembered his chart.",'5b':"The lights looked similar, but their blinking patterns were different.",'6a':"On his chart, one flash marked the dangerous headland.",
+      '3a':"But the fog suddenly cleared.",'3b':"A wall of jagged rocks filled his entire path.",'4a':"He spun the wheel.",'4b':"The boat drifted. The rocks drew closer.",
+      '5a':"Then he remembered his chart.",'5b':"The lights looked alike. Their patterns were not.",'6a':"On his chart, one flash marked the headland.",
       '6b':"Two flashes marked the harbor on the right.",'7a':"He counted the nearer light's flashes.",'7b':"Just one.",'7c':"He'd been following the wrong lighthouse.",
       '8a':"Through the fog, the other light flickered.",'8b':"Once.",'8c':"Twice.",'8d':"There was still a chance.",
-      '9a':"He steered onto the harbor approach marked on his chart, barely slipping past the rocks.",'10a':"Those flashes weren't decoration.",'10b':"They told him which lighthouse he was seeing."}
+      '9a':"He steered onto the charted approach, barely slipping past the rocks.",'10a':"Those flashes weren't decoration.",'10b':"They told him which lighthouse he was seeing.",'11a':"But no light warns you about what's below."}
 DURS={k:(SCR['dur'][k] if SCR else 2.0) for k in ORDER}
-GAP=(DUR-0.2-sum(DURS.values()))/(len(ORDER)-1)            # equal pauses (< 0.5 s): narration runs through the whole minute
+GAP=((DUR-6.9)-0.05-sum(DURS[k] for k in ORDER[:-1]))/(len(ORDER)-1)      # equal pauses (< 0.5 s); the last sentence starts 6.9 s before the end, leaving room for the horror coda
 ST={}; _t=0.05
 for k in ORDER: ST[k]=_t; _t+=DURS[k]+GAP
 def s(k,o=0.0): return ST[k]+o
-mc.ORDER,mc.ST,mc.DURS=ORDER,ST,DURS; mc.TEXT.update(TEXT); mc.HIL|={'LIGHTHOUSES','LIGHTHOUSES?','ROCKS','ROCKS.','CHART','CHART.','FLASH','FLASHES','FLASHES.','ONE','TWO','WRONG','LIGHTHOUSE.','LIGHTHOUSE'}
+mc.ORDER,mc.ST,mc.DURS=ORDER,ST,DURS; mc.TEXT.update(TEXT); mc.HIL|={'BELOW.','LIGHT','LIGHTHOUSES','LIGHTHOUSES?','ROCKS','ROCKS.','CHART','CHART.','FLASH','FLASHES','FLASHES.','ONE','TWO','WRONG','LIGHTHOUSE.','LIGHTHOUSE'}
+SUB_F=7.5                                                          # full-resolution pixels per font pixel = 1.25x the old 6 px (the 2x subtitles were too big)
+mc.SUB_ROW=22                                                      # characters per row at that size (a row is 22 * 45 px = 990 px of 1080)
 SUBS=mc.sub_chunks(); mc.SUBS=SUBS
 _first={}
 for k in ORDER: _first.setdefault(int(''.join(c for c in k if c.isdigit())),k)
-CUTS=[0.0]+[round((ST[_first[i]]-GAP/2)*FPS)/FPS for i in range(2,11)]+[DUR]          # shot i = CUTS[i-1] .. CUTS[i]
+CUTS=[0.0]+[round((ST[_first[i]]-GAP/2)*FPS)/FPS for i in range(2,12)]+[DUR]          # shot i = CUTS[i-1] .. CUTS[i]
 def shot_of(t):
-    for i in range(1,11):
+    for i in range(1,12):
         if t<CUTS[i]: return i
-    return 10
-CAMS={1:'A',2:'A',3:'C',4:'B',5:'B',6:'B',7:'A',8:'A',9:'C',10:'A'}
+    return 11
+CAMS={1:'A',2:'A',3:'C',4:'B',5:'B',6:'B',7:'A',8:'A',9:'C',10:'A',11:'C'}
 def cam_id(t): return CAMS[shot_of(t)]
 
 # ======================= FLASH (deterministic; the same pattern whenever a light is visible) =======================
@@ -67,8 +69,14 @@ ROCK=[(6,6,12),(3,3,9),(9,9,16),(5,5,11)]; SEA=[(26,42,68),(32,50,76)]; FOGC=(58
 LIGHT_A=(255,240,205); LIGHT_B=(225,236,255)
 
 # ======================= LOCKED ASSET: the boat path (integrated from heading + speed) =======================
-YAW_K=[(0,0.02),(6,0.0),(8.0,-0.02),(9.6,-0.20),(12,-0.22),(17.9,-0.22),(20,-0.12),(23,0.02),(27,0.12),(36,0.12),(49,0.12),(50.5,0.40),(52,0.78),(54,0.80),(56,0.55),(58,0.42),(60,0.40)]
-SPD_K=[(0,2.8),(17.9,2.8),(21,0.6),(24,0.25),(27,-0.10),(49,-0.10),(50.4,1.2),(52,3.0),(54,3.6),(56,3.4),(60,3.2)]
+OLD_ST={"1a": 0.05, "1b": 2.126, "2a": 6.202, "2b": 9.269, "3a": 11.815, "3b": 13.971, "4a": 17.337, "4b": 18.803, "5a": 22.49, "5b": 24.536, "6a": 28.442, "6b": 32.328, "7a": 35.364, "7b": 38.06, "7c": 39.377, "8a": 42.173, "8b": 44.719, "8c": 45.795, "8d": 46.961, "9a": 48.628, "10a": 54.004, "10b": 56.84}
+_xo=[0.0]+[OLD_ST[k] for k in ORDER if k in OLD_ST]; _xn=[0.0]+[ST[k] for k in ORDER if k in OLD_ST]
+def warp(t): return float(np.interp(t,_xo,_xn)) if t<_xo[-1] else _xn[-1]+(t-_xo[-1])
+A0=ST['11a']                                                       # the horror coda starts with the last sentence
+_YAW0=[(0,0.02),(6,0.0),(8.0,-0.02),(9.6,-0.20),(12,-0.22),(17.9,-0.22),(20,-0.12),(23,0.02),(27,0.12),(36,0.12),(49,0.12),(50.5,0.40),(52,0.78),(54,0.80)]
+_SPD0=[(0,2.8),(17.9,2.8),(21,0.6),(24,0.25),(27,-0.10),(49,-0.10),(50.4,1.2),(52,3.0),(54,3.6)]
+YAW_K=[(warp(t),y) for t,y in _YAW0]+[(ST['10a']+1.0,0.55),(A0,0.42),(DUR+2,0.40)]                    # (path timing re-mapped onto the new, faster narration)
+SPD_K=[(warp(t),v) for t,v in _SPD0]+[(ST['10a']+1.0,3.5),(A0+0.3,3.2),(A0+1.6,0.0),(DUR+2,0.0)]       # the engine dies in the fog
 from scipy.interpolate import PchipInterpolator
 _yaw=PchipInterpolator([k[0] for k in YAW_K],[k[1] for k in YAW_K]); _spd=PchipInterpolator([k[0] for k in SPD_K],[k[1] for k in SPD_K])
 _DT=1/240.; _TS=np.arange(0,DUR+1,_DT); _X=np.zeros(len(_TS)); _Z=np.zeros(len(_TS)); _X[0]=1.4; _Z[0]=0.0
@@ -196,9 +204,10 @@ def captain_pose(t):
     look_l=-0.40*env(t,s('2a',1.0),s('2b',2.0),0.3,0.3); look_r=0.45*env(t,s('8a',0.2),s('8d',1.4),0.3,0.4)
     p['hyaw']=look_l+look_r-0.45*env(t,s('7a',0.2),s('7c',0.0),0.3,0.3)-0.55*sm(seg01(t,s('4a',0.0),s('4a',0.12)))*(1-sm(seg01(t,s('5a',0.0),s('5a',0.4))))      # snap towards the rocks
     p['hp']=0.55*env(t,s('5a',0.5),s('6b',0.4),0.4,0.5)-0.12*env(t,s('10a',0.4),DUR,0.6,0.1)
-    p['fear']=env(t,s('3b',0.0),s('4b',3.0),0.2,0.5)
+    p['fear']=max(env(t,s('3b',0.0),s('4b',3.0),0.2,0.5),env(t,A0+1.2,A0+9.0,0.3,0.1))
     p['lean']=-0.12*sm(seg01(t,s('4a',0.0),s('4a',0.15)))*(1-sm(seg01(t,s('4b',1.0),s('4b',2.5))))
-    p['relief']=env(t,s('9a',3.6),DUR,0.8,0.1)
+    p['relief']=env(t,s('9a',3.6),A0+0.4,0.8,0.5)
+    p['hyaw']+=0.55*math.sin(2.6*(t-A0))*env(t,A0+0.8,A0+9.0,0.3,0.1)                       # searching the fog
     p['eyes']=1.0-min(1.0,math.sin(PI*seg01(t,s('2a',2.0),s('2a',2.2)))+math.sin(PI*seg01(t,s('7a',1.5),s('7a',1.7))))
     return p
 
@@ -206,10 +215,108 @@ def captain_pose(t):
 def cam_shot(t):
     c=cam_id(t); x,z=boat_xz(t); yw=boat_yaw(t); bb,rl,pt=bob_pose(t); R_=Ry(yw)
     def Bw(q): return tuple(np.array([x,bb,z])+R_@np.array(q,float))
+    if shot_of(t)==11: return CAM11
     if c=='A': return Bw((0.0,2.15,-3.5)),Bw((0.0,1.75,8.0)),42.0
     if c=='B': return Bw((-1.45,1.95,1.55)),Bw((0.0,1.55,-0.1)),44.0
     if shot_of(t)==3: return (4.0,3.0,22.0),(-4.0,3.2,56.0),62.0
     return (2.5,3.4,44.0),(-3.5,3.0,62.0),62.0
+
+
+# ======================= THE ENDING: the boat is lost in the fog, a megalodon rises and swallows it =======================
+T_CONT=A0+0.6; T_SHADOW=A0+1.0; T_FIN=A0+2.4; T_BR=A0+3.5; T_CLOSE=T_BR+1.15; T_GONE=T_BR+1.5; T_FALL=T_BR+1.8; T_END=T_BR+3.2
+SX,SZ=boat_xz(A0+1.7); CAM11=((SX+5.5,2.0,SZ-11.5),(SX-0.3,4.2,SZ),58.0)
+SC=1.5; CM=np.array([0.0,0.2,-2.2]); HINGE=np.array([0.0,0.08,-4.0])
+SH_TOP=(18,22,34); SH_BEL=(128,138,152); TEETH=(236,232,214); MOUTH=(110,24,34)
+def _pyr(cx,y0,cz,hw,hd,h,ax,az,col):
+    c=[(cx-hw,y0,cz-hd),(cx+hw,y0,cz-hd),(cx+hw,y0,cz+hd),(cx-hw,y0,cz+hd)]; ap=(cx+ax,y0+h,cz+az); ctr=np.array([cx+ax/2,y0+h*0.4,cz+az/2]); Q=[]
+    for i in range(4):
+        q=_tri(c[i],c[(i+1)%4],ap,col)
+        if np.dot(q['n'],q['c']-ctr)<0: q=_tri(c[(i+1)%4],c[i],ap,col)
+        Q.append(q)
+    return Q
+def shark_local(th):
+    """megalodon in local units (snout at the origin, body trailing along -z, y up); the lower jaw hinges at HINGE and opens by th. Scaled by SC when placed."""
+    Q=box(-1.5,1.5,0.10,1.9,-4.2,-0.6,SH_TOP)+box(-0.8,0.8,0.35,1.3,-0.6,0.05,SH_TOP)+box(-1.2,1.2,0.05,0.10,-4.0,-0.4,MOUTH)           # upper jaw + snout + red roof
+    for z in np.arange(-3.9,-0.5,0.55):
+        for x in (-1.38,1.38): Q+=_pyr(x,0.06,z,0.15,0.15,-0.65,0,0,TEETH)
+    for x in np.arange(-1.0,1.01,0.5): Q+=_pyr(x,0.06,-0.75,0.15,0.15,-0.65,0,0,TEETH)
+    L=box(-1.35,1.35,-1.0,0.0,-3.9,-0.8,SH_BEL)+box(-0.7,0.7,-0.9,-0.1,-0.8,-0.2,SH_BEL)+box(-1.1,1.1,0.0,0.05,-3.6,-1.0,MOUTH)           # lower jaw + red floor
+    for z in np.arange(-3.5,-0.9,0.55):
+        for x in (-1.22,1.22): L+=_pyr(x,0.05,z,0.14,0.14,0.55,0,0,TEETH)
+    for x in np.arange(-0.8,0.81,0.4): L+=_pyr(x,0.05,-0.85,0.14,0.14,0.55,0,0,TEETH)
+    Rj=Rx(th); L=transform(L,lambda p_: tuple(HINGE+Rj@(np.array(p_,float)-HINGE)))
+    Q+=L
+    Q+=box(-1.9,1.9,-1.7,0.1,-9,-4.2,SH_BEL)+box(-1.9,1.9,0.1,2.4,-9,-4.2,SH_TOP)+box(-1.2,1.2,-1.1,0.2,-12,-9,SH_BEL)+box(-1.2,1.2,0.2,1.7,-12,-9,SH_TOP)+box(-0.55,0.55,-0.6,0.9,-15,-12,SH_TOP)
+    Q+=box(-0.12,0.12,0.9,3.6,-16.2,-14.2,SH_TOP)+box(-0.12,0.12,-2.4,-0.6,-15.6,-14.4,SH_TOP)                                       # tail fin
+    Q+=_pyr(0,2.4,-6.0,0.16,1.1,3.7,0,-0.8,SH_TOP)
+    for sx in (-1,1):                                                                                                                   # pectoral fins: a wide T-shape from the front
+        pf=box(sx*1.9,sx*4.6,-1.3,-1.1,-7.2,-5.2,SH_TOP); piv=np.array([sx*1.9,-1.2,-6.2]); Rz_=Rz(-sx*0.45)
+        Q+=transform(pf,lambda p_,piv=piv,Rz_=Rz_: tuple(piv+Rz_@(np.array(p_,float)-piv)))                                                                                      # dorsal fin
+    for sx in (-1,1): Q+=box(sx*1.5-0.02+(0.03 if sx>0 else 0),sx*1.5+0.02+(0.03 if sx>0 else 0),1.1,1.4,-1.8,-1.5,BLK)                # eyes
+    return Q
+def _unwrap(a,b):
+    d=(b-a+PI)%(2*PI)-PI; return a+d
+def shark_state(t):
+    """mouth-centre position, yaw (swims in, then turns its mouth to the camera), pitch (nose up), jaw opening. visible only from T_FIN-0.8"""
+    S0=np.array([SX-10.0,SZ+4.0]); B_=np.array([SX,SZ]); u=sm(seg01(t,T_FIN-0.8,T_BR+0.1)); xz=S0+(B_-S0)*u
+    yaw0=math.atan2(B_[0]-S0[0],B_[1]-S0[1]); yaw1=_unwrap(yaw0,math.atan2(CAM11[0][0]-SX,CAM11[0][2]-SZ)); yaw=yaw0+(yaw1-yaw0)*sm(seg01(t,T_BR-0.7,T_BR+0.6))
+    y=lerp(-5.3,4.4,sm(seg01(t,T_BR,T_BR+0.95)))
+    if t>=T_FALL: y=lerp(4.4,-12.0,sm(seg01(t,T_FALL,T_END)))
+    phi=lerp(0.0,1.1,sm(seg01(t,T_BR-0.3,T_BR+0.95)))
+    if t>=T_FALL: phi=lerp(1.1,0.25,sm(seg01(t,T_FALL,T_END)))
+    th=0.95*sm(seg01(t,T_BR+0.2,T_BR+0.75))*(1-sm(seg01(t,T_CLOSE,T_CLOSE+0.3)))
+    return np.array([xz[0],y,xz[1]]),yaw,phi,th
+def shark_xf(t):
+    M,yaw,phi,th=shark_state(t); R_=Ry(yaw)@Rx(-phi)
+    return (lambda p_: tuple(M+R_@((np.array(p_,float)-CM)*SC))),th
+def mouth_xf(t):
+    M,yaw,phi,th=shark_state(t); R_=Ry(yaw)@Rx(-phi)
+    return lambda q: tuple(M+R_@(Ry(PI/2)@np.array(q,float)+np.array([0,0.5,0.0])))
+def boat_xf_coda(t):
+    """the real boat path until the jaws reach it, then it is scooped into the mouth"""
+    n_=boat_xf(t)
+    if t<T_BR+0.35: return n_
+    m_=mouth_xf(t); u=sm(seg01(t,T_BR+0.35,T_BR+0.8))
+    return lambda q: tuple((1-u)*np.array(n_(q))+u*np.array(m_(q)))
+def _foam(t0,n,spread,vmin,vmax,seed):
+    r=np.random.default_rng(seed); return [(r.uniform(-1,1,2)*spread,r.uniform(vmin,vmax),r.uniform(-4,4,2),r.uniform(0.3,0.75)) for _ in range(n)]
+FOAM=[(T_BR+0.55,_foam(0,22,1.8,5,11,3)),(T_FALL+0.45,_foam(0,26,3.0,6,13,4))]
+def foam_quads(t):
+    Q=[]
+    for t0,P in FOAM:
+        tau=t-t0
+        if not (0<=tau<1.7): continue
+        for off,vy,vxz,sz in P:
+            x=SX+off[0]+vxz[0]*tau; z=SZ+off[1]+vxz[1]*tau; y=0.4+vy*tau-4.9*tau*tau
+            if y>0.05: Q+=box(x-sz/2,x+sz/2,y,y+sz,z-sz/2,z+sz/2,(222,234,244))
+    return Q
+def shadow_quads(t):
+    if not (T_SHADOW<=t<T_BR+0.9): return []
+    u=sm(seg01(t,T_SHADOW,T_BR)); r=lerp(1.5,6.5,u); M,yaw,phi,th=shark_state(t) if t>T_FIN-0.8 else (np.array([SX,0,SZ]),0,0,0)
+    cx,cz=(M[0],M[2]) if t>T_FIN-0.8 else (SX+8.0*(1-u),SZ+3.0*(1-u)); Q=[]; n_=14
+    for i in range(n_):
+        a0=2*PI*i/n_; a1=2*PI*(i+1)/n_; q=_tri((cx,0.06,cz),(cx+r*1.7*math.cos(a0),0.06,cz+r*math.sin(a0)),(cx+r*1.7*math.cos(a1),0.06,cz+r*math.sin(a1)),(6,10,22))
+        if q['n'][1]<0: q=_tri((cx,0.06,cz),(cx+r*1.7*math.cos(a1),0.06,cz+r*math.sin(a1)),(cx+r*1.7*math.cos(a0),0.06,cz+r*math.sin(a0)),(6,10,22))
+        Q.append(q)
+    return Q
+def rings(t):
+    """list of (cx,cz,radius,fade) water rings: little ones around the fin, big expanding ones after the breach and the fall"""
+    out=[]
+    if T_FIN<=t<T_BR+0.1:
+        M=shark_state(t)[0]
+        for k in range(3):
+            tau=(t-T_FIN)%0.6+k*0.2; out.append((M[0],M[2],0.6+tau*1.8,max(0,1-tau/1.4)))
+    for t0,sp_,ln in ((T_BR+0.9,6.0,2.4),(T_BR+1.15,6.0,2.4),(T_BR+1.4,6.0,2.4),(T_FALL+0.8,8.5,2.6),(T_FALL+1.1,8.5,2.6)):
+        tau=t-t0
+        if 0<=tau<ln: out.append((SX,SZ,1.0+tau*sp_,max(0.0,1-tau/ln)))
+    return out
+def draw_rings(a,zb,cam,fov,t):
+    for cx,cz,r,f in rings(t):
+        for ang in np.arange(0,2*PI,0.035):
+            pr=proj(cx+r*1.0*math.cos(ang),0.06,cz+r*math.sin(ang),cam,fov)
+            if not pr: continue
+            px,py=int(pr[0]),int(pr[1])
+            if 0<=px<W and 0<=py<H and (zb[py,px]==0 or pr[2]<=1.0/zb[py,px]+0.6): a[py,px]=a[py,px]*(1-0.8*f)+np.array([200,214,230],np.float32)*0.8*f
 
 # ======================= clearance (HUD + QA) =======================
 _BV=np.array([p for q in boat_local() for p in q['p']])
@@ -225,7 +332,7 @@ def clearance(t): return float(np.interp(t,_CT,_CL))
 
 # ======================= render =======================
 R=Renderer(W,H,fog=FOGC)
-def fog_end(t): return 24+70*env(t,s('3a',-0.4),s('4b',2.8),0.9,1.6)+14*env(t,s('5a',0.0),s('7c',2.5),1.0,1.0)+46*env(t,s('8a',0.0),DUR,1.2,0.1)
+def fog_end(t): return (24+70*env(t,s('3a',-0.4),s('4b',2.8),0.9,1.6)+14*env(t,s('5a',0.0),s('7c',2.5),1.0,1.0)+46*env(t,s('8a',0.0),DUR,1.2,0.1))*(1-0.62*sm(seg01(t,A0-0.3,A0+1.5)))
 _fn=np.random.default_rng(5).random((H//8+2,W//8+2))
 def _smooth_noise():
     a=np.array(Image.fromarray((_fn*255).astype(np.uint8)).resize((W,H),Image.BICUBIC),np.float32)/255.0; return a
@@ -239,24 +346,36 @@ def glow(a,pr,fpx,rm,col,k):
 def render(t):
     cp,tg,fov=cam_shot(t); cam=Camera.look(cp,tg); cpa=np.array(cp); xf=boat_xf(t); st=captain_pose(t)
     fa,fb=flash_a(t),flash_b(t); visb=0.6+0.4*env(t,s('8a',-0.3),DUR,0.8,0.1)
-    bq=transform(boat_local()+wheel(st['wheel']),xf); cq,cd=captain_local(st); cq=transform(cq,xf); cd=transform(cd,xf)
-    cd[:]=[x for x in cd if np.linalg.norm(x['c']-cpa)<np.linalg.norm(x['hc']-cpa)]
+    xo=boat_xf_coda(t); gone=t>=T_GONE
+    bq=[] if gone else transform(boat_local()+wheel(st['wheel']),xo)
+    if gone: cq,cd=[],[]
+    else:
+        cq,cd=captain_local(st); cq=transform(cq,xo); cd=transform(cd,xo); cd[:]=[x for x in cd if np.linalg.norm(x['c']-cpa)<np.linalg.norm(x['hc']-cpa)]
     lamA=transform(lantern_box(LA[0],LA[1],LA_Y,fa>0.3,LIGHT_A),lambda q:q); lamB=transform(lantern_box(LB[0],LB[1],LB_Y,fb>0.3,LIGHT_B),lambda q:q)
     lights=[(xf((0,2.7,-0.9)),(255,196,120),0.95),(xf((0,3.4,2.6)),(255,190,110),0.45),((-30,60,-10),(150,170,255),0.55)]
-    img,vi,zb=zrender(R,cam,[SEA_Q,ROCK_Q,LH_A,LH_B,MARK_Q,lamA,lamB,bq,cq,cd],lights,fov=fov,fog_start=4,fog_end=fog_end(t),ambient=0.42,bias=[1,1,1,1,1,1,1,1,1,1.004],return_z=True)
+    layers=[SEA_Q,ROCK_Q,LH_A,LH_B,MARK_Q,lamA,lamB,bq,cq,cd]; bias=[1,1,1,1,1,1,1,1,1,1.004]
+    if t>=T_SHADOW and t<T_BR+0.9: layers.insert(1,shadow_quads(t)); bias.insert(1,1.0)
+    if shot_of(t)==11:
+        lights.append(((SX+4.0,9.0,SZ-6.0),(150,170,230),0.7))
+        if T_FIN-0.8<=t<T_END+0.1: f_,th_=shark_xf(t); layers.append(transform(shark_local(th_),f_)); bias.append(1.0)
+        fq=foam_quads(t)
+        if fq: layers.append(fq); bias.append(1.0)
+    img,vi,zb=zrender(R,cam,layers,lights,fov=fov,fog_start=4,fog_end=fog_end(t),ambient=0.42,bias=bias,return_z=True)
     a=np.asarray(img).astype(np.float32)*np.array([0.9,0.96,1.1],np.float32)
     a+=FOGN[...,None]*np.array([5,6,9],np.float32)*(1.0-0.7*env(t,s('3a',-0.4),s('4b',2.8),0.9,1.6))                       # low-res 2D fog noise
-    fpx=R.view(cam,fov)[7]
-    glow(a,proj(LA[0],LA_Y-0.5,LA[1],cam,fov),fpx,3.0+4.0*fa,LIGHT_A,0.62+0.7*fa)
-    glow(a,proj(LB[0],LB_Y-0.5,LB[1],cam,fov),fpx,2.0+6.0*fb,LIGHT_B,(0.34+1.0*fb)*visb)
-    if cam_id(t)=='C': glow(a,proj(*xf((0.86,DECK_Y+0.8,-2.34)),cam,fov),fpx,0.7,(255,200,110),0.8)
-    for (mx,mz),c in ((MARK_L,(255,70,70)),(MARK_R,(70,255,120))): glow(a,proj(mx,2.9,mz,cam,fov),fpx,1.6,c,0.55*visb)
+    fpx=R.view(cam,fov)[7]; fk=1-0.7*sm(seg01(t,A0-0.3,A0+1.5))
+    draw_rings(a,zb,cam,fov,t)
+    glow(a,proj(LA[0],LA_Y-0.5,LA[1],cam,fov),fpx,3.0+4.0*fa,LIGHT_A,(0.62+0.7*fa)*fk)
+    glow(a,proj(LB[0],LB_Y-0.5,LB[1],cam,fov),fpx,2.0+6.0*fb,LIGHT_B,(0.34+1.0*fb)*visb*fk)
+    if cam_id(t)=='C' and t<T_GONE: glow(a,proj(*xo((0.86,DECK_Y+0.8,-2.34)),cam,fov),fpx,0.7,(255,200,110),0.8)
+    for (mx,mz),c in ((MARK_L,(255,70,70)),(MARK_R,(70,255,120))): glow(a,proj(mx,2.9,mz,cam,fov),fpx,1.6,c,0.55*visb*fk)
     return post.ps1(Image.fromarray(np.clip(a,0,255).astype(np.uint8))),cam,fov
 
 # ======================= HUD, chart, UI (2D overlays) =======================
 ACC,WHT,RED,GRN,CYAN=mc.ACC,mc.WHT,mc.RED,(130,255,150),mc.CYAN
 def hud(d,t):
     c=clearance(t); col=RED if c<8 and int(t*6)%2==0 else (ACC if c<16 else GRN) if c>=8 else (255,160,160)
+    if t>=T_GONE: d.rectangle([0,0,118,22],fill=(8,8,20)); font.text(d,'SIGNAL LOST',4,4,RED if int(t*4)%2==0 else (120,30,30),1,(0,0,0)); d.rectangle([4,14,4+104,19],fill=(8,8,20),outline=(120,30,30)); return
     d.rectangle([0,0,118,22],fill=(8,8,20)); font.text(d,'ROCKS',4,4,col,1,(0,0,0)); font.text(d,f'{c:.0f} M' if c<100 else '99 M',64,4,col,1,(0,0,0))
     d.rectangle([4,14,4+104,19],fill=(8,8,20),outline=col); d.rectangle([5,15,5+int(102*min(1.0,c/30)),18],fill=col)
     if c<8: font.text(d,'DANGER',74,4,RED,1,(0,0,0)) if False else None
@@ -296,18 +415,49 @@ def ui(d,t,cam,fov):
     if shot_of(t)==8:
         label_light(d,t,cam,fov,LB[0],LB_Y,LB[1],'HARBOR',GRN)
         if s('8c',0.35)<=t: mc.ui_box(d,['LIGHT','IDENTIFIED'],26,GRN if int((t-s('8c',0.35))*6)%2==0 else (220,255,225),2)
+    if shot_of(t)==11 and T_CONT<=t<T_BR+1.0 and int((t-T_CONT)*(4+3*(t-T_CONT)))%2==0: mc.ui_box(d,['UNKNOWN','CONTACT'],26,RED,2)
     if shot_of(t)==10 and s('10a',0.7)<=t: mc.ui_box(d,['LIGHTHOUSE','IDENTIFIED'],26,CYAN if int((t-s('10a',0.7))*4)%2==0 else (210,245,255),2)
 def shake(t):
-    for t0,amp in ((s('3b',0.0),2.0),(s('4a',0.1),4.0),(s('7b',0.1),2.0),(s('8b',0.08),1.5),(s('8c',0.0),1.5)):
+    for t0,amp in ((s('3b',0.0),2.0),(s('4a',0.1),4.0),(s('7b',0.1),2.0),(s('8b',0.08),1.5),(s('8c',0.0),1.5),(T_BR+0.5,3.0),(T_CLOSE+0.05,6.0),(T_FALL+0.6,3.5)):
         u=(t-t0)/0.3
         if 0<=u<1: return int(round(amp*math.sin(70*(t-t0))*(1-u))),int(round(amp*0.6*math.cos(55*(t-t0))*(1-u)))
     if 52.0<=t<54.6 and clearance(t)<2.2: return (1 if int(t*24)%2 else -1),0                                                                   # subtle vibration near the rocks
     return 0,0
-def frame(t):
+def frame_low(t):
     img,cam,fov=render(t); dx,dy=shake(t)
     if dx or dy:
         from PIL import ImageChops; img=ImageChops.offset(img,dx,dy)
-    d=ImageDraw.Draw(img); hud(d,t); ui(d,t,cam,fov); mc.subtitles(d,t); return img
+    d=ImageDraw.Draw(img); hud(d,t); ui(d,t,cam,fov); return img
+def sub_overlay(t):
+    """burned-in subtitles at 1080x1920 (7.5 px per font pixel); returns (RGB overlay, L mask) or None"""
+    for a,b,rows,key in SUBS:
+        if a<=t<b:
+            sc=SUB_F; lines=[' '.join(r) for r in rows]; lh=9.4*sc; pad=2*sc; wmax=max(font.width(l,sc) for l in lines)
+            w=wmax+2*pad; h=(len(lines)-1)*lh+7*sc+2*pad; x0=(W*S-w)/2; y0=H*S-36-h
+            ov=Image.new('RGB',(W*S,H*S),(0,0,0)); m=Image.new('L',(W*S,H*S),0); do=ImageDraw.Draw(ov); dm=ImageDraw.Draw(m)
+            dm.rectangle([round(x0),round(y0),round(x0+w)-1,round(y0+h)-1],fill=255)
+            for i,r in enumerate(rows):
+                x=x0+pad
+                for wd in r:
+                    col=ACC if wd.upper().strip('.,!?:') in mc.HIL else WHT; font.check(wd)
+                    for k_,ch in enumerate(wd.upper()):
+                        for j,row in enumerate(font.FONT[ch]):
+                            for i2,bit in enumerate(row):
+                                if bit=='1':
+                                    X=x+(k_*6+i2)*sc; Y=y0+pad+i*lh+j*sc; box_=[round(X),round(Y),round(X+sc)-1,round(Y+sc)-1]; do.rectangle(box_,fill=col); dm.rectangle(box_,fill=255)
+                    x+=font.width(wd,sc)+6*sc
+            return ov,m
+    return None
+def frame_final(t):
+    """1080x1920 float frame ready for the VHS pass (3D + HUD/UI upscaled 6x, subtitles composited at full resolution)"""
+    arr=post.upscale(frame_low(t),S); so=sub_overlay(t)
+    if so: m=np.asarray(so[1])>0; arr[m]=np.asarray(so[0])[m].astype(np.float32)
+    return arr
+def frame(t):
+    """180x320 preview used by scene_qa: the full-resolution subtitles are shrunk onto the low-res frame"""
+    img=frame_low(t); so=sub_overlay(t)
+    if so: ov=so[0].resize((W,H),Image.BOX); m=so[1].resize((W,H),Image.BOX).point(lambda v:255 if v>100 else 0); img.paste(ov,(0,0),m)
+    return img
 
 # ======================= QA manifest =======================
 def boat_state(t): return dict(base=(*boat_xz(t),),yaw=boat_yaw(t))
@@ -339,8 +489,8 @@ QA=dict(fps=FPS,dur=DUR,W=W,frame=lambda t: frame(t),chars={'captain':(_chars_st
     scenes=[dict(id=f'shot{i}',t0=CUTS[i-1],t1=CUTS[i],action=a) for i,a in enumerate((
         'foreground rock, captain at the wheel, light A flashes, ROCKS counter (cam A)','two lights in the fog, steers LEFT to the brighter one (cam A)','fog clears, wall of rocks on the left (cam C)',
         'wheel spun right, head snaps, boat still drifting (cam B)','looks down at the chart, chart overlay (cam B)','1 FLASH headland / 2 FLASHES harbor panels (cam B)',
-        'counts light A: one flash, 1 FLASH, HEADLAND (cam A)','light B flashes twice, LIGHT IDENTIFIED, HARBOR (cam A)','turns RIGHT, slips past the last rock (cam C)','harbor ahead, B flashes twice, LIGHTHOUSE IDENTIFIED (cam A)'),1)],
-    texts=lambda: [('sub',' '.join(r),mc.SUB_SC) for _,_,rows,_ in SUBS for r in rows]+[('ui',l,sc) for l,sc in (('1 FLASH',3),('LIGHT',2),('IDENTIFIED',2),('LIGHTHOUSE',2),('ROCKY HEADLAND',2),('HARBOR',2),('2 FLASHES',2),('NAUTICAL CHART',1),('HEADLAND',1),('ROCKS',1))])
+        'counts light A: one flash, 1 FLASH, HEADLAND (cam A)','light B flashes twice, LIGHT IDENTIFIED, HARBOR (cam A)','turns RIGHT, slips past the last rock (cam C)','harbor ahead, B flashes twice, LIGHTHOUSE IDENTIFIED (cam A)','fog swallows the boat, UNKNOWN CONTACT, megalodon rises and swallows it, SIGNAL LOST (cam C)'),1)],
+    texts=lambda: [('sub',' '.join(r),1.25) for _,_,rows,_ in SUBS for r in rows]+[('ui',l,sc) for l,sc in (('1 FLASH',3),('LIGHT',2),('IDENTIFIED',2),('LIGHTHOUSE',2),('ROCKY HEADLAND',2),('HARBOR',2),('2 FLASHES',2),('NAUTICAL CHART',1),('HEADLAND',1),('ROCKS',1),('UNKNOWN',2),('CONTACT',2),('SIGNAL LOST',1))])
 
 TEST=os.environ.get('TEST')
 if TEST and __name__=='__main__':
@@ -373,7 +523,7 @@ def build_audio(path):
     drone=(np.sin(2*np.pi*55*tt_all)+np.sin(2*np.pi*55.6*tt_all)+0.4*np.sin(2*np.pi*82.4*tt_all))*0.014*(0.6+0.4*np.sin(2*np.pi*0.07*tt_all))
     M+=drone
     # ---- music sections (0-12 mysterious drone + mechanical ticks / 12-30 heartbeat + tension / 30-43 quiet investigative / 43-55 build / 55-60 restrained resolution) ----
-    c2,c3,c4,c5=CUTS[3],CUTS[6],CUTS[8],CUTS[10]
+    c2,c3,c4,c5=CUTS[2],CUTS[5],CUTS[7],CUTS[9]                                                                       # starts of shots 3, 6, 8, 10 (~12 / 30 / 43 / 55 s)
     for k in range(int(c2/0.5)): note(M,0.1+k*0.5,[57,57,60,57,55,57,60,64][k%8],0.08,0.012,'sq',30.0)                    # mechanical retro ticks
     t0=c2
     while t0<c3:                                                                                                         # heartbeat-like bass pulse, speeding up
@@ -383,8 +533,10 @@ def build_audio(path):
         if m_ and c3+k*1.15<c4: note(M,c3+k*1.15,m_,1.2,0.022,'bell',3.0)
     k=0; t0=c4
     while t0<c5-0.2: note(M,t0,[45,52,57,52][k%4]+int(7*(t0-c4)/(c5-c4)),0.2,0.04,'sq',9.0); k+=1; t0+=lerp(0.34,0.14,(t0-c4)/(c5-c4))        # building ostinato
-    for m_ in (45,52,57,60): note(M,c5,m_,DUR-c5+0.3,0.03,'sin',0.5,0.4)                                               # restrained resolution
+    for m_ in (45,52,57,60): note(M,c5,m_,A0-c5+0.3,0.03,'sin',0.5,0.4)                                                # restrained resolution (until the coda)
     note(M,c5+0.6,76,2.0,0.03,'bell',1.6)
+    for m_ in (28,29,40): note(M,A0,m_,DUR-A0+0.3,0.05,'sin',0.3,0.3)                                                    # the coda: unresolved low cluster
+    M+=(np.sin(2*np.pi*1760*tt_all)*np.sin(2*np.pi*3.1*tt_all)**2*0.004*(tt_all>A0+1.0))
     # ---- foley ----
     for t0 in (2.1,6.4,9.0,14.2,21.5,26.0,31.5,37.0,44.5,48.0,56.5): creak(t0,0.55,0.03)
     for t0 in (s('2b',0.4),s('4a',0.1),s('9a',0.2)): creak(t0,0.7,0.06,380)                                           # steering wheel creaks
@@ -403,6 +555,15 @@ def build_audio(path):
     thud(s('9a',3.9),55,0.15,0.5)
     for k,m_ in enumerate((60,64,67,72)): note(M2,c5+k*0.12,m_,1.6,0.04,'bell',2.5)                                      # relieved release
     for t0 in (s('10a',0.9)+0.05,s('10a',0.9)+DB+0.05): tone(t0,784,784,0.25,0.05,harm=(1.0,0.3))
+    # ---- the coda: engine dies, sonar pings, rumble, fin, breach, chomp, splash ----
+    for k,t0 in enumerate((A0+0.95,A0+1.25,A0+1.5)): thud(t0,70-k*10,0.10,0.15); nb(t0,0.1,200,1500,0.04,1200+k)
+    tone(A0+0.9,140,60,0.8,0.04,harm=(1.0,0.5))
+    t0=A0+0.7; gp=0.9
+    while t0<T_BR+0.2: tone(t0,1500,1500,0.35,0.05,harm=(1.0,0.2)); t0+=gp; gp=max(0.3,gp*0.8)
+    tone(A0+0.8,28,46,3.0,0.12,harm=(1.0,0.4)); nb(T_FIN-0.3,1.6,3000,8000,0.05,1301,1.5)
+    thud(T_BR+0.45,38,0.45,1.0); nb(T_BR+0.2,1.3,120,3500,0.15,1302,0.6)
+    for k in range(3): nb(T_CLOSE+0.03+0.07*k,0.06,700,5000,0.22,1310+k,1.0)
+    thud(T_CLOSE+0.08,50,0.42,0.5); nb(T_FALL,1.6,150,3000,0.12,1320,0.8); thud(T_FALL+0.3,45,0.28,0.6)
     # ---- voice ----
     NB=np.zeros(n); duck=np.ones(n); mdip=np.ones(n)
     mdip[int(s('7a',1.2)*sr):int(s('7b',1.4)*sr)]=0.4                                                                    # brief music dip while counting
@@ -424,5 +585,5 @@ if __name__=='__main__' and os.environ.get('PART'):
     import subprocess
     p=subprocess.Popen(['ffmpeg','-nostdin','-v','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W*S}x{H*S}','-r',str(FPS),'-i','-','-c:v','libx264','-crf','19','-preset','medium','-pix_fmt','yuv420p',os.path.join(OUT,f'lh_{a:05d}.mp4')],stdin=subprocess.PIPE)
     vhs=post.VHS(W*S,H*S,S,grade='none',chroma=1,scan_dark=0.96,vignette=0.25,grain=1.5,band_period=1e9)
-    for f in range(a,min(b,N)): p.stdin.write(vhs(post.upscale(frame(f/FPS),S),f,f/FPS).tobytes())
+    for f in range(a,min(b,N)): p.stdin.write(vhs(frame_final(f/FPS),f,f/FPS).tobytes())
     p.stdin.close(); p.wait(); print('part done',a,b); sys.exit()
