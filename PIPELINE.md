@@ -78,3 +78,19 @@ Both versions use the same knight, boss, dungeon, barrier, style, opening shot (
 B (`final_boss_b.py`) imports A (`final_boss.py`):
 - 0–4 s and the last 3.9 s are A's `frame()` output and A's audio samples.
 - Everything in between uses A's models and set, with the B-only corridor dressing and the lever added.
+
+## Added 18 Nov 2026: critique, check and regression tools
+- **Phase 3b — critique (after a draft render, before the final):** `python tools/qa/critique.py <draft.mp4> --name <script> --round N`.
+  It measures what `scene_qa` cannot (static opening, still stretches, quiet stretches, gaps between voice-level sounds),
+  detects the real cuts (a light flicker is not a cut) and writes a sheet (12 even frames + B/A frames around each cut) to
+  `out/qa/<script>/critique_rN.png`. Each round is logged in `reviews/<script>.md` (tracked in git) with scores 1-10 for:
+  readability, motivation + timing, framing, limbs + contacts, text, cuts, sound vs picture, pacing, and the top 3 fixes.
+  Every score must be >= 8 before the final. At most 3 rounds, then Enes decides. Claude cannot listen: sound is scored by
+  Enes, Claude only reports the measurements.
+- **Phase 5 — check the final file:** `python tools/qa/check.py <final.mp4> --script examples/<script>.py`
+  (codec, 1080x1920, 24 fps, frame count, script length, -14 LUFS +/- 1, true peak <= -1 dBTP, no silent half-second,
+  `frame(t)` deterministic). Exit code 1 = not deliverable.
+- **Phase 1 — after changing a shared model, the engine, `post` or the font:** `python tools/qa/regress.py compare`
+  lists the videos whose frames changed (md5 of `frame(t)` at 10/50/90 % of the story). Re-check and re-render those.
+  After an intended, reviewed change: `python tools/qa/regress.py snapshot examples/<script>.py` (baseline:
+  `tools/qa/baseline.json`). Needs the voice lines in `tts/` (see CONTINUE.md setup), or the script shows as 'skipped'.

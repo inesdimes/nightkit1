@@ -45,6 +45,13 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - Start of a new chat: read ONLY this file and `PIPELINE.md`. Use `WORKFLOW.md` for the GPT + Claude split, `CHANNEL_PROMPT.md` is the briefing prompt for GPT.
 - NEW: `WORKFLOW.md` (GPT + Claude division of work) and `CHANNEL_PROMPT.md` (briefing prompt for GPT).
 
+## QA tools (added 18 Nov 2026)
+- `tools/qa/critique.py` (scored review rounds, log in `reviews/<script>.md`), `tools/qa/check.py` (final-file check),
+  `tools/qa/regress.py` (which videos changed after a shared change; baseline `tools/qa/baseline.json`, 13 scripts).
+  Process summary: `.claude/skills/nightkit-short/SKILL.md`; details in PIPELINE.md (last section).
+- Ghost Boo v3 critique round 1: readability / text / cuts at 7 (ghost colour jump at the camera C cut, small
+  subtitles). Not fixed yet: waiting for Enes.
+
 ## Next steps
 1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
 2. Caption for Loot Restocker (Safe Zone, One Apple and Cat POV captions are done, all three platforms).

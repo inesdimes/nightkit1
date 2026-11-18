@@ -1,0 +1,67 @@
+{
+ "examples/camera_bed.py": {
+  "0.1": "1330b1c483f50161b3da071283b46178",
+  "0.5": "c1ec6fbbf71bc5580e0025aa25c28641",
+  "0.9": "86a8ece7099f7402d14f0ba5a6d1748b"
+ },
+ "examples/cat_dodge.py": {
+  "0.1": "26e605170acc7df9f083a5ea97762126",
+  "0.5": "7afe4f59328a40aeabdcbbd820076f8c",
+  "0.9": "c8ad41f3eaa6d4fb713f8c9baf5df2ed"
+ },
+ "examples/cat_pov.py": {
+  "0.1": "aebf5798e86dca5dfeeb0a7da683e4c4",
+  "0.5": "896aa1bee5fea63e9de2e0d54f9aa2b0",
+  "0.9": "16e21fbf63235f9ef44761ffc934ac20"
+ },
+ "examples/final_boss.py": {
+  "0.1": "21722edc0171c7a62125b00d0ef8887a",
+  "0.5": "cdab138c0fc871bad0eed9cfee5ee830",
+  "0.9": "6b654500ea42c0ac4aea4d63b18d5949"
+ },
+ "examples/final_boss_b.py": {
+  "0.1": "9b42852f46a4745a3761106b81004086",
+  "0.5": "064fad3ce3415cba53d3f66a3d3c366e",
+  "0.9": "2906b16372930fe68cde09b5438766af"
+ },
+ "examples/ghost_boo.py": {
+  "0.1": "f68b5782fe9a4b5f954a5e764f643c38",
+  "0.5": "9ec0ec2919e770d7878e0c942b467d8f",
+  "0.9": "08db9c7da71ad9567a05397146d672f2"
+ },
+ "examples/guard_forgets.py": {
+  "0.1": "7009154f1bb186a73ed6549734936b10",
+  "0.5": "b6f030a7895aa0f0bc52102ea26d05f3",
+  "0.9": "4277232e384ddcb9032d87d2c0f9df09"
+ },
+ "examples/guard_forgets_b.py": {
+  "0.1": "3bb18937e3203c76880d63460b35da17",
+  "0.5": "583f56d20c77ffc81fe0e70f7576b5be",
+  "0.9": "8384dd8bbc3f956b0934211257d3d720"
+ },
+ "examples/loot_restocker.py": {
+  "0.1": "0d16667637fd6ec9b0b39b612952ee35",
+  "0.5": "903d2bf5d83ae5b8ec0bc0bb11cc5f35",
+  "0.9": "bb9b708936ee382c04f078faa7aafa90"
+ },
+ "examples/one_apple.py": {
+  "0.1": "28146333208f1af1574efa698ac1f645",
+  "0.5": "6aa2691ddd8562dae16538bf488800d5",
+  "0.9": "f93aad17ae87eead836ad5d3814eadf7"
+ },
+ "examples/one_apple_15.py": {
+  "0.1": "1a0d7cb6c090aa4184481f4603e19f8b",
+  "0.5": "bca5ffd52c67b9b96d3022824faaf53f",
+  "0.9": "b785c67e224bc134581368a6b7752f4e"
+ },
+ "examples/safe_zone.py": {
+  "0.1": "d15b18481482cfb1e2d6acb8f1cf0a6a",
+  "0.5": "727578e460c85b574b0b18b72659cbc1",
+  "0.9": "8209ee6e5af78ead0749a325e30e09ab"
+ },
+ "examples/umbrella.py": {
+  "0.1": "272c7ddba2f3c88fbef28521e4f5d16b",
+  "0.5": "1bb53d46c13b2e7ee98d76160ebc02dd",
+  "0.9": "2029329154b693b0015cfb5e20c5dbe7"
+ }
+}
