@@ -21,4 +21,4 @@ Enes writes in Turkish; answer in Turkish.
 - Claude cannot listen: report sound by measurement (RMS / peak), Enes judges it.
 
 ## End of every session
-Update `CONTINUE.md` (video table + newest work), commit, push. Videos are never committed.
+Update `CONTINUE.md` (video table + newest work) and commit locally. Do NOT push to GitHub: since 18 Nov 2026 this PC is the home of the repo (Enes's decision). Videos are never committed.
