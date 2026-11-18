@@ -39,6 +39,7 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 | Why Do Mirrors Copy Us? **v2** (34 s, closer camera, SYNC HUD) | examples/mirror_copy_v2.py (imports mirror_copy.py; voice `tools/tts/mc2.py`) | rendered 18 Nov: critique round 1 all >= 8, `check.py` 9/9 -> `deliverables/why_do_mirrors_copy_us_v2_34s.mp4`; not posted; the 60 s cut had a glint bug (stripe crossed the robot), fixed in `mirror_copy.glint()` (60 s file not re-rendered) |
 | Why Do Lighthouses Blink? (60.0 s, PS1 maritime horror) | examples/lighthouse.py (voices `tools/tts/lh.py 1.0`; captain follows the wrong light, is lost, a megalodon (side profile, boat lying in its open jaws) swallows the boat; subtitles 1.25x at 1080x1920) | FINAL 18 Nov, `check.py` 9/9 -> `deliverables/why_do_lighthouses_blink_60s.mp4` (older cuts kept in deliverables: `_v1_calm_ending`, `_v2_escape_then_shark`, `_v3_front_shark`); not posted |
 | Misty Valley pilot (7.0 s, Blender 5.3 EEVEE, no narration, SFX only) | blender/misty_pilot.py (MODE=preview/final/audio/mux; frames + MP4 in `~/Documents/blender-shorts/renders/misty_pilot/`) | FINAL 18 Nov: 1080x1920, 96 samples, motion blur -> `misty_pilot_final.mp4`; not posted. Note: EEVEE world volume blocks sun/sky since 4.2, so haze is a volume box |
+| One Small Mistake #01: The Save That Killed Him (41.6 s, PS1 dark comedy) | examples/save_killed.py (voice `tools/tts/sk.py`, Kokoro bm_george speed 1.25; reuses FB knight + L10 hall; new purple crystal, potion, HUD/pause menu) | FINAL 18 Nov (approved by Enes): critique r1-r2 all >= 8, `check.py` 12/13 (WARN = planned flash pops) -> `renders/save_killed/the_save_that_killed_him_41s.mp4`; not posted. 41.6 s not 30 s: the brief's 115 words do not fit Kokoro's pace. 15 s TikTok cut next |
 | One Apple 15 s cut (15.25 s) | examples/one_apple_15.py (imports v4 assets; voice `tools/tts/ap15.py`) | rendered, not posted; for **TikTok** |
 
 Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`, `captions/safe_zone.md`, `captions/smallest_umbrella.md`, `captions/camera_under_bed.md`.
@@ -70,6 +71,13 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 
 ## In progress: THE LAST 10 SECONDS (series), ep. 1 "The Dungeon Collapse"
 - Enes chose the idea (collapsing dungeon, HUD timer 10.0 -> 0.0, loss aversion, ends with one apple). Script `examples/last10_collapse.py` (58 s), voice `tools/tts/l10.py`. Draft 2 rendered, critique round 2 in `reviews/last10_collapse.md`; not posted. Open: pacing of the 19-30 s thought beat.
+
+## Local PC notes (18 Nov 2026, Enes's Windows PC)
+- Setup done here: `pip install scipy soundfile kokoro-onnx onnx`, Kokoro files in `tts/`, ffmpeg via `winget install Gyan.FFmpeg`
+  (new shells: `$env:Path += ";$env:LOCALAPPDATA\Microsoft\WinGet\Links"` until restart). Renders go to `..\renders\<project>\`.
+- kokoro-onnx 0.4.7 has no `create_timed`: `tools/tts/emph.py` now has a fallback that reads the duration output of `kokoro-dur.onnx`.
+- `tools/qa/scene_qa.py`: new optional `allow_teleport=[(who,t)]` for planned in-shot resets (respawn under a white flash).
+- PowerShell 5.1: `Start-Process -Environment` does not exist; set `$env:PART` before each `Start-Process` for parallel parts.
 
 ## Next steps
 1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
