@@ -342,7 +342,7 @@ def render(t):
     glow=1.0+0.08*math.sin(t*5.0) if ls['on'] else 0.0
     lights=[((ls['pos'][0],ls['pos'][1]+0.1,ls['pos'][2]-0.15),(255,196,100),0.75*glow),((cpa[0],2.4,-1.0),(110,130,230),0.0)]
     layers=[COR_F,COR_W,jq,jd,gq,gd,lq]
-    img,vi,zb=zrender(R,cam,layers,lights,fov=fov,fog_start=5,fog_end=16,ambient=0.34 if t<53.0 else 0.68,bias=[1,1,1,1.004,1,1.004,1.0],return_z=True)
+    img,vi,zb=zrender(R,cam,layers,lights,fov=fov,fog_start=5,fog_end=16,ambient=0.34 if t<53.0 else 0.45,bias=[1,1,1,1.004,1,1.004,1.0],return_z=True)
     a=np.asarray(img).astype(np.float32)
     a=a*np.array([0.82,0.9,1.12],np.float32)                                              # dark blue ambient grade
     # 2D lantern glow: banded, additive, warm; vanishes while the lantern is off
@@ -382,23 +382,28 @@ if _BS[-1]<DUR: _BO.append(_BO[-1]+(DUR-_BS[-1])/FAST); _BS.append(DUR)
 N_OUT=int(math.ceil(_BO[-1]*FPS)); DUR_OUT=N_OUT/FPS
 def SRC(to): return float(np.interp(to,_BO,_BS))
 def OUTT(ts): return float(np.interp(ts,_BS,_BO))
+SUB_SC=2; SUB_ROW=13                                                               # v4: 2x subtitles, <= 13 characters per row (fits 180 px)
 def sub_chunks():
-    """split every line into short chunks (<= 2 rows of ~15 chars), timed by character share over the measured voice length"""
-    out=[]
+    """wrap each line into rows of <= SUB_ROW characters (a row also ends at a sentence end; a short word like 'a' / 'the'
+    never dangles at a row end), show the rows two at a time, timed by character share over the measured voice length"""
+    out=[]; END=('.','?','!'); WEAK={'a','the','to','his','he','so'}
     for key,t0,txt in LINES:
-        dur=(SCR['dur'][key] if SCR else 2.0); words=txt.split(' '); n=sum(len(w)+1 for w in words); chunks=[]; cur=[]
+        dur=(SCR['dur'][key] if SCR else 2.0); words=txt.split(' '); n=sum(len(w)+1 for w in words)
+        rows=[]; r=[]
         for w in words:
-            if cur and (sum(len(x)+1 for x in cur)+len(w)>15 or (cur[-1].endswith(('.','?','!','...')) and len(cur)>=2)): chunks.append(cur); cur=[]
-            cur.append(w)
-        if cur: chunks.append(cur)
-        pos=0
+            if r and (sum(len(x)+1 for x in r)+len(w)>SUB_ROW or r[-1].endswith(END)): rows.append(r); r=[]
+            r.append(w)
+        rows.append(r)
+        for i in range(len(rows)-1):                                                      # move a dangling short word down
+            if len(rows[i])>1 and rows[i][-1].lower() in WEAK and sum(len(x)+1 for x in rows[i+1])+len(rows[i][-1])<=SUB_ROW: rows[i+1].insert(0,rows[i].pop())
+        chunks=[]; c=[]
+        for rw in rows:
+            c.append(rw)
+            if len(c)==2 or rw[-1].endswith(END): chunks.append(c); c=[]
+        if c: chunks.append(c)
+        pos=0; o0=OUTT(t0)                                                                # output time
         for ch in chunks:
-            L=sum(len(x)+1 for x in ch); o0=OUTT(t0); a=o0+dur*pos/n; b=o0+dur*(pos+L)/n; pos+=L                # output time
-            rows=[]; r=[]
-            for w in ch:
-                if r and sum(len(x)+1 for x in r)+len(w)>14: rows.append(r); r=[]
-                r.append(w)
-            rows.append(r); out.append((a,b+0.12,rows,key))
+            L=sum(len(x)+1 for rw in ch for x in rw); a=o0+dur*pos/n; b=o0+dur*(pos+L)/n; pos+=L; out.append((a,b+0.12,ch,key))
     for i in range(len(out)-1):                                                           # chunk stays until the next one starts (inside the same line)
         if out[i][3]==out[i+1][3]: out[i]=(out[i][0],out[i+1][0],out[i][2],out[i][3])
     return out
@@ -406,10 +411,11 @@ SUBS=sub_chunks()
 def subtitles(d,t):
     for a,b,rows,key in SUBS:
         if a<=t<b:
-            lines=[' '.join(r) for r in rows]; w=max(font.width(l,1) for l in lines)+10; x0=(W-w)//2; y0=266; d.rectangle([x0,y0,x0+w,y0+len(lines)*10+5],fill=(0,0,0))
+            sc=SUB_SC; lh=7*sc+3; lines=[' '.join(r) for r in rows]; w=max(font.width(l,sc) for l in lines)+4*sc; h=len(lines)*lh+2*sc
+            x0=(W-w)//2; y0=H-6-h; d.rectangle([x0,y0,x0+w,y0+h],fill=(0,0,0))                    # anchored to the bottom edge, clear of faces and the lantern
             for i,r in enumerate(rows):
-                x=x0+5
-                for wd in r: font.text(d,wd,x,y0+3+i*10,ACC if wd.upper().strip('.,!?') in {'BOO','\'BOO\'','LANTERN','PANICKED','DARK','NIGHTLIGHT'} or wd.upper() in HIL else WHT,1,None); x+=font.width(wd,1)+6
+                x=x0+2*sc
+                for wd in r: font.text(d,wd,x,y0+2*sc+i*lh,ACC if wd.upper().strip('.,!?') in {'BOO','\'BOO\'','LANTERN','PANICKED','DARK','NIGHTLIGHT'} or wd.upper() in HIL else WHT,sc,None); x+=font.width(wd,sc)+6*sc
 def ui_box(d,lines,y,col,sc=2,blink=0):
     w=max(font.width(l,sc) for l in lines)+12; x0=(W-w)//2; h=len(lines)*(7*sc+3)+8
     d.rectangle([x0,y,x0+w,y+h],fill=(8,8,20),outline=col); d.rectangle([x0+2,y+2,x0+w-2,y+h-2],outline=(60,60,100))
@@ -466,7 +472,7 @@ QA=dict(fps=FPS,dur=DUR,W=W,frame=lambda t: frame(t),chars={'ghost':(ghost_state
             dict(id='scare',t0=38.0,t1=46.0,action='ghost dashes in front, BOO lunge, janitor hops (cam A)'),
             dict(id='left_behind',t0=46.0,t1=53.0,action='hard cut: lantern on the floor, janitor flees right, ghost approaches (cam A)'),
             dict(id='payoff',t0=53.0,t1=60.0,action='ghost lifts the lantern, curls up beside it; NIGHTLIGHT UNLOCKED (cam C)')],
-    texts=lambda: [('ui',l,1) for _,_,rows,_ in SUBS for l in [' '.join(r) for r in rows]]+[('ui',l,2) for l in ('ATTEMPT 1:','ATTEMPT 2:','FAILED','SCARE','SUCCESS!','NIGHTLIGHT','UNLOCKED')])
+    texts=lambda: [('ui',l,SUB_SC) for _,_,rows,_ in SUBS for l in [' '.join(r) for r in rows]]+[('ui',l,2) for l in ('ATTEMPT 1:','ATTEMPT 2:','FAILED','SCARE','SUCCESS!','NIGHTLIGHT','UNLOCKED')])
 
 TEST=os.environ.get('TEST')
 if TEST and __name__=='__main__':

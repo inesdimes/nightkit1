@@ -29,3 +29,27 @@ Top 3 fixes this round:
 
 Status: below 8 on readability / text / cuts -> not cleared for a new final. Waiting for Enes (v3 was already delivered before this tool existed).
 
+## Round 2 - 2026-11-18 - why_do_ghosts_say_boo.mp4
+
+- duration 44.17 s, 1060 frames, 4 cuts at 16.46, 26.79, 32.58, 37.71
+- opening motion (first 1 s): 1.31
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 0.4 s
+- sheet: out/qa/ghost_boo/critique_r2.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) | 8 | ghost keeps its colour into the payoff; both eyes readable in every sampled frame |
+| motivation + timing | 8 | unchanged from round 1 |
+| framing | 8 | 2x subtitles sit on the bottom edge, below the ghost and the lantern in every camera |
+| limbs + contacts | 8 | knock hand ~10 cm short of the wall (not visible from camera A), kept |
+| text | 8 | 2x subtitles, max 2 rows of <= 13 characters, widest row 162 of 180 px; no dangling one-word rows |
+| cuts | 8 | 37.67 -> 37.71 colour now matches (camera C ambient 0.68 -> 0.45) |
+| sound vs picture | n/a | audio unchanged from v3; Enes judges |
+| pacing | 8 | unchanged: no still or quiet stretch, longest voice gap 0.4 s |
+
+Top 3 fixes this round: none blocking.
+
+Status: every scored criterion >= 8 -> cleared. check.py 9/9. Delivered as v4.
+
