@@ -36,6 +36,14 @@ def make_arrow(tail, direction, scale=1.0):
     F += oriented_box(t + d * 0.02 * s, B, (0.02 * s, 0.014, 0.003), mat(ARROW_FLETCH))
     return F
 
+CRATE_SIZE = (0.10, 0.07, 0.07)
+def make_arrow_crate(center, yaw_deg=0.0, n=3):
+    """the small crate of arrows the goblin brings in the extended cut: one box + n shafts sticking out (n is visible)"""
+    c = np.asarray(center, float); F = aabb(c, CRATE_SIZE, mat('#6B5638'))
+    for i in range(n):
+        x = (i - (n - 1) / 2) * 0.028; F += limb_box(c + [x, 0.02, 0], c + [x, 0.12, 0.0], 0.009, mat(ARROW_SHAFT)) + aabb(c + [x, 0.11, 0], (0.014, 0.025, 0.004), mat(ARROW_FLETCH))
+    return transform_faces(F, rot_y(D(yaw_deg)), c - rot_y(D(yaw_deg)) @ c)
+
 # ============================================================================= ARCHER
 C_HOOD = '#2E2A3A'; C_TUNIC = '#3E7A6B'; C_SKIN = '#C9A27E'; C_BOOT = '#6B4A2F'; C_QUIVER = '#4A3B2A'; C_EYE = '#1E1E1E'; C_BOW = '#6B4A2F'; C_STRING = '#D8D0B8'
 HIP_Y = 0.44
@@ -50,12 +58,13 @@ ARCHER_POSES = {
  'LOOK_AT_BOARD': dict(L=(-30, -65, 90, -60), R=(95, -75, 190, -75), head_yaw=85,  head_pitch=0,  pitch=0, eyes='NEUTRAL', mouth='FLAT',    arrow=None,    bow_rot=0,  stance=0.065),
  'SIGH':          dict(L=(-10, -75, 85, -75), R=(95, -75, 190, -75), head_yaw=0,   head_pitch=8,  pitch=2, eyes='NEUTRAL', mouth='SMALL_O', arrow=None,    bow_rot=0,  stance=0.065),
 }
-ARCHER_DEFAULT = dict(pos=(2.6, -0.55), yaw=0.0, pose='IDLE', eyes=None, mouth=None, quiver=6, arrow=None, roll=0.0, pitch=None, head_yaw=None, head_pitch=None, bow_rot=None, arms=None)
+ARCHER_DEFAULT = dict(pos=(2.8, -0.40), stance=None, yaw=0.0, pose='IDLE', eyes=None, mouth=None, quiver=6, arrow=None, roll=0.0, pitch=None, head_yaw=None, head_pitch=None, bow_rot=None, arms=None)
 
 def _archer(state):
     s = dict(ARCHER_DEFAULT); s.update(state); P = dict(ARCHER_POSES[s['pose']])
     for k in ('head_yaw', 'head_pitch', 'pitch', 'bow_rot', 'eyes', 'mouth'):
         if s[k] is not None: P[k] = s[k]
+    if s['stance'] is not None: P['stance'] = s['stance']
     if s['arrow'] is not None: P['arrow'] = None if s['arrow'] == 'none' else s['arrow']
     if s['arms'] is not None: P.update(s['arms'])
     tunic, boot = mat(C_TUNIC), mat(C_BOOT)
@@ -81,7 +90,7 @@ def _archer(state):
         upper += limb_box(S_, E, 0.05, tunic) + limb_box(E, Hh, 0.05, tunic)
     hand_L, hand_R = pts['L'][2], pts['R'][2]
     # ---- head: hood box 0.26 x 0.22 x 0.20 + a hood peak (0.26 total with the peak), a flat skin panel, two eyes, one mouth. face texture = swappable quads
-    head = aabb((0, 0.85, 0), (0.26, 0.22, 0.20), mat(C_HOOD)) + oriented_box((0, 0.985, -0.035), rot_x(D(-25)), (0.05, 0.022, 0.05), mat(C_HOOD))
+    head = aabb((0, 0.85, 0), (0.26, 0.22, 0.20), mat(C_HOOD)) + oriented_box((0, 0.958, -0.035), rot_x(D(-25)), (0.05, 0.022, 0.05), mat(C_HOOD))
     head += aabb((0, 0.855, 0.101), (0.16, 0.12, 0.004), mat(C_SKIN))
     ez = 0.1035; eye = mat(C_EYE)
     def q(cx, cy, w, h, z=ez): return quad_face([(cx - w / 2, cy - h / 2, z), (cx + w / 2, cy - h / 2, z), (cx + w / 2, cy + h / 2, z), (cx - w / 2, cy + h / 2, z)], eye, up=(0, 0, 1))
@@ -113,6 +122,7 @@ def _archer(state):
     W_ = lambda p: yaw @ _rot_pt(Ru, pv, p) + t                                   # local point -> world point (the same chain the faces go through)
     if 'arrow_tail' in info: info['arrow_tail'] = W_(info['arrow_tail']); info['arrow_dir'] = yaw @ Ru @ info['arrow_dir']
     info['hand_L'] = W_(hand_L); info['hand_R'] = W_(hand_R); info['bow_grip'] = W_(Bc)
+    info['elbow_L'] = W_(pts['L'][1]); sa = _rot_pt(Rb, Bc, Bc + np.array([-0.06, 0.17, 0])); sb = _rot_pt(Rb, Bc, Bc + np.array([-0.06, -0.17, 0])); info['string_a'] = W_(sa); info['string_b'] = W_(sb)
     chain = lambda F: transform_faces(_group(F, Ru, pv), yaw, t)
     info['string_aabb'] = _faces_aabb(chain(string)); info['left_forearm_aabb'] = _faces_aabb(chain(limb_box(pts['L'][1], pts['L'][2], 0.05, tunic)))
     faces = transform_faces(legs + upper, yaw, t)
@@ -138,7 +148,7 @@ GOBLIN_POSES = {          # arm = (az, el), one 0.14 segment each; leg swing in 
  'SHRUG':   dict(L=(0, -80), R=(180, -80)),
 }
 WALK_CYCLE = [(25, -25, 0.0), (0, 0, 0.012), (-25, 25, 0.0), (0, 0, 0.012)]   # (left leg swing, right leg swing, body lift): a 4-frame cycle
-GOBLIN_DEFAULT = dict(pos=(6.45, 0.0), yaw=-90.0, pose='STAND', head_yaw=0.0, head_pitch=None, pupil=None, blink=None, squash=None, phase=0, carry=None)
+GOBLIN_DEFAULT = dict(pos=(6.55, 0.0), arms=None, walk=False, arm_lift=0.0, carry_item='arrow', yaw=-90.0, pose='STAND', head_yaw=0.0, head_pitch=None, pupil=None, blink=None, squash=None, phase=0, carry=None)
 
 def _goblin(state):
     s = dict(GOBLIN_DEFAULT); s.update(state); P = dict(GOBLIN_POSES[s['pose']])
@@ -146,7 +156,8 @@ def _goblin(state):
         if s[k] is not None: P[k] = s[k]
     P.setdefault('head_pitch', 0); P.setdefault('pupil', (0, 0)); P.setdefault('blink', False); P.setdefault('squash', 1.0); P.setdefault('carry', False)
     body = mat(C_GOB); F = []; lift = 0.0; swing = (0, 0)
-    if s['pose'] == 'WALK': a, b, lift = WALK_CYCLE[s['phase'] % 4]; swing = (a, b)
+    if s['arms']: P.update(s['arms'])
+    if s['pose'] == 'WALK' or s['walk']: a, b, lift = WALK_CYCLE[s['phase'] % 4]; swing = (a, b)
     for sx, sw in ((1, swing[0]), (-1, swing[1])):                                   # legs: two short boxes, 0.16 tall
         hip = np.array([sx * 0.04, 0.16 + lift, 0]); end = hip + 0.16 * np.array([0, -math.cos(D(sw)), math.sin(D(sw))])
         F += limb_box(hip, end, 0.065, body, 0.07)
@@ -155,24 +166,25 @@ def _goblin(state):
     # arms (one 0.14 segment each); in the walk they swing opposite to the legs
     arms = {}
     for sx, key in ((1, 'L'), (-1, 'R')):
-        az, el = P[key]; sh = np.array([sx * 0.095, 0.30 + lift, 0]); d = dirv(az, el)
+        az, el = P[key]; el = el + (s['arm_lift'] if P['carry'] else 0); sh = np.array([sx * 0.095, 0.30 + lift, 0]); d = dirv(az, el)
         if s['pose'] == 'WALK':                                                     # in the walk the arms swing opposite to the same-side leg
             ang = D(swing[1 if sx == 1 else 0]) * 0.9; d = np.array([sx * 0.05, -math.cos(ang), math.sin(ang)]); d /= np.linalg.norm(d)
         arms[key] = sh + 0.14 * d; F += limb_box(sh, arms[key], 0.04, body)
-    if P['carry']:                                                                  # the arrow lies across both hands
-        mid = (arms['L'] + arms['R']) / 2; F += make_arrow(mid - np.array([0.15, 0, 0]), (1, 0, 0))
+    if P['carry']:                                                                  # the arrow (or the small arrow crate) lies across both hands
+        mid = (arms['L'] + arms['R']) / 2
+        F += make_arrow(mid - np.array([0.15, 0, 0]), (1, 0, 0)) if s['carry_item'] == 'arrow' else make_arrow_crate(mid + np.array([0, 0.045, 0.02]), 0.0, 3)
     # head: 0.20 x 0.16 x 0.16 box + two big ears angled outward; eyes (sclera + pupil), one mouth line
-    head = aabb((0, 0.40 + lift, 0), (0.20, 0.16, 0.16), body)
-    for sx in (1, -1): head += oriented_box((sx * 0.15, 0.468 + lift, 0), rot_z(D(sx * 25)), (0.05, 0.03, 0.01), mat(C_EAR))
+    head = aabb((0, 0.404 + lift, 0), (0.20, 0.16, 0.16), body)
+    for sx in (1, -1): head += oriented_box((sx * 0.15, 0.472 + lift, 0), rot_z(D(sx * 25)), (0.05, 0.03, 0.01), mat(C_EAR))
     zf = 0.0815; sc, pu, dk = mat(C_SCLERA), mat(C_PUPIL), mat(C_PUPIL)
     def q(cx, cy, w, h, m, z=zf): return quad_face([(cx - w / 2, cy - h / 2, z), (cx + w / 2, cy - h / 2, z), (cx + w / 2, cy + h / 2, z), (cx - w / 2, cy + h / 2, z)], m, up=(0, 0, 1))
-    ey = 0.415 + lift
+    ey = 0.419 + lift
     for sx in (1, -1):
         if P['blink']: head += [q(sx * 0.045, ey, 0.045, 0.008, dk)]
         else:
             head += [q(sx * 0.045, ey, 0.045, 0.05, sc)]
             px, py = P['pupil']; head += [q(sx * 0.045 + px * 0.012, ey + py * 0.012, 0.02, 0.025, pu, zf + 0.0006)]
-    head += [q(0, 0.355 + lift, 0.05, 0.004, dk)]
+    head += [q(0, 0.359 + lift, 0.05, 0.004, dk)]
     neck = np.array([0, 0.32 + lift, 0]); Rh = rot_y(D(s['head_yaw'])) @ rot_x(D(P['head_pitch'])); F += _group(head, Rh, neck)
     yaw = rot_y(D(s['yaw'])); t = np.array([s['pos'][0], 0, s['pos'][1]]); faces = transform_faces(F, yaw, t)
     if P['squash'] != 1.0: faces = squash_faces(faces, P['squash'])

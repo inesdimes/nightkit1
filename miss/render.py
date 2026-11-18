@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """MISS - a PS1-style corridor short. Headless, deterministic. Dependencies: numpy, Pillow and ffmpeg (via subprocess), nothing else.
 
-  python render.py --cut master      -> out/MISS_15s_master.mp4      (steps 5-6, not built yet)
-  python render.py --cut extended    -> out/MISS_30s_extended.mp4    (steps 5-6, not built yet)
+  python render.py --cut master      -> out/MISS_15s_master.mp4  (+ out/contact_master.png, out/stills/, out/qa_report.txt)
+  python render.py --cut extended    -> out/MISS_30s_extended.mp4 (+ out/contact_extended.png, out/stills/, out/qa_report.txt)
 
 Debug / review outputs (steps 1-4):
   python render.py --debug world     -> out/debug/*  the five cameras, a turntable and the camera asserts
@@ -16,6 +16,11 @@ import raster as R
 import font as FNT
 import world as WORLD
 import characters as CH
+import timeline as T
+import scene as SC
+import audio as AU
+import qa as QA
+import subprocess, time
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out')
 
@@ -72,13 +77,57 @@ def debug_poses():
     Image.fromarray(grid(cells, 4, labels, zoom=3)).save(os.path.join(OUT, 'contact_poses.png'))
     print('wrote', os.path.join(OUT, 'contact_poses.png'))
 
+def shot_name(cut, f):
+    for sid, a, b in T.CUTS[cut]['shots']:
+        if a <= f < b: return sid
+    return T.CUTS[cut]['shots'][-1][0]
+
+def contact_sheet(cut):
+    """one frame per shot, labelled with the shot id and the frame number; the individual stills go to out/stills/"""
+    frames = T.CUTS[cut]['sheet']; os.makedirs(os.path.join(OUT, 'stills'), exist_ok=True); cells, labels = [], []
+    for f in frames:
+        img, _ = SC.frame180(cut, f); cells.append(img); sid = shot_name(cut, f); labels.append(f'{sid}  f{f}')
+        Image.fromarray(R.upscale(img)).save(os.path.join(OUT, 'stills', f'{cut}_{sid}_f{f:03d}.png'))
+    cols = 3 if len(cells) <= 6 else 4
+    Image.fromarray(grid(cells, cols, labels, zoom=2)).save(os.path.join(OUT, f'contact_{cut}.png'))
+
+def write_qa_reports(cut, res):
+    txt, counts = QA.format_report(cut, res); os.makedirs(OUT, exist_ok=True)
+    open(os.path.join(OUT, f'qa_report_{cut}.txt'), 'w').write(txt)
+    parts = [open(os.path.join(OUT, f'qa_report_{c}.txt')).read() for c in ('master', 'extended') if os.path.exists(os.path.join(OUT, f'qa_report_{c}.txt'))]
+    open(os.path.join(OUT, 'qa_report.txt'), 'w').write('\n'.join(parts)); return counts
+
+def render_cut(cut, force=False):
+    C = T.CUTS[cut]; N = C['frames']; os.makedirs(OUT, exist_ok=True); t0 = time.time()
+    wav = os.path.join(OUT, f'{cut}.wav'); ai = AU.build_audio(cut, wav, OUT)                       # audio first: the QA reports its loudness
+    res = QA.run_qa(cut, ai); counts = write_qa_reports(cut, res)
+    print(f'[{cut}] QA: {counts["PASS"]} pass, {counts["FAIL"]} fail, {counts["DEVIATION"]} deviation (see out/qa_report.txt)')
+    if counts['FAIL'] and not force:
+        for st, rule, detail in res:
+            if st == 'FAIL': print('  FAIL', rule, '->', detail)
+        print('Refusing to encode with failing asserts (use --force to override).', file=sys.stderr); sys.exit(1)
+    path = os.path.join(OUT, C['file'])
+    cmd = ['ffmpeg', '-nostdin', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{R.W * R.SCALE}x{R.H * R.SCALE}', '-r', '24', '-i', '-', '-i', wav,
+           '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-c:a', 'aac', '-b:a', '192k', '-r', '24', '-movflags', '+faststart', '-shortest', path]
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+    for f in range(N):
+        img, _ = SC.frame180(cut, f); p.stdin.write(np.ascontiguousarray(R.upscale(img)).tobytes())
+    p.stdin.close(); rc = p.wait()
+    if rc: print('ffmpeg failed', file=sys.stderr); sys.exit(1)
+    contact_sheet(cut)
+    return dict(cut=cut, frames=N, seconds=N / 24, path=path, size=os.path.getsize(path), counts=counts, lufs=ai['lufs'], peak=ai['peak_db'], narration=ai['narration'], secs=time.time() - t0)
+
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument('--cut', choices=['master', 'extended']); ap.add_argument('--debug', choices=['world', 'poses', 'all'])
-    a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument('--cut', choices=['master', 'extended']); ap.add_argument('--debug', choices=['world', 'poses', 'all', 'qa'])
+    ap.add_argument('--force', action='store_true', help='encode even if an assert FAILs'); a = ap.parse_args()
     if a.debug in ('world', 'all'): debug_world()
     if a.debug in ('poses', 'all'): debug_poses()
+    if a.debug == 'qa':
+        for c in ('master', 'extended'): res = QA.run_qa(c); print(QA.format_report(c, res)[0])
     if a.cut:
-        print(f'--cut {a.cut}: the shot timeline, subtitles, audio and mux are steps 5-6 and are not built yet.', file=sys.stderr); sys.exit(2)
+        r = render_cut(a.cut, a.force)
+        print(f"\n{r['cut']}: {r['frames']} frames = {r['seconds']:.2f} s, {r['size'] / 1e6:.1f} MB -> {r['path']}\n"
+              f"QA: {r['counts']['PASS']} pass / {r['counts']['FAIL']} fail / {r['counts']['DEVIATION']} deviation; loudness {r['lufs']:.1f} LUFS, peak {r['peak']:.1f} dBFS; {r['narration']}; took {r['secs']:.0f} s")
     if not a.cut and not a.debug: ap.print_help()
 
 if __name__ == '__main__': main()

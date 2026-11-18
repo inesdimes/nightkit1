@@ -1,0 +1,141 @@
+=== master cut: 32 PASS, 0 FAIL, 3 DEVIATION ===
+PASS      arrow ledger: floor + hands + crate + in flight == arrows released, at every frame (quiver never grows)
+          -> 360 frames checked
+PASS      arrow ledger checkpoints from the brief
+          -> 6 checkpoints
+DEVIATION brief's master ledger says 'handed to the archer = 1 in hand, floor 1'
+          -> conservation gives floor 2 (3 released = 1 in hand + 2 on the floor)
+PASS      quiver shows one shaft fewer per release
+          -> 6 -> 3 shafts
+PASS      archer scale: world height identical in every shot (pose lean allowed)
+          -> archer 0.981..1.000 (target 1.00)
+PASS      goblin scale: 0.52 world units (52 % of the archer), measured in every standing/walking frame
+          -> goblin 0.506..0.520; ratio 0.52
+PASS      projected archer height matches the expected range in every camera
+          -> CAM A: archer 75-76 px tall, expected 75-76 px (fpx*H/depth); CAM B: archer 96-96 px tall, expected 95-95 px (fpx*H/depth); CAM D: archer 78-78 px tall, expected 77-77 px (fpx*H/depth)
+PASS      no character box intersects another character / the board (AABB each frame)
+          -> worst: none; goblin max x 6.758 (< 6.96, ears vs wall in CAM C)
+PASS      bow string never touches the hand (string to the last 30 % of the left forearm, thickness included)
+          -> min clearance +0.002 units at frame 53
+PASS      no camera position is inside any wall AABB (every frame, incl. the CAM A push-in)
+          -> ok
+PASS      CAM A: camera is not inside any wall
+          -> ok
+PASS      CAM A: clear line of sight to the target
+          -> ok
+PASS      CAM B: camera is not inside any wall
+          -> ok
+PASS      CAM B: clear line of sight to the target
+          -> ok
+PASS      CAM C: camera is not inside any wall
+          -> ok
+PASS      CAM C: clear line of sight to the target
+          -> ok
+PASS      CAM D: camera is not inside any wall
+          -> ok
+PASS      CAM D: clear line of sight to the target
+          -> ok
+PASS      CAM E: camera is not inside any wall
+          -> ok
+PASS      CAM E: clear line of sight to the target
+          -> ok
+PASS      no arrow ever penetrates the wall plane or the board (tip x <= 7.0)
+          -> max tip x 7.0000
+PASS      arrows travel in a straight line at constant speed and stop at the wall plane
+          -> 3 flights, speed variation 8.9e-16
+PASS      no face is shown larger than 1/4 of the frame height (projected head height)
+          -> largest 30 px (goblin head, frame 245); limit 80 px
+PASS      no cut shorter than 29 frames (1.20 s)
+          -> shortest camera span 66 frames; first cut at frame 92
+PASS      CAM A frames the archer in the left third and the board in the right third
+          -> archer x=0.24, board x=0.80
+PASS      no subtitle overlaps another
+          -> 5 lines
+PASS      every subtitle fits on at most two lines
+          -> max 2 lines (width 172px)
+PASS      subtitles never cover the goblin's face or the bullseye (moved up 4 px when needed)
+          -> 0 frames needed a lift, 0 collisions left
+DEVIATION subtitle 'Five shots. Five misses.' is kept exactly as written
+          -> the master cut shows 3 shots (1 + 2), the extended 4 before it; text is not changed
+PASS      never more than two popups on screen at once
+          -> max 1
+PASS      the goblin ducks AFTER each arrow has already missed (duck frame > arrow arrival)
+          -> release 53: arrival 59, duck 77, release 106: arrival 112, duck 113, release 134: arrival 140, duck 142
+PASS      only frame 686 (extended) is a duck with no arrow before it
+          -> duck frames without an arrow: []
+DEVIATION goblin ducks 6 frames after miss_blip in every shot (duck_step sfx 6 frames after miss_blip)
+          -> frame table gives MISS 70/duck 77 (+7), MISS 115/duck 113 (-2), MISS 144/duck 142 (-2)
+PASS      integrated loudness is -16 LUFS (ffmpeg ebur128)
+          -> -16.00 LUFS
+PASS      peaks under -1 dBFS
+          -> -1.12 dBFS
+
+=== extended cut: 32 PASS, 0 FAIL, 2 DEVIATION ===
+PASS      arrow ledger: floor + hands + crate + in flight == arrows released, at every frame (quiver never grows)
+          -> 720 frames checked
+PASS      arrow ledger checkpoints from the brief
+          -> 9 checkpoints
+PASS      quiver shows one shaft fewer per release
+          -> 6 -> 1 shafts
+PASS      archer scale: world height identical in every shot (pose lean allowed)
+          -> archer 0.983..1.000 (target 1.00)
+PASS      goblin scale: 0.52 world units (52 % of the archer), measured in every standing/walking frame
+          -> goblin 0.506..0.520; ratio 0.52
+PASS      projected archer height matches the expected range in every camera
+          -> CAM A: archer 74-76 px tall, expected 74-76 px (fpx*H/depth); CAM B: archer 96-96 px tall, expected 95-95 px (fpx*H/depth); CAM D: archer 77-77 px tall, expected 76-76 px (fpx*H/depth)
+PASS      no character box intersects another character / the board (AABB each frame)
+          -> worst: none; goblin max x 6.924 (< 6.96, ears vs wall in CAM C)
+PASS      bow string never touches the hand (string to the last 30 % of the left forearm, thickness included)
+          -> min clearance +0.002 units at frame 53
+PASS      no camera position is inside any wall AABB (every frame, incl. the CAM A push-in)
+          -> ok
+PASS      CAM A: camera is not inside any wall
+          -> ok
+PASS      CAM A: clear line of sight to the target
+          -> ok
+PASS      CAM B: camera is not inside any wall
+          -> ok
+PASS      CAM B: clear line of sight to the target
+          -> ok
+PASS      CAM C: camera is not inside any wall
+          -> ok
+PASS      CAM C: clear line of sight to the target
+          -> ok
+PASS      CAM D: camera is not inside any wall
+          -> ok
+PASS      CAM D: clear line of sight to the target
+          -> ok
+PASS      CAM E: camera is not inside any wall
+          -> ok
+PASS      CAM E: clear line of sight to the target
+          -> ok
+PASS      no arrow ever penetrates the wall plane or the board (tip x <= 7.0)
+          -> max tip x 7.0000
+PASS      arrows travel in a straight line at constant speed and stop at the wall plane
+          -> 5 flights, speed variation 1.8e-15
+PASS      no face is shown larger than 1/4 of the frame height (projected head height)
+          -> largest 40 px (goblin head, frame 541); limit 80 px
+PASS      no cut shorter than 29 frames (1.20 s)
+          -> shortest camera span 82 frames; first cut at frame 92
+PASS      CAM A frames the archer in the left third and the board in the right third
+          -> archer x=0.24, board x=0.80
+PASS      no subtitle overlaps another
+          -> 8 lines
+PASS      every subtitle fits on at most two lines
+          -> max 2 lines (width 172px)
+PASS      subtitles never cover the goblin's face or the bullseye (moved up 4 px when needed)
+          -> 0 frames needed a lift, 0 collisions left
+DEVIATION 'S8 button: NO subtitle' vs 'f658-701 Not once.' inside S8
+          -> the explicit frame line wins: "Not once." shows 658-701, S8 has no other subtitle
+PASS      never more than two popups on screen at once
+          -> max 1
+PASS      the goblin ducks AFTER each arrow has already missed (duck frame > arrow arrival)
+          -> release 53: arrival 59, duck 77, release 106: arrival 112, duck 113, release 134: arrival 140, duck 142, release 163: arrival 169, duck 170
+PASS      only frame 686 (extended) is a duck with no arrow before it
+          -> duck frames without an arrow: [686]
+DEVIATION goblin ducks 6 frames after miss_blip in every shot (duck_step sfx 6 frames after miss_blip)
+          -> frame table gives MISS 70/duck 77 (+7), MISS 115/duck 113 (-2), MISS 144/duck 142 (-2), MISS 173/duck 170 (-3)
+PASS      integrated loudness is -16 LUFS (ffmpeg ebur128)
+          -> -16.10 LUFS
+PASS      peaks under -1 dBFS
+          -> -1.11 dBFS
