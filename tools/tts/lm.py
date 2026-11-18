@@ -8,7 +8,7 @@ import numpy as np, soundfile as sf
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 import emph
 from kokoro_onnx import Kokoro
-ap=argparse.ArgumentParser(); ap.add_argument('--voice',default='bm_george'); a=ap.parse_args()
+ap=argparse.ArgumentParser(); ap.add_argument('--voice',default='bm_george'); ap.add_argument('--stress',action='store_true',help='apply the *word* stress marks (off by default: Enes found it changed the voice too much)'); a=ap.parse_args()
 TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','tts'))
 OUT=os.path.join(TTS_DIR,'lm'); os.makedirs(OUT,exist_ok=True); TMP=tempfile.gettempdir()
 DUR=f'{TTS_DIR}/kokoro-dur.onnx'
@@ -33,7 +33,7 @@ dur={}; txt={}; bad=0
 for key,w0,w1,sents in D:
     parts=[]
     for s,sp,st,g,pause in sents:
-        b=emph.trim(emph.render(k,a.voice,sp,'en-gb',s,pitch=st,gain=g),0.01,120,360)
+        b=emph.trim(emph.render(k,a.voice,sp,'en-gb',s if a.stress else s.replace('*',''),pitch=st,gain=g),0.01,120,360)
         parts.append(np.zeros(int(pause*SR))); parts.append(b)
     y=np.concatenate(parts); y,r=fit(y,w1-w0); y=y/np.max(np.abs(y))*0.95
     nz=np.where(np.abs(y)>0.01)[0]; y=y[:nz[-1]+1200]; sf.write(os.path.join(OUT,key+'.wav'),y,SR)
