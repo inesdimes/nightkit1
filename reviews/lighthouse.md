@@ -1,0 +1,54 @@
+# Review log - lighthouse
+
+Every score >= 8 before the final render; at most 3 rounds, then the decision goes to Enes.
+
+## Round 1 - 2026-11-18 - lighthouse_draft1.mp4
+
+- duration 60.00 s, 1440 frames, 19 cuts at 11.67, 17.21, 23.00, 23.04, 23.08, 23.12, 23.17, 23.21, 23.25, 28.29, 28.33, 28.38, 28.42, 28.46, 28.50, 35.21, 38.08, 48.50, 53.88
+- opening motion (first 1 s): 0.73
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 0.2 s
+- sheet: out/qa/lighthouse/critique_r1.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) | 7 | both lights too faint: the brighter/closer vs dimmer/farther difference is not clear in shot 2 |
+| motivation + timing | 8 | flashes sit on "Just one." / "Once. Twice."; chart appears on "remembered his chart" |
+| framing | 8 | frame 0 shows a large rock + ROCKS 5 M; cam C boat is small |
+| limbs + contacts | 8 | scene_qa clean, hull never closer than 0.7 m to a rock |
+| text | 8 | 1 FLASH box covers light A when it flashes |
+| cuts | 8 | hard cuts only |
+| sound vs picture | 8 | measured only; Enes judges the sound |
+| pacing | 8 | no still / quiet stretch |
+
+Top 3 fixes this round:
+1. raise the baseline glow of both lights (A clearly brighter / bigger than B)
+2. move the 1 FLASH box away from light A and clamp the HEADLAND label
+3. slightly brighter ambient 
+
+## Round 2 - 2026-11-18 - lighthouse_draft2.mp4
+
+- duration 60.00 s, 1440 frames, 20 cuts at 2.17, 11.67, 17.21, 23.00, 23.04, 23.08, 23.12, 23.17, 23.21, 23.25, 28.29, 28.33, 28.38, 28.42, 28.46, 28.50, 35.21, 38.08, 48.50, 53.88
+- opening motion (first 1 s): 0.76
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 0.2 s
+- sheet: out/qa/lighthouse/critique_r2.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) | 8 | A brighter/larger than B, both countable; fog still murky by design |
+| motivation + timing | 8 | unchanged |
+| framing | 8 | 1 FLASH box no longer covers the flash |
+| limbs + contacts | 8 | unchanged |
+| text | 8 | labels clamped inside the frame |
+| cuts | 8 | unchanged |
+| sound vs picture | 8 | measured only; Enes judges the sound |
+| pacing | 8 | unchanged |
+
+Top 3 fixes this round:
+1. none blocking (all >= 8)
+2. optional: boat is small in cam C (shots 3, 9)
+3. optional: lighthouse towers are invisible in the fog 
+
