@@ -25,7 +25,7 @@ box=FB.box; xform=FB.xform
 WHT=(242,238,226); YEL=(255,210,60); RED=(240,50,40); GRN=(80,220,90); CYAN=(70,230,255); BLU=(110,170,255)
 
 # ======================= voice timings (locked in briefs/lightning_missed.md) =======================
-LINES=[('1',0.25),('2',4.57),('3',8.16),('4',12.87),('5',16.23),('6',21.35),('7',26.18),('8',29.14)]
+LINES=[('1',0.25),('2',4.57),('3',8.16),('4',12.87),('5',16.23),('6',21.5),('7',26.18),('8',28.8)]
 try: SCR=json.load(open(os.path.join(TTS_DIR,'lm','script.json')))
 except Exception: SCR=json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','tools','tts','scripts','lm_text.json')))
 CUTS=[0.0,4.57,12.87,26.0,DUR]                            # CAM 01 | CAM 02 | CAM 03 (replay) | CAM 04
@@ -35,7 +35,7 @@ def replay_clock(t): return 9.4+(t-REPLAY0)*0.121       # slow motion: strike 2 
 
 # ======================= LOCKED ASSET: the courtyard =======================
 STONE=(70,76,92); STONE_D=(52,57,70); STONE_L=(92,98,116); CHAR=(22,20,24); WOOD=(92,62,36); DARKR=(120,22,30); DARKR2=(86,14,22)
-PILLAR=(-2.6,3.8); PW=0.8; PH=2.9                          # pillar centre x,z / width / height (1.6 x knight)
+PILLAR=(-2.2,3.6); PW=0.8; PH=2.9                          # pillar centre x,z / width / height (1.6 x knight)
 GX=3.3; ZF=4.6; DW=1.3; DH=2.4; FH=3.8                     # guardhouse door centre x, facade plane z, door width/height, facade height
 HINGE=GX-DW/2; FACADE=(GX-2.4,GX+2.4)
 def floor_tiles():
@@ -52,6 +52,9 @@ def courtyard():
     Q+=box(-8.4,-7.6,0,3.0,-3,10,STONE_D)                                      # left wall
     for z in range(-3,10,2): Q+=box(-8.4,-7.6,3.0,3.5,z,z+1,STONE_D)
     Q+=box(10.6,11.4,0,3.0,-3,10,STONE_D)                                      # right wall
+    for tx in (-7.4,9.6):                                                       # corner towers: the castle behind the guardhouse
+        Q+=box(tx-1.2,tx+1.2,0,6.6,8.6,10.6,STONE)+box(tx-1.5,tx+1.5,6.6,7.0,8.3,10.9,STONE_L)
+        for kx in (-1.3,0.0,1.3): Q+=box(tx+kx-0.3,tx+kx+0.3,7.0,7.5,8.3,8.9,STONE_L)
     return Q
 def pillar(charred):
     x,z=PILLAR; c=CHAR if charred else STONE; cl=(40,36,42) if charred else STONE_L
@@ -87,7 +90,7 @@ IDLE_LH=(-0.27,0.86,0.04)
 def kmodel(**st):
     st=dict(st); st.pop('shield',None); lh=st.get('lh') or IDLE_LH; st['lh']=lh
     return FB.knight(**st)+_shield(st['base'],st['yaw'],lh,st.get('lean',0.0),st.get('run',0.0),st.get('sit',0.0))
-START=(-1.7,0.0,2.0); CROUCH=(2.2,0.0,3.0); DOOR_IN=(GX,0.0,ZF+1.6)
+START=(-1.0,0.0,2.0); CROUCH=(2.2,0.0,3.0); DOOR_IN=(GX,0.0,ZF+1.6)
 def kstate(t):
     """the knight in story time"""
     base=START; yaw=PI; d=dict(walk=0.0,run=0.0,lean=0.0,head=0.0,sit=0.0,lh=IDLE_LH,rh=None,sword='none')
@@ -125,14 +128,15 @@ def view_state(t):
 def creep(t,t0,rate=0.0016): return motion.creep(t,t0,rate,FPS)
 def cam_shot(t):
     if t<CUTS[1]:  # CAM 01: close three-quarter, knight fills ~55 % of the height, slow push
-        k=creep(t,0.0,0.0022); tgt=(-1.7,1.0,2.0); pos=motion.dolly((-1.25,1.25,0.5),tgt,k); return dict(cam=pos,tgt=tgt,fov=62)
+        k=creep(t,0.0,0.0022); tgt=(-1.0,1.0,2.0); pos=motion.dolly((-0.55,1.25,0.5),tgt,k); return dict(cam=pos,tgt=tgt,fov=62)
     if t<CUTS[2]:  # CAM 02: wide, pillar left / guardhouse right, tracking glide 8.1-9.3 then push
-        g=motion.glide(seg01(t,8.1,9.3)); tgt=lerp3((-0.3,1.0,3.4),(1.2,1.0,3.6),g); pos0=lerp3((-0.3,1.5,-0.6),(0.5,1.4,-0.4),g)
-        pos=motion.dolly(pos0,tgt,creep(t,CUTS[1],0.0014)); return dict(cam=pos,tgt=tgt,fov=74)
+        g=motion.glide(seg01(t,8.1,9.3)); tgt=lerp3((-0.3,1.0,3.5),(1.2,1.0,3.6),g); pos0=lerp3((-0.3,1.5,-0.1),(0.5,1.4,0.1),g)
+        pos=motion.dolly(pos0,tgt,creep(t,CUTS[1],0.0014)); return dict(cam=pos,tgt=tgt,fov=70)
     if t<CUTS[3]:  # CAM 03: low three-quarter on the boots (both on adjacent tiles), slow orbit-like glide at 21.4
-        g=motion.glide(seg01(t,21.4,23.2)); tgt=(2.25,0.6,3.0)
-        pos0=lerp3((0.4,1.0,0.9),(0.1,1.15,1.2),g); pos=motion.dolly(pos0,tgt,creep(t,CUTS[2],0.0013)); return dict(cam=pos,tgt=tgt,fov=50)
-    tgt=(3.0,1.4,4.6); pos=motion.dolly((1.0,1.6,1.5),tgt,creep(t,CUTS[3],0.0016)); return dict(cam=pos,tgt=tgt,fov=64)   # CAM 04
+        g=motion.glide(seg01(t,21.4,23.2)); tgt=(2.25,0.65,3.0)
+        pos0=lerp3((4.3,1.1,0.9),(3.9,0.85,0.5),g); pos=motion.dolly(pos0,tgt,creep(t,CUTS[2],0.0013)); return dict(cam=pos,tgt=tgt,fov=52)
+    g=motion.glide(seg01(t,29.0,31.0)); tgt=lerp3((3.0,1.4,4.6),(3.0,1.9,6.0),g); pos0=lerp3((1.0,1.6,1.5),(1.6,2.3,-2.2),g)
+    pos=motion.dolly(pos0,tgt,creep(t,31.0 if t>=31.0 else CUTS[3],0.0012)); return dict(cam=pos,tgt=tgt,fov=lerp(64,72,g))   # CAM 04: pulls back to show the castle
 def flash_amt(t):
     f=0.0
     for s,v in ((S1,1.0),(S2,1.0),(S3,0.4),(16.9,0.35)):

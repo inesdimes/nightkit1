@@ -26,3 +26,27 @@ Top 3 fixes this round:
 1. CAM 02: bring the camera closer so the knight is larger (the pillar + door must stay in frame)
 2. CAM 03: show the boots from the side rather than the back (boots on two tiles must read)
 3. last 6 s: the closed door alone is a still-ish hold; add the castle in frame (wider CAM 04) so "equipped the whole castle" is literal
+## Round 2 - 2026-11-18 - lightning_missed_draft2.mp4
+
+- duration 33.00 s, 792 frames, 16 cuts at 0.04, 0.08, 0.12, 0.25, 4.58, 9.88, 9.92, 10.00, 12.88, 16.96, 17.00, 19.92, 26.00, 28.54, 28.58, 28.62
+- opening motion (first 1 s): 6.33
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 0.7 s
+- sheet: out/qa/lightning_missed/critique_r2.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) | 8 | knight, shield and door read; the HIGH / LOW labels sit close to the path line |
+| motivation + timing | 8 | beats on measured TTS starts; the replay strike lands on "You see" |
+| framing | 8 | CAM 02 knight ~33 % (was ~20 %), pillar and guardhouse both in frame; CAM 03 now shows the knight from the front with the boots on two tiles; CAM 04 pulls back to the castle |
+| limbs + contacts | 8 | scene_qa clean; the crouch is still a little stiff |
+| text | 9 | all UI and subtitles fit |
+| cuts | 8 | 3 hard cuts as briefed; flash frames show as pops in check.py (intended) |
+| sound vs picture | 8 | measured only: no silence, gap 0.7 s, -14.0 LUFS, -1.8 dBTP; the new emotion direction is for Enes to judge by ear |
+| pacing | 8 | the pull-back glide (29-31 s) keeps the end moving |
+
+Top 3 fixes this round:
+1. (none blocking) crouch pose could be softer
+2. HIGH / LOW labels: move away from the path line
+3. emotion in the voice: judged by Enes, adjust the direction table in tools/tts/lm.py
