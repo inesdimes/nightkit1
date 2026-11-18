@@ -40,6 +40,17 @@ WHAT WE LEARNED FROM OUR ANALYTICS (small numbers, observations not laws)
 - What we try on every new video: a big, close, moving character in the very first frame; the story starts within ~6 s; no silent or empty stretches; one clear payoff at the end; game-logic hooks ("Why can... but not...?").
 - Reach does not turn into followers yet (about +1 subscriber per video).
 
+STORY SHAPE THAT FITS 30-60 s (borrowed idea, use as a default, not a law)
+1. Hook = a paradox stated as fact in the first sentence, no setup (about 10-16 words). Example shape: "Why can ... but not ...?"
+2. Setting in 1-2 short lines, concrete details.
+3. Escalation in 3-6 beats, each a little bigger; one or two exaggeration jokes.
+4. One mystery beat ("Wait, ...?").
+5. Pivot ("You see, ...") to the real reason, ideally through an everyday analogy.
+6. Short ironic payoff in the last 1-2 sentences; the video ends on the last word.
+- Narration about 3.5-4 words per second, plain spoken English, no pauses over 0.25 s.
+- Show every sentence literally on screen; a prop carries the joke. Never describe in words what the viewer already sees.
+- Every visual reaction lands 0-3 frames BEFORE its word.
+
 OUR RULES
 - Hook in the first 1-2 seconds, no clickbait, no end cards, no logos, English narration, subtitles exactly as spoken.
 - One video per day per platform; check stats after 48 hours.

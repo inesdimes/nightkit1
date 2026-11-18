@@ -94,3 +94,19 @@ B (`final_boss_b.py`) imports A (`final_boss.py`):
   lists the videos whose frames changed (md5 of `frame(t)` at 10/50/90 % of the story). Re-check and re-render those.
   After an intended, reviewed change: `python tools/qa/regress.py snapshot examples/<script>.py` (baseline:
   `tools/qa/baseline.json`). Needs the voice lines in `tts/` (see CONTINUE.md setup), or the script shows as 'skipped'.
+
+## Added 18 Nov 2026: camera and readability rules (ideas from an outside Remotion/three.js short pipeline; our engine is different)
+Observations to apply in storyboards and to look for in critique rounds, not hard rules.
+- **Camera:** hard cuts on big position jumps; everything else is a smooth glide (about 0.75-1.7 s). Every hold creeps
+  (slow push-in), so no stretch of 12+ frames is fully static (`critique.py` already reports still stretches). Impact shakes
+  flip sign each frame and decay within about 7 frames. Tilts of 4-5 degrees add drama; no random hand-held float.
+- **Timing:** reactions start 0-3 frames before the word they illustrate. Lock the picture timing before the sound is made;
+  a later timing change means re-running the audio.
+- **Readability traps (check on every contact sheet):**
+  - a prop closer than about 2 m to the lens becomes a huge cut-off blob at the frame edge: keep it recognisable or remove it
+  - a foreground object cut by the frame edge reads as a meaningless shape
+  - a hanging or swinging object drawn with a single line can read as a hanging: show the full structure
+  - a sign lit from the side goes grey and unreadable: give text faces an unlit material
+  - a rail or bar at chest height crossing a character reads as bars through the torso: move the lens or the rail
+- **Final-file check idea (not implemented yet):** per-frame scan for black, white, frozen and sudden-pop frames, ignoring
+  planned flashes and crossfades (the outside repo does this in `short_qa.py`); would extend `tools/qa/check.py`.
