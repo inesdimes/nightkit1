@@ -1,6 +1,6 @@
 # Continuation note — Insert Disc 2 (18 Nov 2026)
 
-Paste this into a new chat. Repo: `inesdimes/nightkit1`, branch `ccr-bf35ef55-cb0f4r` (latest work, includes everything from
+Paste this into a new chat. Repo: `inesdimes/nightkit1`, branch `ccr-91720a78-gihjic` (latest work, includes everything from `ccr-bf35ef55-cb0f4r` and
 `ccr-f9cdf9b1-6cua2c`; not on `main`). A new session may only be allowed to push to its own branch: create it from this one.
 Read first: `HANDOFF.md` (channel, rules, video table), `PIPELINE.md` (production + QA process), `ANALYTICS.md` (data, observations).
 

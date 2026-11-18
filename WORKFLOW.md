@@ -1,5 +1,7 @@
 # WORKFLOW — GPT + Claude, one video at a time (Insert Disc 2)
 
+GPT's briefing prompt (jobs A-F) is `CHANNEL_PROMPT.md`: paste everything below its `---` line at the start of a new GPT chat.
+
 Goal: better videos with less Claude usage. GPT does the cheap thinking (ideas, briefs, captions, analytics). Claude does only what needs code, rendering and QA.
 Rule of thumb: **one video = one fresh Claude session.** A long chat drowns in old previews and gets worse. The repo files are the memory, not the chat.
 
@@ -9,15 +11,16 @@ Rule of thumb: **one video = one fresh Claude session.** A long chat drowns in o
 | 1. Idea list (10 ideas, filtered by what the engine can do) | GPT (use `CHANNEL_PROMPT.md`, job A) | 10 one-line ideas | none |
 | 2. Pick one idea | Enes | 1 idea | none |
 | 3. Production brief (storyboard, narration, timing) | GPT (job B) | brief | none |
-| 4. Brief lint (see §3) | GPT, second pass | brief with MUST / NICE-TO-HAVE | none |
-| 5. Plan + build + QA + render | **Claude, fresh session** | mp4 + contact sheet | the only expensive step |
+| 4. Brief lint (see §3) | GPT, second pass (job C) | corrected brief with MUST / NICE-TO-HAVE + list of changes | none |
+| 5. Script lint, plan, build, QA, render | **Claude, fresh session** (`tools/qa/script_lint.py` first) | mp4 + contact sheet | the only expensive step |
 | 6. Review (watch the mp4, list fixes in ONE message) | Enes | one numbered list | none |
 | 7. Fixes | Claude, same session, only changed shots | new mp4 | small |
-| 8. Captions, titles, hashtags, pinned comment | GPT (job C) | `captions/<video>.md` | none |
-| 9. Post, 48 h later read the numbers | Enes -> GPT (job D) | notes for `ANALYTICS.md` | none |
+| 8. Captions, titles, hashtags, pinned comment | GPT (job D) | `captions/<video>.md` | none |
+| 9. Post, 48 h later read the numbers | Enes -> GPT (job E) | notes for `ANALYTICS.md` | none |
+| 10. Optional second opinion on a finished video (notes / contact sheet) | GPT (job F) | scores + top 3 fixes | none |
 
 ## 2. Opening a fresh Claude session (copy this)
-> Repo `inesdimes/nightkit1`, branch `ccr-f9cdf9b1-6cua2c`. Read `CONTINUE.md` and `PIPELINE.md` only. Task: build the video in the brief below. Reuse existing assets, do not rebuild anything unchanged. Show a short plan first, wait for my OK, then build.
+> Repo `inesdimes/nightkit1`, branch `ccr-91720a78-gihjic` (the newest; if a newer one exists, use that). Read `CONTINUE.md` and `PIPELINE.md` only. Task: build the video in the brief below. Reuse existing assets, do not rebuild anything unchanged. Show a short plan first, wait for my OK, then build.
 > [paste the brief]
 
 Why it works: the new session reads ~3 small files instead of 600 messages of history.
@@ -28,6 +31,7 @@ Why it works: the new session reads ~3 small files instead of 600 messages of hi
 - Every requirement is tagged MUST or NICE-TO-HAVE. Claude builds MUST first.
 - Exact seconds for each shot, exact narration text, and which characters from the asset list are reused.
 - Max 4 camera setups for a 15 s video, 6 for 30 s.
+- The full list of brief rules (hook, narration pace, camera, readability traps) is in `CHANNEL_PROMPT.md` under BRIEF RULES; GPT applies it in jobs B and C.
 - Cheapest videos: reuse a locked asset (knight, skeleton, goblin, cat, duckling + dog, archer). Expensive: any new character or room.
 
 ## 4. Claude usage budget (so the week does not run out)
