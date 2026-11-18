@@ -1,6 +1,7 @@
-# Continuation note — Insert Disc 2 (17 Nov 2026)
+# Continuation note — Insert Disc 2 (18 Nov 2026)
 
-Paste this into a new chat. Repo: `inesdimes/nightkit1`, branch `ccr-f9cdf9b1-6cua2c` (all work is here, not on `main`).
+Paste this into a new chat. Repo: `inesdimes/nightkit1`, branch `ccr-bf35ef55-cb0f4r` (latest work, includes everything from
+`ccr-f9cdf9b1-6cua2c`; not on `main`). A new session may only be allowed to push to its own branch: create it from this one.
 Read first: `HANDOFF.md` (channel, rules, video table), `PIPELINE.md` (production + QA process), `ANALYTICS.md` (data, observations).
 
 ## Working agreement
@@ -42,7 +43,7 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - The Smallest Umbrella (15 s, revised cut): rendered, not posted (`examples/umbrella.py`).
 - Cat POV (15 s, TikTok): rendered, not posted (`examples/cat_pov.py`). Cat Dodge Boss and The Camera Under My Bed were dropped by Enes.
 - MISS (archer + goblin, `miss/`): standalone project (numpy + Pillow + ffmpeg only), both cuts render with `python render.py --cut master|extended`; steps 1-6 done, README.md and NOTES.md (DEVIATIONS) are written (step 7 done). Narration is skipped (no offline TTS on that machine).
-- Start of a new chat: read ONLY this file and `PIPELINE.md`. Use `WORKFLOW.md` for the GPT + Claude split, `CHANNEL_PROMPT.md` is the briefing prompt for GPT.
+- Start of a new chat: read ONLY this file and `PIPELINE.md` (the skill `.claude/skills/nightkit-short` has the production order). Use `WORKFLOW.md` for the GPT + Claude split, `CHANNEL_PROMPT.md` is the briefing prompt for GPT.
 - NEW: `WORKFLOW.md` (GPT + Claude division of work) and `CHANNEL_PROMPT.md` (briefing prompt for GPT).
 
 ## QA tools (added 18 Nov 2026)
