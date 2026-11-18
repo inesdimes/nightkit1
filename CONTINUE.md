@@ -67,6 +67,9 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 ## In progress: The Lightning Missed (series: What Happens Next?)
 - Enes approved a NEW series inside Insert Disc 2 (real science fact + retro-game logic joke; do not repeat old formats). Voice locked (80 words, ~32.8 s), decisions in `briefs/lightning_missed.md`. Next: asset lock (courtyard, shield, poses) -> `examples/lightning_missed.py`.
 
+## In progress: THE LAST 10 SECONDS (series), ep. 1 "The Dungeon Collapse"
+- Enes chose the idea (collapsing dungeon, HUD timer 10.0 -> 0.0, loss aversion, ends with one apple). Script `examples/last10_collapse.py` (58 s), voice `tools/tts/l10.py`. Draft 2 rendered, critique round 2 in `reviews/last10_collapse.md`; not posted. Open: pacing of the 19-30 s thought beat.
+
 ## Next steps
 1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
 2. Caption for Loot Restocker (Safe Zone, One Apple and Cat POV captions are done, all three platforms).

@@ -69,7 +69,6 @@ def render(k,voice,speed,lang,text,pitch=0.0,gain=0.0):
     plain,words,marks=parse(text)
     a,sr,T=k.create_timed(plain,voice,speed,lang)
     full=resample_poly(a,SR,sr) if sr!=SR else a
-    spans=word_spans(T,len(words),SR)
-    y=apply(full,spans,marks) if marks else full
+    y=apply(full,word_spans(T,len(words),SR),marks) if marks else full
     if abs(pitch)>0.01: y=shape(y,pitch,1.0,0)
     return y*10**(gain/20)

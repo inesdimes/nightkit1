@@ -1,0 +1,32 @@
+{
+ "text": {
+  "1": "He had ten seconds to escape the dungeon, and he spent four of them looting.",
+  "2": "The ceiling is crumbling. The exit is forty steps away.",
+  "3": "He grabs one chest. Overencumbered. His speed drops to almost nothing.",
+  "4": "So he swaps it for a smaller chest. Still too heavy.",
+  "5": "Wait. Why doesn't he just drop everything and run?",
+  "6": "You see, losing something hurts twice as much as gaining it feels good. Scientists call it loss aversion.",
+  "7": "So he drops his loot one item at a time. Every drop costs him a second.",
+  "8": "Finally, he lets go of everything and sprints.",
+  "9": "The floor collapses behind every step.",
+  "10": "The door is locked. The key was in the first chest.",
+  "11": "He kicks it open with one second left.",
+  "12": "He escapes with zero gold, zero swords, and one apple.",
+  "13": "It was the only thing the game let him carry."
+ },
+ "dur": {
+  "1": 4.59,
+  "2": 4.15,
+  "3": 5.07,
+  "4": 3.44,
+  "5": 3.34,
+  "6": 6.57,
+  "7": 4.81,
+  "8": 2.63,
+  "9": 2.42,
+  "10": 3.52,
+  "11": 2.53,
+  "12": 4.0,
+  "13": 3.21
+ }
+}
