@@ -32,7 +32,7 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb>.py      # regenerate the voic
 | Cat Dodge Boss (15 s) | examples/cat_dodge.py (voice `tools/tts/cd.py`; woman = `face_track.girl()`, new cat model) | **dropped by Enes (17 Nov)**, do not post |
 | Cat POV (15 s, TikTok) | examples/cat_pov.py (voice `tools/tts/cp.py`; imports cat/room/pizza from cat_dodge.py) | rendered, not posted |
 | The Smallest Umbrella (15 s, wholesome) | examples/umbrella.py (voice `tools/tts/um.py`; own duckling, dog, umbrella, rainy street) | rendered, not posted |
-| The Camera Under My Bed (30 s, PS1 horror) | examples/camera_bed.py (voices `tools/tts/cb.py`; own man model, bedroom, CRT feed compositing) | rendered, not posted |
+| The Camera Under My Bed (30 s, PS1 horror) | examples/camera_bed.py (voices `tools/tts/cb.py`; own man model, bedroom, CRT feed compositing) | **dropped by Enes (18 Nov): too many errors**, do not post |
 | One Apple 15 s cut (15.25 s) | examples/one_apple_15.py (imports v4 assets; voice `tools/tts/ap15.py`) | rendered, not posted; for **TikTok** |
 
 Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`, `captions/safe_zone.md`, `captions/smallest_umbrella.md`, `captions/camera_under_bed.md`.
