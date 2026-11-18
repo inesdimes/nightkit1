@@ -40,7 +40,8 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 ## Newest work (18 Nov 2026)
 - The Smallest Umbrella (15 s, revised cut): rendered, not posted (`examples/umbrella.py`).
 - Cat POV (15 s, TikTok): rendered, not posted (`examples/cat_pov.py`). Cat Dodge Boss and The Camera Under My Bed were dropped by Enes.
-- MISS (archer + goblin, `miss/`): standalone project (numpy + Pillow + ffmpeg only), both cuts render with `python render.py --cut master|extended`; steps 1-6 done, README.md and NOTES.md (DEVIATIONS) are step 7 and not written yet. Narration is skipped (no offline TTS on that machine).
+- MISS (archer + goblin, `miss/`): standalone project (numpy + Pillow + ffmpeg only), both cuts render with `python render.py --cut master|extended`; steps 1-6 done, README.md and NOTES.md (DEVIATIONS) are written (step 7 done). Narration is skipped (no offline TTS on that machine).
+- Start of a new chat: read ONLY this file and `PIPELINE.md`. Use `WORKFLOW.md` for the GPT + Claude split, `CHANNEL_PROMPT.md` is the briefing prompt for GPT.
 - NEW: `WORKFLOW.md` (GPT + Claude division of work) and `CHANNEL_PROMPT.md` (briefing prompt for GPT).
 
 ## Next steps
