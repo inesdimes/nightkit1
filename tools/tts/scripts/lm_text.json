@@ -1,0 +1,22 @@
+{
+ "text": {
+  "1": "The lightning misses the knight, but his health bar drops by half.",
+  "2": "His shield is untouched. The pillar took the hit.",
+  "3": "He runs. Another bolt lands behind him. One HP left.",
+  "4": "Wait. If it keeps missing, what is hurting him?",
+  "5": "You see, lightning doesn't need a direct hit. Its current spreads through the ground.",
+  "6": "Boots on two different voltages let current pass through his body.",
+  "7": "He slams the guardhouse door.",
+  "8": "His shield was useless. So he equipped the whole castle."
+ },
+ "dur": {
+  "1": 3.87,
+  "2": 3.24,
+  "3": 4.21,
+  "4": 2.86,
+  "5": 4.72,
+  "6": 4.13,
+  "7": 2.06,
+  "8": 3.65
+ }
+}
