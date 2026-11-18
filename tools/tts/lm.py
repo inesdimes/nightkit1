@@ -1,6 +1,6 @@
 """Voice lines for THE LIGHTNING MISSED (lm). One British narrator (bm_george). Kokoro has no emotion or stress control, so each sentence carries
 a DIRECTION (speed, pitch in semitones, gain in dB, pause before) and WORD STRESS marks: *word* = stressed, **word** = strongly stressed
-(see tools/tts/emph.py: the stressed word is rendered on its own, slower, higher and louder). Edit the table, run, listen.
+(tools/tts/emph.py: the whole sentence is spoken naturally; only the stressed word is made slower, higher and louder, using exact phoneme timings). Edit the table, run, listen.
 One wav per line in $TTS_DIR/lm/<key>.wav + script.json. Run: python tools/tts/lm.py [--voice bm_george]
 A line that overflows its window is time-compressed (pitch kept) up to 1.18x; beyond that the script warns."""
 import json, os, sys, subprocess, tempfile, argparse
@@ -11,7 +11,9 @@ from kokoro_onnx import Kokoro
 ap=argparse.ArgumentParser(); ap.add_argument('--voice',default='bm_george'); a=ap.parse_args()
 TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','tts'))
 OUT=os.path.join(TTS_DIR,'lm'); os.makedirs(OUT,exist_ok=True); TMP=tempfile.gettempdir()
-k=Kokoro(f'{TTS_DIR}/kokoro-v1.0.int8.onnx',f'{TTS_DIR}/voices-v1.0.bin'); SR=emph.SR
+DUR=f'{TTS_DIR}/kokoro-dur.onnx'
+if not os.path.exists(DUR): emph.make_dur_model(f'{TTS_DIR}/kokoro-v1.0.int8.onnx',DUR)    # same model + a duration output
+k=Kokoro(DUR,f'{TTS_DIR}/voices-v1.0.bin'); SR=emph.SR
 # (key, window start, latest end, [(sentence with *stress* marks, speed, pitch semitones, gain dB, pause before s), ...])
 D=[('1',0.25,4.50,[("The lightning *misses* the knight, but his health bar drops by **half**.",1.0,0.4,1.5,0)]),
    ('2',4.57,8.10,[("His shield is *untouched*.",1.0,-0.3,0,0),("The **pillar** took the hit.",1.05,0.6,1.0,0.1)]),
@@ -31,8 +33,7 @@ dur={}; txt={}; bad=0
 for key,w0,w1,sents in D:
     parts=[]
     for s,sp,st,g,pause in sents:
-        b=emph.render_chunks(k,a.voice,sp,'en-gb',s,pitch=st,gain=g)
-        b=emph.shape(b,0,1,0) if False else b
+        b=emph.trim(emph.render(k,a.voice,sp,'en-gb',s,pitch=st,gain=g),0.01,120,360)
         parts.append(np.zeros(int(pause*SR))); parts.append(b)
     y=np.concatenate(parts); y,r=fit(y,w1-w0); y=y/np.max(np.abs(y))*0.95
     nz=np.where(np.abs(y)>0.01)[0]; y=y[:nz[-1]+1200]; sf.write(os.path.join(OUT,key+'.wav'),y,SR)
