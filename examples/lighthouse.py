@@ -220,7 +220,7 @@ def cam_shot(t):
 
 # ======================= THE ENDING: the boat is lost in the fog, a megalodon rises and swallows it =======================
 T_CONT=A0+0.7; T_SHADOW=A0+1.1; T_FIN=A0+2.5; T_BR=A0+3.6; T_CLOSE=T_BR+1.1; T_FALL=T_BR+2.3; T_END=T_BR+4.6
-SX,SZ=boat_xz(A0); CAM11=((SX+4.2,1.5,SZ-9.5),(SX-0.2,4.8,SZ),60.0)
+SX,SZ=boat_xz(A0); CAM11=((SX+6.0,4.4,SZ-13.5),(SX-0.2,3.6,SZ),62.0)
 SC=1.5; CM=np.array([0.0,0.2,-2.2]); HINGE=np.array([0.0,0.08,-4.0])
 SH_TOP=(36,42,58); SH_BEL=(88,96,112); TEETH=(236,232,214); MOUTH=(110,24,34)
 def _pyr(cx,y0,cz,hw,hd,h,ax,az,col):
@@ -244,7 +244,7 @@ def shark_local(th):
     Q+=L
     Q+=box(-1.9,1.9,-1.7,0.1,-9,-4.2,SH_BEL)+box(-1.9,1.9,0.1,2.4,-9,-4.2,SH_TOP)+box(-1.2,1.2,-1.1,0.2,-12,-9,SH_BEL)+box(-1.2,1.2,0.2,1.7,-12,-9,SH_TOP)+box(-0.55,0.55,-0.6,0.9,-15,-12,SH_TOP)
     Q+=box(-0.12,0.12,0.9,3.6,-16.2,-14.2,SH_TOP)+box(-0.12,0.12,-2.4,-0.6,-15.6,-14.4,SH_TOP)                                       # tail fin
-    Q+=_pyr(0,2.4,-6.0,0.16,1.1,3.7,0,-0.8,SH_TOP)
+    Q+=_pyr(0,2.4,-6.0,0.16,1.1,3.7,0,-0.8,(92,104,122))
     for sx in (-1,1):                                                                                                                   # pectoral fins: a wide T-shape from the front
         pf=box(sx*1.9,sx*4.6,-1.3,-1.1,-7.2,-5.2,SH_TOP); piv=np.array([sx*1.9,-1.2,-6.2]); Rz_=Rz(-sx*0.45)
         Q+=transform(pf,lambda p_,piv=piv,Rz_=Rz_: tuple(piv+Rz_@(np.array(p_,float)-piv)))                                                                                      # dorsal fin
@@ -253,23 +253,22 @@ def shark_local(th):
 def _unwrap(a,b):
     d=(b-a+PI)%(2*PI)-PI; return a+d
 def shark_state(t):
-    """mouth-centre position, yaw (swims in, then turns its mouth to the camera), pitch (nose up), jaw opening. visible only from T_FIN-0.8"""
-    S0=np.array([SX-10.0,SZ+4.0]); B_=np.array([SX,SZ]); u=sm(seg01(t,T_FIN-0.8,T_BR+0.1)); xz=S0+(B_-S0)*u
-    yaw0=math.atan2(B_[0]-S0[0],B_[1]-S0[1]); yaw1=_unwrap(yaw0,math.atan2(CAM11[0][0]-SX,CAM11[0][2]-SZ)); yaw=yaw0+(yaw1-yaw0)*sm(seg01(t,T_BR-0.7,T_BR+0.6))
-    y=lerp(-5.3,4.4,sm(seg01(t,T_BR,T_BR+0.95)))
-    if t>=T_FALL: y=lerp(4.4,-14.0,sm(seg01(t,T_FALL,T_END)))
-    phi=lerp(0.0,1.1,sm(seg01(t,T_BR-0.3,T_BR+0.95)))
-    if t>=T_FALL: phi=lerp(1.1,0.5,sm(seg01(t,T_FALL,T_END)))
-    th=1.0*sm(seg01(t,T_BR+0.2,T_BR+0.75))-0.22*math.sin(PI*seg01(t,T_CLOSE,T_CLOSE+0.4))           # opens wide with the boat inside, then snaps down on it and holds it
+    """mouth-centre position, yaw (the shark is seen in PROFILE: heading perpendicular to the line of sight), pitch (nose up), jaw opening. visible only from T_FIN-0.8"""
+    yaw=math.atan2(CAM11[0][0]-SX,CAM11[0][2]-SZ)+PI/2; h1=np.array([math.sin(yaw),math.cos(yaw)])
+    S0=np.array([SX,SZ])-h1*6.0; B_=np.array([SX,SZ]); xz=S0+(B_-S0)*sm(seg01(t,T_FIN-0.8,T_BR+0.1))        # swims in along its own heading
+    y=lerp(-5.3,4.0,sm(seg01(t,T_BR,T_BR+0.95)))
+    if t>=T_FALL: y=lerp(4.0,-14.0,sm(seg01(t,T_FALL,T_END)))
+    phi=lerp(0.0,0.8,sm(seg01(t,T_BR-0.3,T_BR+0.95)))
+    if t>=T_FALL: phi=lerp(0.8,0.35,sm(seg01(t,T_FALL,T_END)))
+    th=1.0*sm(seg01(t,T_BR+0.2,T_BR+0.75))-0.30*math.sin(PI*seg01(t,T_CLOSE,T_CLOSE+0.4))           # opens wide with the boat inside, snaps down once on it
     return np.array([xz[0],y,xz[1]]),yaw,phi,th
 def shark_xf(t):
     M,yaw,phi,th=shark_state(t); R_=Ry(yaw)@Rx(-phi)
     return (lambda p_: tuple(M+R_@((np.array(p_,float)-CM)*SC))),th
 def mouth_xf(t):
-    """the boat is gripped across the FRONT of the jaws, broadside to the camera, so the whole boat (and the captain) stays visible in the shark's mouth"""
-    M,yaw,phi,th=shark_state(t); R_=Ry(yaw)@Rx(-phi); P=M+R_@np.array([0,0.35,0.3]); yc=math.atan2(CAM11[0][0]-SX,CAM11[0][2]-SZ)
-    Rb=Ry(yc+PI/2)@Rz(0.10*math.sin(9*t)*sm(seg01(t,T_CLOSE,T_CLOSE+0.4)))                      # the hull shudders in the bite
-    return lambda q: tuple(P+Rb@np.array(q,float)+np.array([0,-0.2-0.25*math.sin(PI*seg01(t,T_CLOSE,T_CLOSE+0.4)),0.0]))
+    """the boat lies LENGTHWISE in the open mouth (bow at the snout, stern at the hinge), broadside to the camera, so it is fully visible between the jaws"""
+    M,yaw,phi,th=shark_state(t); R_=Ry(yaw)@Rx(-phi); P=M+R_@np.array([0,1.0,0.2])
+    return lambda q: tuple(P+R_@np.array(q,float)+np.array([0,-0.3*math.sin(PI*seg01(t,T_CLOSE,T_CLOSE+0.4)),0.0]))
 def boat_xf_coda(t):
     """the real boat path until the jaws reach it, then it is scooped into the mouth"""
     n_=boat_xf(t)

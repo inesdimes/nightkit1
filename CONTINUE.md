@@ -37,7 +37,7 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 | Why Do Ghosts Say Boo? (60 s, PS1 horror-comedy) | examples/ghost_boo.py (voices `tools/tts/gb.py`; own ghost, janitor, lantern, corridor) | v4 rendered: 44.2 s cut, 2x subtitles, camera C colour fixed -> `deliverables/why_do_ghosts_say_boo.mp4` (60 s v2 also kept); not posted; QA + critique round 2 clean |
 | Why Do Mirrors Copy Us? (60.0 s, PS1 surreal comedy) | examples/mirror_copy.py (voices `tools/tts/mc.py`; own robot, mirror room, 2D reflection sprite) | rendered 18 Nov: critique rounds 1-2 all >= 8, `check.py` 9/9 -> `deliverables/why_do_mirrors_copy_us_60s.mp4`; not posted |
 | Why Do Mirrors Copy Us? **v2** (34 s, closer camera, SYNC HUD) | examples/mirror_copy_v2.py (imports mirror_copy.py; voice `tools/tts/mc2.py`) | rendered 18 Nov: critique round 1 all >= 8, `check.py` 9/9 -> `deliverables/why_do_mirrors_copy_us_v2_34s.mp4`; not posted; the 60 s cut had a glint bug (stripe crossed the robot), fixed in `mirror_copy.glint()` (60 s file not re-rendered) |
-| Why Do Lighthouses Blink? (60.0 s, PS1 maritime horror) | examples/lighthouse.py (voices `tools/tts/lh.py 1.0`; captain follows the wrong light, is lost, a megalodon swallows the boat; subtitles 1.25x at 1080x1920) | rendered 18 Nov, `check.py` 9/9 -> `deliverables/why_do_lighthouses_blink_60s.mp4` (older cuts kept: `..._v1_calm_ending.mp4`, `..._v2_escape_then_shark.mp4`); not posted |
+| Why Do Lighthouses Blink? (60.0 s, PS1 maritime horror) | examples/lighthouse.py (voices `tools/tts/lh.py 1.0`; captain follows the wrong light, is lost, a megalodon (side profile, boat lying in its open jaws) swallows the boat; subtitles 1.25x at 1080x1920) | FINAL 18 Nov, `check.py` 9/9 -> `deliverables/why_do_lighthouses_blink_60s.mp4` (older cuts kept in deliverables: `_v1_calm_ending`, `_v2_escape_then_shark`, `_v3_front_shark`); not posted |
 | One Apple 15 s cut (15.25 s) | examples/one_apple_15.py (imports v4 assets; voice `tools/tts/ap15.py`) | rendered, not posted; for **TikTok** |
 
 Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`, `captions/safe_zone.md`, `captions/smallest_umbrella.md`, `captions/camera_under_bed.md`.
@@ -48,6 +48,12 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - MISS (archer + goblin, `miss/`): standalone project (numpy + Pillow + ffmpeg only), both cuts render with `python render.py --cut master|extended`; steps 1-6 done, README.md and NOTES.md (DEVIATIONS) are written (step 7 done). Narration is skipped (no offline TTS on that machine).
 - Start of a new chat: read ONLY this file and `PIPELINE.md` (the skill `.claude/skills/nightkit-short` has the production order). Use `WORKFLOW.md` for the GPT + Claude split, `CHANNEL_PROMPT.md` is the briefing prompt for GPT.
 - NEW: `WORKFLOW.md` (GPT + Claude division of work) and `CHANNEL_PROMPT.md` (briefing prompt for GPT).
+
+## Newest work (18 Nov 2026, evening) - Insert Disc 2 sessions
+- New videos made this session (all in `examples/`, rendered, not posted): `mirror_copy.py` (60 s) and `mirror_copy_v2.py` (34 s, the better cut; imports the 60 s file), `lighthouse.py` (60 s, final story above). Captions are not written yet for these three.
+- Lessons from Enes's feedback (apply to new briefs): big, close character in frame 0; hook with a HUD / danger readout; do not follow a brief literally if it hurts retention (ANALYTICS 9-11: 61 s stories keep 56-58 % on YouTube, the first 10 s decide); subtitles 1.25x drawn at 1080x1920 (`sub_overlay()` in lighthouse.py), not 2x; narration must not be cut mid-sentence.
+- Weak spots known in `lighthouse.py`: the megalodon is a blocky low-poly model; the empty-sea hold at 54-57 s is flagged as a still stretch (intentional); Claude cannot listen, so sound was only measured.
+- `mirror_copy.glint()` fixed a bug in the 60 s mirror video (stripe crossed the robot); that video was not re-rendered.
 
 ## QA tools (added 18 Nov 2026)
 - `tools/qa/critique.py` (scored review rounds, log in `reviews/<script>.md`), `tools/qa/check.py` (final-file check),
