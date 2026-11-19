@@ -1,7 +1,7 @@
 """SAPKALI MOLEKUL: AYNI SU IKI RENK - 70 s loop Short (1080x1920, 2D pixel art, no Blender needed).
 Usage:  python examples/anthocyanin_loop.py audio      # VO + SFX + music -> timeline.json, audio_final.wav
         python examples/anthocyanin_loop.py preview    # contact sheet of key frames (fast check)
-        python examples/anthocyanin_loop.py video      # render + mux -> anthocyanin_loop_v1.mp4
+        python examples/anthocyanin_loop.py video      # render + mux -> anthocyanin_loop_v1_en.mp4
         python examples/anthocyanin_loop.py qa         # frame0==frame2099, palette, safe area, loudness, size
 Output dir: renders/anthocyanin (outside the repo)."""
 import os, sys, json, math, subprocess, hashlib
@@ -23,38 +23,38 @@ BAY = np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]) /
 SC = [0, 3, 10, 22, 35, 48, 58, 68, 70]   # scene starts (s)
 NAR, LEM, MOL = 'nar', 'lem', 'mol'
 SCRIPT = {
- 's1': dict(win=(0.0, 3.4), maxf=2.0, speed=1.5, items=[
-    ('A', NAR, 'Mor lahana suyuna limon sıktım... PEMBE!', 'Mor lahana suyuna limon sıktım… PEMBE!'),
-    ('B', NAR, 'Karbonat attım... MAVİ!', 'Karbonat attım… MAVİ!'),
-    ('C', NAR, 'Aynı su, iki renk. Bu nasıl iş?!', 'Aynı su, iki renk. Bu nasıl iş?!')]),
- 's2': dict(win=(3.7, 9.9), maxf=1.5, speed=0.8, items=[
-    ('a', NAR, 'Suçlu bu tatlı arkadaş:', 'Suçlu bu tatlı arkadaş:'),
-    ('b', NAR, 'Antosiyanin!', 'Antosiyanin!'),
-    ('c', NAR, 'Mor lahana suyunun renk patronu.', 'Mor lahana suyunun renk patronu.'),
-    ('d', NAR, 'Elinde de minicik H artı şapkaları var.', 'Elinde de minicik H+ şapkaları var.')]),
- 's3': dict(win=(10.2, 21.9), maxf=1.5, speed=0.8, items=[
-    ('a', NAR, 'Limon geldi, ortam asitleşti.', 'Limon geldi, ortam asitleşti.'),
-    ('b', NAR, 'Antosiyanin şapkaları kaptı:', 'Antosiyanin şapkaları kaptı:'),
-    ('l', LEM, 'Şapka bende!', 'LİMON: “Şapka bende!”'),
-    ('c', NAR, 'Renk pembeye döndü.', 'Renk pembeye döndü.')]),
- 's4': dict(win=(22.2, 34.9), maxf=1.5, speed=0.8, items=[
-    ('a', NAR, 'Sonra karbonat geldi, ortam bazikleşti.', 'Sonra karbonat geldi, ortam bazikleşti.'),
-    ('b', NAR, 'Karbonat şapkaları topladı.', 'Karbonat şapkaları topladı.'),
-    ('c', NAR, 'Antosiyanin şapkasız kaldı:', 'Antosiyanin şapkasız kaldı:'),
-    ('l', MOL, 'Şapkam nerede?!', 'ANTOSİYANİN: “Şapkam nerede?!”'),
-    ('d', NAR, 'Renk mavi.', 'Renk mavi.')]),
- 's5': dict(win=(35.2, 47.9), maxf=1.5, speed=0.8, items=[
-    ('a', NAR, 'Yani olay şu:', 'Yani olay şu:'),
-    ('b', NAR, 'H artı şapkası takarsa pembe, çıkarırsa mavi.', 'H+ şapkası takarsa pembe, çıkarırsa mavi.'),
-    ('c', NAR, 'Renk değişimi, molekülün şapka takıp çıkarmasından.', 'Renk değişimi, molekülün şapka takıp çıkarmasından.')]),
- 's6': dict(win=(48.2, 57.9), maxf=1.5, speed=0.8, items=[
-    ('a', NAR, 'Peki mora nasıl dönüyoruz?', 'Peki mora nasıl dönüyoruz?'),
-    ('b', NAR, 'pH i ortaya çekiyoruz.', 'pH’ı ortaya çekiyoruz.'),
-    ('c', NAR, 'Şapkalar dengeleniyor, mor geri geliyor.', 'Şapkalar dengeleniyor, mor geri geliyor.'),
-    ('d', NAR, 'pH yedi, sahne senin!', 'pH 7, sahne senin!')]),
- 's7': dict(win=(58.2, 67.9), maxf=1.4, speed=0.9, end_align=True, items=[
-    ('a', NAR, 'Ve şimdi... başa saralım.', 'Ve şimdi… başa saralım.'),
-    ('b', NAR, 'Mor lahana suyuna limon sıktım...', 'Mor lahana suyuna limon sıktım…')]),
+ 's1': dict(win=(0.0, 3.4), maxf=2.0, speed=1.4, items=[
+    ('A', NAR, 'I squeezed lemon into cabbage juice... PINK!', 'I squeezed lemon into cabbage juice… PINK!'),
+    ('B', NAR, 'Added carbonate... BLUE!', 'Added carbonate… BLUE!'),
+    ('C', NAR, 'Same water, two colors. How?!', 'Same water, two colors. How?!')]),
+ 's2': dict(win=(3.7, 9.9), maxf=1.5, speed=0.95, items=[
+    ('a', NAR, 'Meet the culprit:', 'Meet the culprit:'),
+    ('b', NAR, 'Anthocyanin!', 'Anthocyanin!'),
+    ('c', NAR, 'The color boss of purple cabbage juice.', 'The color boss of purple cabbage juice.'),
+    ('d', NAR, "And he's holding tiny H plus hats.", "And he’s holding tiny H+ hats.")]),
+ 's3': dict(win=(10.2, 21.9), maxf=1.5, speed=0.95, items=[
+    ('a', NAR, 'Lemon arrives, and the mix turns acidic.', 'Lemon arrives, and the mix turns acidic.'),
+    ('b', NAR, 'Anthocyanin grabs the hats:', 'Anthocyanin grabs the hats:'),
+    ('l', LEM, "I've got the hat!", 'LEMON: “I’ve got the hat!”'),
+    ('c', NAR, 'The color turns pink.', 'The color turns pink.')]),
+ 's4': dict(win=(22.2, 34.9), maxf=1.5, speed=0.95, items=[
+    ('a', NAR, 'Then carbonate arrives, and the mix turns basic.', 'Then carbonate arrives, and the mix turns basic.'),
+    ('b', NAR, 'Carbonate collects the hats.', 'Carbonate collects the hats.'),
+    ('c', NAR, 'Anthocyanin is left hatless:', 'Anthocyanin is left hatless:'),
+    ('l', MOL, "Where's my hat?!", 'ANTHOCYANIN: “Where’s my hat?!”'),
+    ('d', NAR, 'The color turns blue.', 'The color turns blue.')]),
+ 's5': dict(win=(35.2, 47.9), maxf=1.5, speed=0.95, items=[
+    ('a', NAR, "So here's the deal:", 'So here’s the deal:'),
+    ('b', NAR, 'H plus hat on, it is pink. Hat off, it is blue.', 'H+ hat on: pink. Hat off: blue.'),
+    ('c', NAR, 'The color change is just the molecule putting hats on and taking them off.', 'The color change is just the molecule putting hats on and taking them off.')]),
+ 's6': dict(win=(48.2, 57.9), maxf=1.5, speed=0.95, items=[
+    ('a', NAR, 'So how do we get purple back?', 'So how do we get purple back?'),
+    ('b', NAR, 'We pull the pH to the middle.', 'We pull the pH to the middle.'),
+    ('c', NAR, 'The hats balance out, and purple returns.', 'The hats balance out, and purple returns.'),
+    ('d', NAR, 'pH seven, the stage is yours!', 'pH 7, the stage is yours!')]),
+ 's7': dict(win=(58.2, 67.9), maxf=1.4, speed=1.0, end_align=True, items=[
+    ('a', NAR, "And now... let's rewind.", 'And now… let’s rewind.'),
+    ('b', NAR, 'I squeezed lemon into cabbage juice...', 'I squeezed lemon into cabbage juice…')]),
 }
 VOICE = {NAR: ('af_heart', 1.0), LEM: ('af_nova', 1.15), MOL: ('af_sky', 1.25)}   # voice, pitch factor (resample)
 GAP = 0.14
@@ -91,7 +91,7 @@ def synth_vo():
                     from kokoro_onnx import Kokoro
                     k = Kokoro(f'{TTS_DIR}/kokoro-v1.0.int8.onnx', f'{TTS_DIR}/voices-v1.0.bin')
                 spd = sc['speed'] * (1.1 if kind != NAR else 1.0)
-                a, sr = k.create(tts, voice=VOICE[kind][0], speed=spd, lang='tr')
+                a, sr = k.create(tts, voice=VOICE[kind][0], speed=spd, lang='en-us')
                 sf.write(p, a, sr)
             a, sr = sf.read(p); a = trim(a)
             pf = VOICE[kind][1]
@@ -337,7 +337,7 @@ def carb(im, d, cx, cy, w, h, hats=0, laugh=0):
     d.line((x0, cy + 4, x0 - 12, cy + 18 - laugh), fill=CRM, width=5); d.line((x1, cy + 4, x1 + 12, cy + 18 - laugh), fill=CRM, width=5)
     d.rectangle((x0, y0, x1, y1), fill=CRM, outline=BG, width=2)
     d.rectangle((x0 + 2, y1 - 16, x1 - 2, y1 - 2), fill=BG)
-    text(d, (cx, y1 - 9), 'KARBONAT', font('ps', 8), CRM, 'mm', shadow=False)
+    text(d, (cx, y1 - 9), 'Na2CO3', font('ps', 8), CRM, 'mm', shadow=False)
     for sx in (-1, 1):
         ex = cx + sx * 12
         d.ellipse((ex - 4, cy - 8, ex + 4, cy), fill=BG)
@@ -441,12 +441,12 @@ def sc1(im, d, T, g, lt):
                 a = k * math.pi / 4; r = 14 + (lt - tt) * 70
                 d.rectangle((180 + r * math.cos(a) * 1.4 - 2, 273 + r * math.sin(a) * 0.5 - 2 - 8, 180 + r * math.cos(a) * 1.4 + 1, 273 + r * math.sin(a) * 0.5 + 1 - 8), fill=CRM)
     f = font('ps', 16)
-    text(d, (22, 52), 'LİMON:', f, CRM); text(d, (22 + f.getlength('LİMON: '), 52), 'PEMBE', f, PNK); icon(d, 'shock', 292, 60)
-    text(d, (22, 82), 'KARBONAT:', f, CRM); text(d, (22 + f.getlength('KARBONAT: '), 82), 'MAVİ', f, BLU); icon(d, 'dizzy', 292, 90)
+    text(d, (22, 52), 'LEMON:', f, CRM); text(d, (22 + f.getlength('LEMON: '), 52), 'PINK', f, PNK); icon(d, 'shock', 292, 60)
+    text(d, (22, 82), 'CARBONATE:', f, CRM); text(d, (22 + f.getlength('CARBONATE: '), 82), 'BLUE', f, BLU); icon(d, 'dizzy', 292, 90)
 
 def sc2(im, d, T, g, lt):
     A = T['an']; seg = T['seg']
-    title(d, 'SUÇLU BULUNDU:', 'ANTOSİYANİN')
+    title(d, 'CULPRIT FOUND:', 'ANTHOCYANIN')
     u = lt / 0.9
     base = 330
     if lt < 0.9: cy = base + int(260 * (1 - u) ** 2) * 1 - int(0)
@@ -464,7 +464,7 @@ def sc2(im, d, T, g, lt):
     d = ImageDraw.Draw(im)
     if g >= seg['s2c'][0] and g < seg['s2d'][1] + 1.5:
         d.rectangle((24, 418, 336, 446), fill=CRM)
-        text(d, (180, 432), 'RENK PATRONU', font('vt', 28), BG, 'mm', shadow=False)
+        text(d, (180, 432), 'COLOR BOSS', font('vt', 28), BG, 'mm', shadow=False)
     if 0 <= g - seg['s2b'][0] < 0.5:
         for k in range(6):
             a = k * math.pi / 3 + 0.3; r = 62 + (g - seg['s2b'][0]) * 60
@@ -472,7 +472,7 @@ def sc2(im, d, T, g, lt):
 
 def sc3(im, d, T, g, lt):
     A = T['an']; seg = T['seg']
-    title(d, 'LİMON ŞAPKA ATAR', '=> PEMBE', CRM, PNK)
+    title(d, 'LEMON THROWS HATS', '=> PINK', CRM, PNK)
     th = A['s3throw']; fl = 0.55
     lemx = 420 - min(1, max(0, (lt - 0.4) / 0.9)) * 150
     landed = sum(1 for t in th if g >= t + fl)
@@ -493,11 +493,11 @@ def sc3(im, d, T, g, lt):
             hatfly(d, (int(lemx) - 10, 222), tgt, (g - t) / fl, 55)
     if A['s3acid'] - 0.25 <= g < A['s3acid']:
         drop(d, 285, int(250 + (g - (A['s3acid'] - 0.25)) * 600))
-    if seg['s3l'][0] <= g < seg['s3l'][1] + 0.6: bubble(d, 255, 185, 'ŞAPKA BENDE!')
+    if seg['s3l'][0] <= g < seg['s3l'][1] + 0.6: bubble(d, 255, 185, 'I GOT THE HAT!')
 
 def sc4(im, d, T, g, lt):
     A = T['an']; seg = T['seg']
-    title(d, 'KARBONAT ŞAPKA', 'ÇALAR => MAVİ', CRM, BLU)
+    title(d, 'CARBONATE STEALS', 'HATS => BLUE', CRM, BLU)
     st = A['s4steal']; fl = 0.55
     taken = sum(1 for t in st if g >= t + fl)
     leaving = sum(1 for t in st if g >= t)
@@ -517,7 +517,7 @@ def sc4(im, d, T, g, lt):
     for i, t in enumerate(st):
         if t <= g < t + fl:
             hatfly(d, (mx, my - 44 - 10 - 13 * (2 - i)), (int(cx), 345 - 30 - 13 * i - 6), (g - t) / fl, 70)
-    if seg['s4l'][0] <= g < seg['s4l'][1] + 0.6: bubble(d, 215, 205, 'ŞAPKAM NEREDE?!')
+    if seg['s4l'][0] <= g < seg['s4l'][1] + 0.6: bubble(d, 215, 205, 'WHERE IS MY HAT?!')
 
 def ph_at(g, A, T):
     t0 = A['s5start']
@@ -534,7 +534,7 @@ def col_ph(p): return PNK if p < 5 else (PUR if p < 9 else BLU)
 
 def sc5(im, d, T, g, lt):
     A = T['an']
-    title(d, 'RENK = ŞAPKA', 'OYUNU', CRM, YEL, ic='hat')
+    title(d, 'COLOR = HAT', 'GAME', CRM, YEL, ic='hat')
     p = ph_at(g, A, T); col = col_ph(p)
     hats = 2 if p < 5 else (1 if p < 9 else 0)
     bt = int(lt * 2)
@@ -556,13 +556,13 @@ def sc5(im, d, T, g, lt):
     d.line((x1 + 0, by + 22, x1, by + 28), fill=CRM)
     for n in (0, 7, 14):
         text(d, (x0 + n * 20 + (0 if n < 14 else 0), by + 44), str(n), font('vt', 28), CRM, 'mm')
-    text(d, (x0 - 4, by - 14), 'ASİT', font('vt', 24), PNK, 'lm'); text(d, (x1 + 4, by - 14), 'BAZ', font('vt', 24), BLU, 'rm')
+    text(d, (x0 - 4, by - 14), 'ACID', font('vt', 24), PNK, 'lm'); text(d, (x1 + 4, by - 14), 'BASE', font('vt', 24), BLU, 'rm')
     mx = x0 + p * 20
     d.polygon([(mx, by - 2), (mx - 8, by - 14), (mx + 8, by - 14)], fill=YEL)
 
 def sc6(im, d, T, g, lt):
     A = T['an']; seg = T['seg']
-    title(d, 'pH 7 = MOR', 'GERİ DÖNDÜ', CRM, PUR)
+    title(d, 'pH 7 = PURPLE', 'IS BACK', CRM, PUR)
     mixed = g >= A['s6mix'] + 0.4
     col = PUR if mixed else PNK
     beaker(im, d, 235, 335, 130, 160, col, 0.65, bubbles=4, t=lt, label='pH 7' if g >= seg['s6d'][0] - 0.3 else None)
@@ -597,7 +597,7 @@ def cassette(im, d, T, g, lt, spin=1.0):
 def sc7(im, d, T, g, lt):
     A = T['an']; rew = A['rew']
     if g < rew:
-        title(d, 'BAŞA SARALIM', 'MI?', CRM, YEL, ic='rew')
+        title(d, 'SHALL WE', 'REWIND?', CRM, YEL, ic='rew')
         cassette(im, d, T, g, lt, 0.3)
         d = ImageDraw.Draw(im)
         mol(im, d, 180, 400, 28, PUR, 'happy', 1, ((lt * 5) % 4 - 2, 0), 'down')
@@ -679,7 +679,7 @@ def finish(im, f, mask, T):
     return up
 
 def render_video(T, only=None, out=None):
-    out = out or os.path.join(OUT, 'anthocyanin_loop_v1.mp4')
+    out = out or os.path.join(OUT, 'anthocyanin_loop_v1_en.mp4')
     shk = shake_frames(T); mask = fx_masks(); flash = {int(round(t * FPS)) for t in FLASH_AT + [T['an']['pT'], T['an']['bT']]}
     cmd = ['ffmpeg', '-nostdin', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', '1080x1920', '-r', '30', '-i', '-',
            '-i', os.path.join(OUT, 'audio_final.wav'), '-map', '0:v', '-map', '1:a',
@@ -718,7 +718,7 @@ def qa(T):
     a0 = finish(render(T, 0, shk), 0, mask, T); a1 = finish(render(T, NF - 1, shk), NF - 1, mask, T)
     print('raw frame0 == frame2099:', np.array_equal(a0, a1))
     print('off-palette colours in sampled frames: worst', worst, 'frames affected', bad)
-    mp = os.path.join(OUT, 'anthocyanin_loop_v1.mp4')
+    mp = os.path.join(OUT, 'anthocyanin_loop_v1_en.mp4')
     if os.path.exists(mp):
         print('size MB', round(os.path.getsize(mp) / 1e6, 1))
         for t, n in (('0', 0), ('69.9667', 2099)):
