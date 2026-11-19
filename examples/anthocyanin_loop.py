@@ -616,6 +616,38 @@ def sc7(im, d, T, g, lt):
 
 SCENES = [sc1, sc2, sc3, sc4, sc5, sc6, sc7]
 
+# ---------------------------------------------------------------- silence cuts (seconds in the 70 s master)
+CUTS = [(17.0, 22.0), (31.0, 35.0), (44.1, 48.0), (59.0, 64.1)]   # all after the last VO word of a scene, before the next scene's flash
+def kept_frames():
+    gone = set()
+    for a, b in CUTS: gone.update(range(int(round(a * FPS)), int(round(b * FPS))))
+    return [f for f in range(NF) if f not in gone]
+
+def cut_audio():
+    sf = _sf(); a, sr = sf.read(os.path.join(OUT, 'audio_raw.wav')); keep = kept_frames()
+    runs = []; st = keep[0]; pv = keep[0]
+    for f in keep[1:]:
+        if f != pv + 1: runs.append((st, pv + 1)); st = f
+        pv = f
+    runs.append((st, pv + 1))
+    xf = int(0.02 * SR); out = None
+    for r0, r1 in runs:
+        seg = a[int(r0 / FPS * SR):int(r1 / FPS * SR)].copy()
+        if out is None: out = seg
+        else:
+            fade = np.linspace(0, 1, xf)[:, None]
+            out[-xf:] *= (1 - fade)
+            seg[:xf] *= fade
+            out = np.concatenate([out, seg])
+    raw = os.path.join(OUT, 'audio_cut_raw.wav'); sf.write(raw, out, SR)
+    r = subprocess.run(['ffmpeg', '-nostdin', '-hide_banner', '-y', '-i', raw, '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'], capture_output=True, text=True)
+    js = json.loads(r.stderr[r.stderr.rfind('{'):r.stderr.rfind('}') + 1])
+    af = ('loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=%s:measured_TP=%s:measured_LRA=%s:measured_thresh=%s:offset=%s:linear=true'
+          % (js['input_i'], js['input_tp'], js['input_lra'], js['input_thresh'], js['target_offset']))
+    fin = os.path.join(OUT, 'audio_final_cut.wav')
+    subprocess.run(['ffmpeg', '-nostdin', '-v', 'error', '-y', '-i', raw, '-af', af, '-ar', '48000', '-ac', '2', fin], check=True)
+    print('cut audio %.2f s' % (len(out) / SR)); return fin
+
 # ---------------------------------------------------------------- compositor
 SHAKE = [(-4, 0), (4, 2), (-3, -2), (3, 1), (-2, 0), (1, 0)]
 FLASH_AT = [3.0, 10.0, 22.0, 35.0, 48.0, 58.0]
@@ -678,23 +710,25 @@ def finish(im, f, mask, T):
     up = np.where(mask[:, :, None], np.array(BG, dtype=np.uint8), up)
     return up
 
-def render_video(T, only=None, out=None):
-    out = out or os.path.join(OUT, 'anthocyanin_loop_v1_en.mp4')
+def render_video(T, only=None, out=None, cut=False):
+    out = out or os.path.join(OUT, 'anthocyanin_loop_v1_en_short.mp4' if cut else 'anthocyanin_loop_v1_en.mp4')
+    frames = kept_frames() if cut else list(range(NF))
+    afile = cut_audio() if cut else os.path.join(OUT, 'audio_final.wav')
     shk = shake_frames(T); mask = fx_masks(); flash = {int(round(t * FPS)) for t in FLASH_AT + [T['an']['pT'], T['an']['bT']]}
     cmd = ['ffmpeg', '-nostdin', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', '1080x1920', '-r', '30', '-i', '-',
-           '-i', os.path.join(OUT, 'audio_final.wav'), '-map', '0:v', '-map', '1:a',
+           '-i', afile, '-map', '0:v', '-map', '1:a',
            '-c:v', 'libx264', '-preset', 'slow', '-qp', '18', '-pix_fmt', 'yuv420p', '-x264-params', 'keyint=60:min-keyint=1:scenecut=0:aq-mode=0:mbtree=0',
-           '-force_key_frames', 'expr:eq(n,0)+eq(n,2099)', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
-           '-frames:v', str(NF), '-t', '70', out]
+           '-force_key_frames', 'expr:eq(n,0)+eq(n,%d)' % (len(frames) - 1), '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+           '-frames:v', str(len(frames)), out]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     hs = {}
-    for f in range(NF):
+    for i, f in enumerate(frames):
         im = render(T, f, shk)
         up = finish(im, f, mask, T)
         if f in flash: up = np.full_like(up, CRM)
         if f in (0, NF - 1): hs[f] = hashlib.md5(up.tobytes()).hexdigest()
         p.stdin.write(up.tobytes())
-        if f % 300 == 0: print('frame', f, flush=True)
+        if i % 300 == 0: print('frame', i, flush=True)
     p.stdin.close(); p.wait()
     print('raw frame0 == frame2099:', hs[0] == hs[NF - 1], hs)
 
@@ -736,4 +770,5 @@ if __name__ == '__main__':
     T = json.load(open(os.path.join(OUT, 'timeline.json'), encoding='utf-8'))
     if mode == 'preview': preview(T)
     if mode in ('video', 'all'): render_video(T)
+    if mode == 'cut': render_video(T, cut=True)
     if mode in ('qa', 'all'): qa(T)
