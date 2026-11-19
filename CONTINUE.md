@@ -85,3 +85,9 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 2. Caption for Loot Restocker (Safe Zone, One Apple and Cat POV captions are done, all three platforms).
 3. Decide Guard Forgets B (see table).
 4. New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
+
+## 19 Nov 2026 - Antosiyanin loop short (Sapkali Molekul)
+- `examples/anthocyanin_loop.py` (pure Pillow/numpy 2D pixel art, no Blender; Kokoro TTS with lang=tr, SFX synthesized, ffmpeg now on PATH).
+  `audio` -> `preview` -> `video` -> `qa`. Output: `renders/anthocyanin/anthocyanin_loop_v1.mp4` (1080x1920, 70 s, 17 MB, -14.2 LUFS).
+- QA: frame 0 == frame 2099 pixel-exact (also after H.264: QP 18, forced I-frames at 0 and 2099); palette = 6 colours only; last VO ends 67.9 s.
+- Not verified by ear: Turkish pronunciation (English Kokoro voices + espeak-tr) - Enes must listen; swap to ElevenLabs if bad.
