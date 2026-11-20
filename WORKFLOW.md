@@ -1,5 +1,7 @@
 # WORKFLOW — GPT + Claude, one video at a time (Insert Disc 2)
 
+**Update 20 Nov 2026:** Enes asked Claude to take over ideas, briefs, captions and analytics as well (the GPT jobs A-F below are now optional). Claude has no memory between sessions: the memory is `ANALYTICS.md` (numbers + readings) and `CONTINUE.md` (state). Every analytics screenshot goes into `ANALYTICS.md` the same day.
+
 GPT's briefing prompt (jobs A-F) is `CHANNEL_PROMPT.md`: paste everything below its `---` line at the start of a new GPT chat.
 
 Goal: better videos with less Claude usage. GPT does the cheap thinking (ideas, briefs, captions, analytics). Claude does only what needs code, rendering and QA.
