@@ -51,5 +51,13 @@ Order of preference, decided by Enes's ear:
 Never: word-stress tricks (they change the voice too much). Voice files and references stay in `voice/` / `tts/` (not in git).
 Write the lines in the usual layout: `tts/fp/<key>.wav` + `tts/fp/script.json` so the video script reads them unchanged.
 
+## No-stop rule for this video (Enes, 20 Nov 2026)
+Do not wait for Enes at any step: no plan approval, no preview approval, no voice pick. Run everything through to the final render.
+- Voice: use ChatterboxVC (option 1) if it runs without errors and the output passes the checks below; otherwise option 2, then 3.
+  Automatic voice checks (Claude cannot listen): no clipping, no pause > 0.6 s inside a line, pitch within +-15 % of the reference,
+  every line fits its window. Report which option was used and why.
+- All QA still runs (script_lint, scene_qa, critique rounds with scores >= 8, at most 3 rounds, check.py); fix and re-render on your own.
+- At the end: send/describe the final MP4, list what Enes should listen to (the voice choice) and any weak spot that remains.
+
 ## Order (PIPELINE.md, skill nightkit-short)
 script_lint -> voice -> measured timings -> asset lock + previews (show Enes 4-6 frames) -> scene_qa -> draft -> critique -> check.py.
