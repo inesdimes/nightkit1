@@ -38,9 +38,18 @@ Every hold creeps (motion.creep), hits get motion.kick (7 frames).
 Hit clangs + kick-shake thuds, phase-change stinger (two-note), cloak whoosh, goblin pant (filtered noise), tiny cup clink,
 a short heroic chord that turns comic on "day off". Ducked under the voice (audio.duck_envelope). No silent stretch > 1.2 s.
 
-## Voice
-Preferred: Chatterbox on the PC (Enes's own voice reference if recorded; exaggeration ~0.5, 0.7 on "Then the cloak slips.").
-Fallback: Kokoro bm_george, speed 1.25 like `tools/tts/sk.py`. No word stress tricks (Enes: they change the voice too much).
+## Voice (updated 20 Nov 2026 after the Chatterbox tests)
+Chatterbox on the PC copies Enes's timbre well, but also his accent: it comes out sounding like Indian English, which Enes does not want.
+Measured (cloud session, 20 Nov): with Enes's reference (cfg_weight 0.0 / 0.2) the timbre stays very close to Enes (pitch ~120 Hz);
+with a bm_george reference the result is a calm British narrator (pitch ~137 Hz, ~5 syllables/s, narrower pitch range), not Enes.
+Order of preference, decided by Enes's ear:
+1. **Voice conversion** (ChatterboxVC): speak each line with an English source voice (Kokoro bm_george or Chatterbox with the George
+   reference, exaggeration 0.5), then convert the timbre to `voice/enes_ref_main.wav`. Accent + rhythm from the source, timbre from Enes.
+   NOT tested yet - test it first on line 1.
+2. Chatterbox with the George reference (`voice/ref_george.wav`), exaggeration 0.5 (0.7 on "Then the cloak slips."): expressive, British, not Enes.
+3. Fallback: Kokoro bm_george, speed 1.25 (like `tools/tts/sk.py`).
+Never: word-stress tricks (they change the voice too much). Voice files and references stay in `voice/` / `tts/` (not in git).
+Write the lines in the usual layout: `tts/fp/<key>.wav` + `tts/fp/script.json` so the video script reads them unchanged.
 
 ## Order (PIPELINE.md, skill nightkit-short)
 script_lint -> voice -> measured timings -> asset lock + previews (show Enes 4-6 frames) -> scene_qa -> draft -> critique -> check.py.
