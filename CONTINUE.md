@@ -81,10 +81,8 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - PowerShell 5.1: `Start-Process -Environment` does not exist; set `$env:PART` before each `Start-Process` for parallel parts.
 
 ## Next steps
-1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
-2. Caption for Loot Restocker (Safe Zone, One Apple and Cat POV captions are done, all three platforms).
-3. Decide Guard Forgets B (see table).
-4. New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
+Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
+New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
 
 ## 19 Nov 2026 - Antosiyanin loop short (Sapkali Molekul)
 - `examples/anthocyanin_loop.py` (pure Pillow/numpy 2D pixel art, no Blender; Kokoro TTS with lang=tr, SFX synthesized, ffmpeg now on PATH).
