@@ -79,7 +79,7 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - `tools/qa/scene_qa.py`: new optional `allow_teleport=[(who,t)]` for planned in-shot resets (respawn under a white flash).
 - PowerShell 5.1: `Start-Process -Environment` does not exist; set `$env:PART` before each `Start-Process` for parallel parts.
 
-## Next video (20 Nov 2026): "Why do final bosses have three phases?"
+## Next video (20 Nov 2026): "Why do final bosses have three phases?" - FINAL APPROVED by Enes (video + voice), captions in `captions/four_phases.md`; 5 small fixes listed in `reviews/four_phases_review.md` (optional, not required for posting)
 - Brief: `briefs/four_phases.md` (3 goblins in a cloak; the knight joins them -> 4 phases; the old goblin gets a day off). To be built on the PC (nightkit). Voice: Chatterbox cloned Enes but with an Indian-English-sounding accent (Enes does not want it); next = test ChatterboxVC (English source -> Enes timbre) on line 1, see the brief's Voice section for the order.
 
 ## Next steps
