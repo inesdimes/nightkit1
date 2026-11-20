@@ -83,6 +83,9 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 ## Next video (20 Nov 2026): "Why do final bosses have three phases?" - FINAL APPROVED by Enes (video + voice), captions in `captions/four_phases.md`; 5 small fixes listed in `reviews/four_phases_review.md` (optional, not required for posting)
 - Brief: `briefs/four_phases.md` (3 goblins in a cloak; the knight joins them -> 4 phases; the old goblin gets a day off). To be built on the PC (nightkit). Voice: Chatterbox cloned Enes but with an Indian-English-sounding accent (Enes does not want it); next = test ChatterboxVC (English source -> Enes timbre) on line 1, see the brief's Voice section for the order.
 
+## Next video (20 Nov 2026): "What happens to the guy whose car you steal?" (trend: new open-world crime game)
+- Brief `briefs/stolen_car.md`, captions `captions/stolen_car.md` (game name only as one hashtag in the description: Enes's decision). PC task in `GO.md`.
+
 ## Next steps
 Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
 New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
