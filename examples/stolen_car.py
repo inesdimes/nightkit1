@@ -32,7 +32,9 @@ def _lines():
     for k in [str(i) for i in range(1,12)]: out.append((k,round(t,3))); t+=SCR['dur'][k]+GAP
     return out,t-GAP
 LINES,_vend=_lines(); T0=dict(LINES)
-DUR=round(_vend+0.45,2); N=int(round(DUR*FPS))
+DUR=round(_vend+0.45,2)
+PRE=2.3                                                          # cold open: the THANKS GARY scene from the end, then the story starts
+N=int(round((DUR+PRE)*FPS))
 def ws(k,i): return T0[k]+SCR['sent'][k][i][0]
 def we(k,i): return T0[k]+SCR['sent'][k][i][1]
 LEAD=2*F
@@ -55,6 +57,7 @@ T_POLICE=T0['11']-0.15
 T_EXIT=T0['11']+0.2                                             # the driver steps out
 T_NOTE2=T0['11']+1.1                                            # THANKS GARY note on the trunk
 T_RUN=T0['11']+1.35                                             # sprints off
+TEASE0=T0['11']+0.78                                            # story time where the cold open starts (just before the note is slapped on)
 CUTS=[0.0,T0['3']-0.04,T0['5']-0.04,T0['8']-0.04,T0['9']-0.04,T0['10']-0.04,T0['11']-0.04,DUR]
 CAR1=(-1.2,9.2); CAR2=(1.4,9.2); LANE=2.2
 
@@ -400,8 +403,11 @@ LAMPG=lambda t: sum([lamp_glow(x,3.9,sun(t)-0.5) for x in (-20,-6,10,24)],[])
 
 # ======================= cameras =======================
 CAM_NOW=[]
+TEASER=[False]
 def creep(t,t0,rate=0.0014): return motion.creep(t,t0,rate,FPS)
 def cam_shot(t):
+    if TEASER[0]:   # cold open: the end scene closer (driver + note big, police on both sides)
+        tgt=(-1.5,1.05,6.7); return dict(cam=motion.dolly((0.4,2.2,-1.4),tgt,creep(t,TEASE0-0.3,0.0010)),tgt=tgt,fov=44)
     if t<CUTS[1]:   # A: close on Gary, big and moving (frame 0)
         tgt=(-0.4,1.28,4.4); u=sm(seg01(t,0.0,1.2)); p=lerp3((0.5,1.5,6.0),(0.2,1.45,6.6),u)
         return dict(cam=motion.dolly(p,tgt,creep(t,0.0,0.0012)),tgt=tgt,fov=58)
@@ -528,15 +534,20 @@ def sub_overlay(t):
                     x+=font.width(wd,sc)+6*sc
             return ov,m
     return None
+def story_t(t):
+    """video time -> story time (the first PRE seconds replay the end scene)"""
+    TEASER[0]=t<PRE
+    return TEASE0+t if t<PRE else t-PRE
 def frame_low(t):
-    img,vi,cam,fov=render3d(t); d=ImageDraw.Draw(img); hud(d,t)
+    tt=story_t(t); img,vi,cam,fov=render3d(tt); d=ImageDraw.Draw(img); hud(d,tt)
     return img
+def _sub(t): return None if t<PRE else sub_overlay(t-PRE)
 def frame_final(t):
-    arr=post.upscale(frame_low(t),S); so=sub_overlay(t)
+    arr=post.upscale(frame_low(t),S); so=_sub(t)
     if so: m=np.asarray(so[1])>0; arr[m]=np.asarray(so[0])[m].astype(np.float32)
     return arr
 def frame(t):
-    img=frame_low(t); so=sub_overlay(t)
+    img=frame_low(t); so=_sub(t)
     if so: ov=so[0].resize((W,H),Image.BOX); m=so[1].resize((W,H),Image.BOX).point(lambda v:255 if v>100 else 0); img.paste(ov,(0,0),m)
     return img
 
@@ -551,16 +562,16 @@ def _geom(t,name,st,V):
     out=[]
     if V[:,1].min()<-0.05: out.append(('floor',f'{name} under the floor'))
     return out
-def _gst(t): return gary_state(t)
+def _gst(t): return gary_state(story_t(t))
 def _dst(t):
-    d=driver_state(t)            # seated in the moving car = rigid with the car, not tracked as a walker
+    t=story_t(t); d=driver_state(t)            # seated in the moving car = rigid with the car, not tracked as a walker
     return d if (d and t>=T_EXIT-0.3) else dict(kind='driver',base=(40,0,40),yaw=0.0)    # one known false positive at T_EXIT-0.3: the QA stand-in jumps to the seat
-QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,
+QA=dict(fps=FPS,dur=DUR+PRE,W=W,frame=frame,
     chars={'gary':(_gst,lambda **st: person_model(st),'none','none'),'driver':(_dst,lambda **st: person_model(st),'none','none')},
-    geom=_geom,camera=lambda t: cam_shot(t)['cam'],min_cam_dist=0.4,camera_ok=lambda p: -60<p[0]<60 and -5<p[2]<18 and 0.2<p[1]<6,
-    allow_jump=[(w,f/FPS) for w in ('gary','driver') for c in CUTS+[x/FPS for x in range(int(T_RET*FPS),int(T_FULL*FPS))] for f in range(int(c*FPS)-2,int(c*FPS)+4)],
+    geom=_geom,camera=lambda t: (lambda tt: cam_shot(tt)['cam'])(story_t(t)),min_cam_dist=0.4,camera_ok=lambda p: -60<p[0]<60 and -5<p[2]<18 and 0.2<p[1]<6,
+    allow_jump=[(w,f/FPS) for w in ('gary','driver') for c in [PRE]+[c_+PRE for c_ in CUTS]+[x/FPS+PRE for x in range(int(T_RET*FPS),int(T_FULL*FPS))] for f in range(int(c*FPS)-2,int(c*FPS)+4)],
     weapon_events=[],
-    scenes=[dict(id=f's{i}',t0=CUTS[i],t1=CUTS[i+1],action=a) for i,a in enumerate((
+    scenes=[dict(id='s_pre',t0=0.0,t1=PRE,action='cold open: the THANKS GARY scene from the end (police lights, the driver sprints off)')]+[dict(id=f's{i}',t0=CUTS[i]+PRE,t1=CUTS[i+1]+PRE,action=a) for i,a in enumerate((
         'hook: Gary on the sidewalk, his car screeches away, VEHICLE STOLEN, counter 899 -> 900 (CAM A)',
         'lock, alarm, second car, both stolen, Gary holds two key sets (CAM B)',
         'keys in the ignition, sandwich, note (CAM B2)',
@@ -572,9 +583,9 @@ QA=dict(fps=FPS,dur=DUR,W=W,frame=frame,
 
 # ======================= AUDIO =======================
 def hsh_(i): v=math.sin(i*127.1)*43758.5453; return v-math.floor(v)
-def build_audio(path):
+def build_audio(path,voice=True,dur=None):
     import soundfile as _sf
-    s=Sound(DUR,loop=False,seed=21); sr=s.sr; n=s.n; t=s.t; BED=np.zeros(n); FX=np.zeros(n)
+    DD=dur or DUR; s=Sound(DD,loop=False,seed=21); sr=s.sr; n=s.n; t=s.t; BED=np.zeros(n); FX=np.zeros(n)
     def put(buf,x,t0,v=1.0):
         i=int(t0*sr)
         if i>=n or i<0: return
@@ -636,16 +647,20 @@ def build_audio(path):
     for k in range(8): step(T_RUN+k*0.1,0.05,70+k)
     # ---- voice
     NB=np.zeros(n); wins=[]
-    for k_,t0 in LINES:
+    for k_,t0 in (LINES if voice else []):
         a,ar=_sf.read(os.path.join(TTS_DIR,'sc',f'{k_}.wav')); a=a if a.ndim==1 else a.mean(1)
         a=np.interp(np.arange(int(len(a)*sr/ar))/sr,np.arange(len(a))/ar,a); put(NB,a,t0); wins.append((t0,t0+len(a)/sr))
     g=duck_envelope(n,sr,wins,-6.0,0.05,0.25); bed=BED*g; fx=FX*(0.55+0.45*g)
-    L=bed+fx; R_=np.roll(bed,700)+np.roll(fx,200); pk=max(np.abs(L).max(),np.abs(R_).max()); gv=pk*1.6/np.abs(NB).max()
+    L=bed+fx; R_=np.roll(bed,700)+np.roll(fx,200); pk=max(np.abs(L).max(),np.abs(R_).max()); gv=pk*1.6/np.abs(NB).max() if voice else 0.0
     s.L=L+NB*gv; s.R=R_+NB*gv; s.reverb(0.1,length=1.0,decay=3.0)
-    end=np.clip((DUR-t)/0.04,0,1); s.L*=end; s.R*=end
+    end=np.clip((DD-t)/0.04,0,1); s.L*=end; s.R*=end
     return s.save(path,peak=0.9)
 if __name__=='__main__' and os.environ.get('PART')=='audio':
-    print(build_audio(os.path.join(OUT,'stolen_car.wav'))); sys.exit()
+    import soundfile as _sf2
+    build_audio(os.path.join(OUT,'sc_story.wav')); build_audio(os.path.join(OUT,'sc_nv.wav'),voice=False,dur=DUR+1.2)
+    a,sr_=_sf2.read(os.path.join(OUT,'sc_story.wav')); b,_=_sf2.read(os.path.join(OUT,'sc_nv.wav'))
+    i0=int(TEASE0*sr_); pre=b[i0:i0+int(PRE*sr_)].copy(); fi=np.minimum(1,np.arange(len(pre))/(0.03*sr_)); fo=np.minimum(1,(len(pre)-np.arange(len(pre)))/(0.12*sr_))
+    pre*=(fi*fo)[:,None]; pre*=min(1.0,0.9/np.abs(pre).max()); _sf2.write(os.path.join(OUT,'stolen_car.wav'),np.concatenate([pre,a,np.zeros((int(0.4*sr_),a.shape[1]))]),sr_); print('audio',len(pre)/sr_+len(a)/sr_); sys.exit()
 if __name__=='__main__' and os.environ.get('PART'):
     a,b=map(int,os.environ['PART'].split(':'))
     import subprocess
