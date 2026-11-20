@@ -33,7 +33,7 @@ def _lines():
     return out,t-GAP
 LINES,_vend=_lines(); T0=dict(LINES)
 DUR=round(_vend+0.45,2)
-PRE=2.3                                                          # cold open: the THANKS GARY scene from the end, then the story starts
+PRE=1.0                                                          # cold open: the THANKS GARY scene from the end, then the story starts
 N=int(round((DUR+PRE)*FPS))
 def ws(k,i): return T0[k]+SCR['sent'][k][i][0]
 def we(k,i): return T0[k]+SCR['sent'][k][i][1]
@@ -57,7 +57,7 @@ T_POLICE=T0['11']-0.15
 T_EXIT=T0['11']+0.2                                             # the driver steps out
 T_NOTE2=T0['11']+1.1                                            # THANKS GARY note on the trunk
 T_RUN=T0['11']+1.35                                             # sprints off
-TEASE0=T0['11']+0.78                                            # story time where the cold open starts (just before the note is slapped on)
+TEASE0=T0['11']+1.0                                             # story time where the cold open starts (just before the note is slapped on)
 CUTS=[0.0,T0['3']-0.04,T0['5']-0.04,T0['8']-0.04,T0['9']-0.04,T0['10']-0.04,T0['11']-0.04,DUR]
 CAR1=(-1.2,9.2); CAR2=(1.4,9.2); LANE=2.2
 
