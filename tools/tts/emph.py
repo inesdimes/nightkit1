@@ -64,10 +64,28 @@ def word_spans(timings,n_words,sr_out):
     if cur: spans.append(cur)
     if len(spans)!=n_words: raise ValueError(f'{len(spans)} phoneme words vs {n_words} text words')
     return [(int(a*sr_out),int(b*sr_out)) for a,b in spans]
+class _Tm:
+    def __init__(s,p,a,b): s.phoneme,s.start,s.end=p,a,b
+def create_timed(k,text,voice,speed,lang):
+    """Fallback for kokoro-onnx 0.4.x (no create_timed): one pass over the duration model (kokoro-dur.onnx), which outputs
+    per-token frame counts next to the audio. Returns (audio 24 kHz, sr, [phoneme timings in s]). One batch only (short sentences)."""
+    ph=k.tokenizer.phonemize(text,lang)
+    chars=[c for c in ph if k.tokenizer.tokenize(c)]
+    toks=np.array(k.tokenizer.tokenize(ph),dtype=np.int64); assert len(toks)==len(chars) and len(toks)<=510
+    style=k.get_voice_style(voice)[len(toks)]
+    names=[i.name for i in k.sess.get_inputs()]
+    if 'input_ids' in names: inp={'input_ids':[[0,*toks,0]],'style':np.array(style,dtype=np.float32),'speed':np.array([speed],dtype=np.int32)}
+    else: inp={'tokens':[[0,*toks,0]],'style':style,'speed':np.ones(1,dtype=np.float32)*speed}
+    outs=k.sess.run(None,inp); onames=[o.name for o in k.sess.get_outputs()]
+    audio=outs[0].squeeze(); dur=outs[onames.index('duration')].squeeze().astype(float)
+    sec=len(audio)/24000/dur.sum()                                   # seconds per duration frame
+    edges=np.concatenate([[0],np.cumsum(dur)])*sec
+    T=[_Tm(c,edges[i+1],edges[i+2]) for i,c in enumerate(chars)]   # token i+1 (0 = leading pad)
+    return audio,24000,T
 def render(k,voice,speed,lang,text,pitch=0.0,gain=0.0):
     """whole-sentence synthesis + local stress on the marked words (exact word spans). Returns 48 kHz audio (not trimmed)."""
     plain,words,marks=parse(text)
-    a,sr,T=k.create_timed(plain,voice,speed,lang)
+    a,sr,T=k.create_timed(plain,voice,speed,lang) if hasattr(k,'create_timed') else create_timed(k,plain,voice,speed,lang)
     full=resample_poly(a,SR,sr) if sr!=SR else a
     y=apply(full,word_spans(T,len(words),SR),marks) if marks else full
     if abs(pitch)>0.01: y=shape(y,pitch,1.0,0)

@@ -1,7 +1,6 @@
 # Continuation note — Insert Disc 2 (18 Nov 2026)
 
-Paste this into a new chat. Repo: `inesdimes/nightkit1`, branch `ccr-91720a78-gihjic` (latest work, includes everything from `ccr-bf35ef55-cb0f4r` and
-`ccr-f9cdf9b1-6cua2c`; not on `main`). A new session may only be allowed to push to its own branch: create it from this one.
+Paste this into a new chat. Repo: `inesdimes/nightkit1`. Shared branch since 20 Nov 2026: `misty-pilot` on the PC; the cloud branch `ccr-91720a78-gihjic` contains all of it (merged 20 Nov) plus the newest analytics. PC: `git pull` at the start, push at the end (see CLAUDE.md). A new session may only be allowed to push to its own branch: create it from this one.
 Read first: `HANDOFF.md` (channel, rules, video table), `PIPELINE.md` (production + QA process), `ANALYTICS.md` (data, observations).
 
 ## Working agreement
@@ -38,6 +37,9 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 | Why Do Mirrors Copy Us? (60.0 s, PS1 surreal comedy) | examples/mirror_copy.py (voices `tools/tts/mc.py`; own robot, mirror room, 2D reflection sprite) | rendered 18 Nov: critique rounds 1-2 all >= 8, `check.py` 9/9 -> `deliverables/why_do_mirrors_copy_us_60s.mp4`; not posted |
 | Why Do Mirrors Copy Us? **v2** (34 s, closer camera, SYNC HUD) | examples/mirror_copy_v2.py (imports mirror_copy.py; voice `tools/tts/mc2.py`) | rendered 18 Nov: critique round 1 all >= 8, `check.py` 9/9 -> `deliverables/why_do_mirrors_copy_us_v2_34s.mp4`; not posted; the 60 s cut had a glint bug (stripe crossed the robot), fixed in `mirror_copy.glint()` (60 s file not re-rendered) |
 | Why Do Lighthouses Blink? (60.0 s, PS1 maritime horror) | examples/lighthouse.py (voices `tools/tts/lh.py 1.0`; captain follows the wrong light, is lost, a megalodon (side profile, boat lying in its open jaws) swallows the boat; subtitles 1.25x at 1080x1920) | FINAL 18 Nov, `check.py` 9/9 -> `deliverables/why_do_lighthouses_blink_60s.mp4` (older cuts kept in deliverables: `_v1_calm_ending`, `_v2_escape_then_shark`, `_v3_front_shark`); not posted |
+| Misty Valley pilot (7.0 s, Blender 5.3 EEVEE, no narration, SFX only) | blender/misty_pilot.py (MODE=preview/final/audio/mux; frames + MP4 in `~/Documents/blender-shorts/renders/misty_pilot/`) | FINAL 18 Nov: 1080x1920, 96 samples, motion blur -> `misty_pilot_final.mp4`; not posted. Note: EEVEE world volume blocks sun/sky since 4.2, so haze is a volume box |
+| One Small Mistake #01: The Save That Killed Him (41.6 s, PS1 dark comedy) | examples/save_killed.py (voice `tools/tts/sk.py`, Kokoro bm_george speed 1.25; reuses FB knight + L10 hall; new purple crystal, potion, HUD/pause menu) | FINAL 18 Nov (approved by Enes): critique r1-r2 all >= 8, `check.py` 12/13 (WARN = planned flash pops) -> `renders/save_killed/the_save_that_killed_him_41s.mp4`; not posted. 41.6 s not 30 s: the brief's 115 words do not fit Kokoro's pace |
+| The Save That Killed Him, TikTok cut (20.5 s) | examples/save_killed_15.py (imports save_killed.py, only voice `sk.py --cut 15` + beat times change) | FINAL 18 Nov (approved by Enes, 20.5 s kept): critique r1 all >= 8, `check.py` 12/13 -> `renders/save_killed/the_save_that_killed_him_tiktok_20s.mp4`; not posted. Captions: `captions/save_that_killed_him.md` |
 | One Apple 15 s cut (15.25 s) | examples/one_apple_15.py (imports v4 assets; voice `tools/tts/ap15.py`) | rendered, not posted; for **TikTok** |
 
 Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`, `captions/safe_zone.md`, `captions/smallest_umbrella.md`, `captions/camera_under_bed.md`.
@@ -70,8 +72,19 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 ## In progress: THE LAST 10 SECONDS (series), ep. 1 "The Dungeon Collapse"
 - Enes chose the idea (collapsing dungeon, HUD timer 10.0 -> 0.0, loss aversion, ends with one apple). Script `examples/last10_collapse.py` (58 s), voice `tools/tts/l10.py`. Draft 2 rendered, critique round 2 in `reviews/last10_collapse.md`; not posted. Open: pacing of the 19-30 s thought beat.
 
+## Local PC notes (18 Nov 2026, Enes's Windows PC)
+- Setup done here: `pip install scipy soundfile kokoro-onnx onnx`, Kokoro files in `tts/`, ffmpeg via `winget install Gyan.FFmpeg`
+  (new shells: `$env:Path += ";$env:LOCALAPPDATA\Microsoft\WinGet\Links"` until restart). Renders go to `..\renders\<project>\`.
+- kokoro-onnx 0.4.7 has no `create_timed`: `tools/tts/emph.py` now has a fallback that reads the duration output of `kokoro-dur.onnx`.
+- `tools/qa/scene_qa.py`: new optional `allow_teleport=[(who,t)]` for planned in-shot resets (respawn under a white flash).
+- PowerShell 5.1: `Start-Process -Environment` does not exist; set `$env:PART` before each `Start-Process` for parallel parts.
+
 ## Next steps
-1. 48 h stats of the 16 Nov posts (YT stayed/swiped, retention graph) -> add to ANALYTICS.md.
-2. Caption for Loot Restocker (Safe Zone, One Apple and Cat POV captions are done, all three platforms).
-3. Decide Guard Forgets B (see table).
-4. New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
+Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
+New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
+
+## 19 Nov 2026 - Antosiyanin loop short (Sapkali Molekul)
+- `examples/anthocyanin_loop.py` (pure Pillow/numpy 2D pixel art, no Blender; Kokoro TTS with lang=tr, SFX synthesized, ffmpeg now on PATH).
+  `audio` -> `preview` -> `video` -> `qa`. Output: `renders/anthocyanin/anthocyanin_loop_v1.mp4` (1080x1920, 70 s, 17 MB, -14.2 LUFS).
+- QA: frame 0 == frame 2099 pixel-exact (also after H.264: QP 18, forced I-frames at 0 and 2099); palette = 6 colours only; last VO ends 67.9 s.
+- Not verified by ear: Turkish pronunciation (English Kokoro voices + espeak-tr) - Enes must listen; swap to ElevenLabs if bad.

@@ -125,6 +125,7 @@ def main():
                 if scenes[si].get('set')=='outside' or scenes[psi].get('set')=='outside': continue
                 d=np.linalg.norm(np.array(a_['base'])-np.array(b_['base'])); dy=abs(((b_['yaw']-a_['yaw']+math.pi)%(2*math.pi))-math.pi)
                 if psi==si:
+                    if any(w==who and abs(t-tj)<0.06 for w,tj in QA.get('allow_teleport',[])): continue   # planned in-shot reset (e.g. respawn under a white flash)
                     if d>0.3*a.step: add(t,'teleport',f'{who} jumps in one frame ({d:.2f} m)')
                     if dy>0.7*a.step: add(t,'teleport',f'{who} turns too fast ({math.degrees(dy):.0f} deg/frame)')
                 elif d>0.5 and not any(w==who and abs(t-tj)<0.1 for w,tj in allowed_jump):
