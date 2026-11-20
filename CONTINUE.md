@@ -89,3 +89,9 @@ New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scen
   `audio` -> `preview` -> `video` -> `qa`. Output: `renders/anthocyanin/anthocyanin_loop_v1.mp4` (1080x1920, 70 s, 17 MB, -14.2 LUFS).
 - QA: frame 0 == frame 2099 pixel-exact (also after H.264: QP 18, forced I-frames at 0 and 2099); palette = 6 colours only; last VO ends 67.9 s.
 - Not verified by ear: Turkish pronunciation (English Kokoro voices + espeak-tr) - Enes must listen; swap to ElevenLabs if bad.
+
+## 20 Nov 2026 - Enes's own English voice (Chatterbox)
+- Chatterbox TTS server is installed at `D:\chatter\Chatterbox-TTS-Server-2.0.0` (web UI `http://localhost:8004`, `start.bat`). Reference recordings are in its `reference_audio\` (`enes_main/curious/deadpan/excited.wav`) and `voice/enes_ref_main.wav` (gitignored).
+- Enes tested 3 ways (VC from Kokoro, TTS with his reference at cfg 0.0/0.2, TTS with a Kokoro reference) and chose **2b**: original Chatterbox, reference `enes_ref_main.wav`, exaggeration 0.5, cfg_weight 0.2, seed 3000 ("harika"). The Turkish accent came through the reference at the default cfg 0.5.
+- Tool: `tools/tts/enes.py lines.json <name>` -> `$TTS_DIR/<name>/<key>.wav` + `script.json` (same shape as the Kokoro scripts). Run it with the Chatterbox embedded Python (system Python has no torch/chatterbox); stop the web server first (VRAM). Output matches the approved 2b file exactly.
+- Gotchas: Turbo ignores cfg_weight/exaggeration (use the original model); `cfg_weight=0.0` crashes in this chatterbox version (tool uses 1e-6); original model files are in the HF cache (downloaded 20 Nov). Not wired into a video yet; the three tone references (curious/deadpan/excited) are short (5-8 s) and untested.
