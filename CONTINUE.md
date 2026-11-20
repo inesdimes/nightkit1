@@ -1,7 +1,6 @@
 # Continuation note — Insert Disc 2 (18 Nov 2026)
 
-Paste this into a new chat. Repo: `inesdimes/nightkit1`, branch `ccr-91720a78-gihjic` (latest work, includes everything from `ccr-bf35ef55-cb0f4r` and
-`ccr-f9cdf9b1-6cua2c`; not on `main`). A new session may only be allowed to push to its own branch: create it from this one.
+Paste this into a new chat. Repo: `inesdimes/nightkit1`. Shared branch since 20 Nov 2026: `misty-pilot` on the PC; the cloud branch `ccr-91720a78-gihjic` contains all of it (merged 20 Nov) plus the newest analytics. PC: `git pull` at the start, push at the end (see CLAUDE.md). A new session may only be allowed to push to its own branch: create it from this one.
 Read first: `HANDOFF.md` (channel, rules, video table), `PIPELINE.md` (production + QA process), `ANALYTICS.md` (data, observations).
 
 ## Working agreement
@@ -79,6 +78,9 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - kokoro-onnx 0.4.7 has no `create_timed`: `tools/tts/emph.py` now has a fallback that reads the duration output of `kokoro-dur.onnx`.
 - `tools/qa/scene_qa.py`: new optional `allow_teleport=[(who,t)]` for planned in-shot resets (respawn under a white flash).
 - PowerShell 5.1: `Start-Process -Environment` does not exist; set `$env:PART` before each `Start-Process` for parallel parts.
+
+## Next video (20 Nov 2026): "Why do final bosses have three phases?"
+- Brief: `briefs/four_phases.md` (3 goblins in a cloak; the knight joins them -> 4 phases; the old goblin gets a day off). To be built on the PC (nightkit). Voice: Chatterbox cloned Enes but with an Indian-English-sounding accent (Enes does not want it); next = test ChatterboxVC (English source -> Enes timbre) on line 1, see the brief's Voice section for the order.
 
 ## Next steps
 Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.

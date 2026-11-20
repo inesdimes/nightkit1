@@ -139,3 +139,17 @@ Reading:
 - Single videos, small numbers, three different platforms: nothing here is a rule. Re-check with the 16 Nov posts (Guard Forgets A, Final Boss B) and the new 15 s TikTok cuts.
 
 Missing: the 16 Nov posts' 48 h numbers (Enes will post them after 48 h are up).
+
+## 12. Final Boss A vs B on YouTube (read from Enes's screenshots, 20 Nov 2026)
+| Video | Age | Views | Engaged views | Unique viewers | Watch time | Avg view | Stayed / swiped | Subs |
+|---|---|---|---|---|---|---|---|---|
+| Final Boss A, 30.5 s ("Why Do Final Bosses NEVER Leave Their Rooms?") | 34 h | **3.0 K** ("1.8 K above normal") | 1.5 K | 625 (still processing) | 9.4 h ("6.4 h above normal") | 0:20 = **65.7 %** | **64.1 %** / 35.9 % | 0 |
+| Final Boss B, 60.25 s | ~3 days | 1.6 K | 918 | 898 (still processing) | 8.3 h | 0:31 = **51.6 %** | **67.5 %** / 32.5 % | **+2** |
+
+Reading:
+- The best numbers on the channel so far. Both versions keep 64-68 % "stayed" (earlier best 56-58 %, others 15-45 %). B was "~0 views" on the evening it was posted and recovered later.
+- Both retention curves **start above 100 %** (people rewatch the first seconds / loop), drop hard in the first ~7-10 s, then stay almost flat to the end (A ~55 %, B ~60 % -> ~40 %).
+- Both got a **second push** a day or more after posting (a step in the views curve): YouTube tested them on a new audience and they passed.
+- 30 s: more views, higher % watched. 60 s: more seconds per view (31 s vs 20 s), similar total watch time, and the only one that brought subscribers (+2).
+- What is different about this video: the hook is a question gamers already have ("why do final bosses never leave their rooms?") and the answer is a story twist (the knight becomes the next boss), not a science fact. Hypothesis: relatable game tropes + a lore twist work better than explained real-world facts.
+- Still small numbers (one topic, two cuts). Unique viewers are marked as still processing.
