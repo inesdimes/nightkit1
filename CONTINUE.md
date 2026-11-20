@@ -116,3 +116,5 @@ New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scen
 - Brief inconsistency (kept the brief's picture): the new boss counts 4 phases, but the old goblin sits outside, so only knight + middle + kid are under the cloak (3 members). Cloak height / HUD show 4.8 m / "PHASES: 4" as written.
 - Weak spots: sword contact on the cloak reads weakly from the side camera (limbs+contacts 7/10); goblins step into the cloak skirt (a hop hides most of it); the old goblin's cup is a plain white box; sound judged by measurement only (-14.1 LUFS, peak -1.4 dBFS, no gap > 0.6 s between voice-level sounds). Script lint hints (no "Wait...?" beat, no explicit "because") ignored: the narration is fixed by the brief.
 - Setup note: `tools/tts/lr.py` must have been run once (loot_restocker.py reads `tts/lr/script.json` at import).
+
+- 20 Nov 2026: Enes scheduled four_phases and stolen_car (TR 23:00 and 21 Nov 02:00, for the Europe / USA evenings); thumbnails made with `tools/thumb.py`. Next: read both at 48 h, fill ANALYTICS.md section 13.

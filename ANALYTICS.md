@@ -153,3 +153,12 @@ Reading:
 - 30 s: more views, higher % watched. 60 s: more seconds per view (31 s vs 20 s), similar total watch time, and the only one that brought subscribers (+2).
 - What is different about this video: the hook is a question gamers already have ("why do final bosses never leave their rooms?") and the answer is a story twist (the knight becomes the next boss), not a science fact. Hypothesis: relatable game tropes + a lore twist work better than explained real-world facts.
 - Still small numbers (one topic, two cuts). Unique viewers are marked as still processing.
+
+## 13. Scheduled posts, 20-21 Nov 2026 (Enes scheduled both, no numbers yet)
+| Video | Scheduled (Turkey time) | Version posted |
+|---|---|---|
+| Why Do Final Bosses Always Have Three Phases? (`four_phases`) | 20 Nov 23:00 or 21 Nov 02:00 (Enes: one at 23:00, the other 21 Nov 02:00; which is which not stated) | 30 s final, `why_do_final_bosses_have_three_phases_30s.mp4` |
+| What Happens to the Guy Whose Car You Steal? (`stolen_car`) | the other slot | v2 with 1 s cold open (THANKS GARY), `..._33s.mp4`; #GTA6 only as a hashtag in the description |
+
+- Why these hours (Enes's decision): they target the evening of Europe (23:00 TR) and the evening of the USA (02:00 TR); earlier notes assumed a Turkish 19:00-21:00 slot. First time the channel posts at these hours, so compare against the earlier posts with that in mind.
+- To do: read both at 48 h (views, engaged views, stayed %, subs, and the country split if YouTube shows it), then fill in this section. Also note whether the #GTA6 hashtag changed the first-hours views of `stolen_car`.
