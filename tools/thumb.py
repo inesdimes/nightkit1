@@ -27,5 +27,5 @@ if __name__=='__main__':
     fp=load('four_phases'); make(fp,0.35,[('WHY DO BOSSES',130,WHT,13),('HAVE 3 PHASES?',250,YEL,13)],os.path.join(R,'four_phases','thumbnail.png'),hud=False)
     sc=load('stolen_car'); make(sc,sc.PRE+3.0,[('HIS CAR WAS',120,WHT,17),('STOLEN',250,RED,30),('900 TIMES',1580,YEL,22)],os.path.join(R,'stolen_car','thumbnail.png'),hud=False)
     # 21 Nov 2026: day-1 videos (the hook frame / the goblin rush, text-only overlay, no subtitles)
-    ss=load('skip_speech'); make(ss,0.7,[('HE WROTE A SPEECH',120,WHT,11),('30 YEARS AGO',230,YEL,16),('NOBODY HEARS IT',1620,RED,13)],os.path.join(R,'skip_speech','thumbnail.png'),hud=False)
-    eq=load('enemies_queue'); make(eq,8.3,[('NINE GOBLINS',120,WHT,15),('AT ONCE',240,RED,26),('ONE AT A TIME',1620,YEL,14)],os.path.join(R,'enemies_queue','thumbnail.png'),hud=False)
+    ss=load('skip_speech'); make(ss,0.7,[('HIS SPEECH',150,WHT,13),('30 YEARS',265,YEL,17),('SKIPPED',395,RED,17)],os.path.join(R,'skip_speech','thumbnail.png'),hud=False)
+    eq=load('enemies_queue'); make(eq,8.3,[('WHY GOBLINS',370,WHT,15),('NEVER',505,RED,30),('ATTACK TOGETHER',735,YEL,11)],os.path.join(R,'enemies_queue','thumbnail.png'),hud=False)
