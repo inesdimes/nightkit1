@@ -20,6 +20,8 @@ which was not a joke: the hero becomes the next prisoner.
 - Voice (corrected 21 Nov after mimic: Enes found it too slow and did not like the voice): **same pace and settings as four_phases**
   (`tools/tts/fp.py`: Kokoro bm_george speed 1.22, pauses 0-0.15 s inside a line, ~0.3 s between lines, then ChatterboxVC).
   Depth comes from the story and the picture, NOT from a slower voice. No quiet stretch over ~1 s.
+- Frame 0 (ANALYTICS 16, speech video 95 % swiped): readable at a glance (clear silhouette, bright enough, a face or an action), moving within the
+  first second, and never a skip / exit / loading-style prompt on screen in the first seconds.
 - Sound: never a per-sample random gate (`rng.random(n) < p`) - that was the crackle in day 1.
 
 ## Posting rules (changed 21 Nov 2026, Enes's decision)
