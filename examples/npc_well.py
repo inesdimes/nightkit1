@@ -28,7 +28,7 @@ WHT=(242,238,226); YEL=(255,210,60); GRAY=(150,150,160); GOLD=(236,190,60)
 
 # ======================= voice timings (tools/tts/nw.py) =======================
 SCR=json.load(open(os.path.join(TTS_DIR,'nw','script.json')))
-GAP=0.55; EXTRA={'4':0.3,'6':0.5,'8':0.3,'10':2.4,'11':0.5,'12':0.2}
+GAP=0.3; EXTRA={'4':0.2,'6':0.2,'8':0.1,'10':1.3,'11':0.3,'12':0.1}
 def _lines():
     t=0.12; out=[]
     for k in [str(i) for i in range(1,14)]: out.append((k,round(t,3))); t+=SCR['dur'][k]+GAP+EXTRA.get(k,0.0)
@@ -52,8 +52,8 @@ T_RING=T0['5']+2.35                                  # the ring leaves her hand
 T_WDOWN=(T0['6']+0.35,T0['6']+1.9)                   # she climbs down
 T_GREY=(we('6',1)-0.2,T0['7']-0.12)                  # flashback fades to grey
 T_K_IN=T0['9']-0.45; T_K_STOP=T0['9']+0.85           # knight walks in, stops
-T_K_RIM=(T0['10']+0.05,T0['10']+1.3); T_K_UP=(T0['10']+1.3,T0['10']+1.8); T_K_DOWN=(T0['10']+1.9,T0['10']+3.5)
-T_K_ASC=(T0['10']+3.9,T0['11']+0.35); T_K_OUT=(T0['11']+0.35,T0['11']+1.0)
+T_K_RIM=(T0['10']+0.05,T0['10']+0.8); T_K_UP=(T0['10']+0.8,T0['10']+1.15); T_K_DOWN=(T0['10']+1.2,T0['10']+2.1)
+T_K_ASC=(T0['10']+2.3,T0['11']+0.35); T_K_OUT=(T0['11']+0.35,T0['11']+1.0)
 T_HOLD=ws('11',0)+1.1                                # he holds out the ring
 T_TAKE=(ws('12',0)+1.1,ws('12',0)+2.3)               # the old man takes the ring
 T_WALK=(T0['13']+0.15,DUR)                           # the old man walks away
@@ -214,7 +214,7 @@ def mstate(t):
     if T0['7']-0.05<=t<T0['8']-0.05:                                                              # his hand on the rim
         u=sm(seg01(t,T0['7']-0.05,T0['7']+0.5))*(1-sm(seg01(t,T0['8']-0.5,T0['8']-0.05)))
         tgt=loc(base,yaw,(-0.7,0.88,5.95)); d['lh' if tgt[0]<0 else 'rh']=lerp3((-0.26 if tgt[0]<0 else 0.26,0.68,0.05),tgt,u); d['lean']=0.34
-    if T0['9']<=t<T0['11']: d['head']=lerp(0.0,0.5,sm(seg01(t,T0['9']+0.7,T0['9']+1.3)))*(1-sm(seg01(t,T0['10']+3.0,T0['10']+4.5)))+(-0.3 if False else 0)
+    if T0['9']<=t<T0['11']: d['head']=lerp(0.0,0.5,sm(seg01(t,T0['9']+0.7,T0['9']+1.3)))*(1-sm(seg01(t,T0['10']+1.9,T0['10']+2.8)))+(-0.3 if False else 0)
     kx,kz=-0.55,5.05
     if t>=T0['11']+0.8:                                                                           # turns to the knight
         yaw=lerp(yaw,math.atan2(kx-base[0],kz-base[2]),sm(seg01(t,T0['11']+0.8,T0['11']+1.7))); d['head']=0.0; d['lean']=0.26
@@ -525,10 +525,10 @@ def build_audio(path):
     for k in range(int((T_K_STOP-T_K_IN)/0.3)): step(T_K_IN+0.15+k*0.3,0.03,300+k)
     for k in range(3): step(T_K_RIM[0]+0.1+k*0.3,0.03,320+k)
     nb(T0['9']+1.4,0.5,300,1600,0.05,331,1); creak(T0['9']+1.45,0.55,0.05,seed=13,f0=190)       # his head turns to the old man: armour + a creak of the rope (no silent gap)
-    creak(T0['10']+1.3,0.8,0.06,seed=11); nb(T_K_UP[0]+0.1,0.35,300,1500,0.03,330)
+    creak(T0['10']+0.8,0.8,0.06,seed=11); nb(T_K_UP[0]+0.1,0.35,300,1500,0.03,330)
     k=0
-    while T_K_DOWN[0]+k*0.55<T_K_ASC[1]:
-        a=T_K_DOWN[0]+k*0.55
+    while T_K_DOWN[0]+k*0.5<T_K_ASC[1]:
+        a=T_K_DOWN[0]+k*0.5
         if not (T_K_DOWN[1]<a<T_K_ASC[0]-0.2): creak(a,0.7,0.045,seed=20+k,f0=190+10*(k%3)); nb(a+0.1,0.2,250,1600,0.018,340+k)
         k+=1
     echo(None,T_K_DOWN[0],T_K_ASC[1]-T_K_DOWN[0],0.55)
