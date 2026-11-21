@@ -157,13 +157,13 @@ def hero_knight(**st):
 def kstate(t):
     """the knight who gives something back (blue cape: the original)"""
     if t<T_KNEEL-0.9: return None
-    sit=0.55*sm(seg01(t,T_KNEEL,T_KNEEL+0.8)); base=(-0.75,0.0,2.25); yaw=math.atan2(0.75,0.75)
-    d=dict(base=base,yaw=yaw,walk=0.0,run=0.0,sword='hip',lean=0.18*sm(seg01(t,T_KNEEL,T_KNEEL+0.8)),head=0.0,rh=(0.26,0.86,0.3),lh=None,sit=sit)
+    sit=0.3*sm(seg01(t,T_KNEEL,T_KNEEL+0.8)); base=(-0.75,0.0,2.25); yaw=math.atan2(0.75,0.75)
+    d=dict(base=base,yaw=yaw,walk=0.0,run=0.0,sword='hip',lean=0.34*sm(seg01(t,T_KNEEL,T_KNEEL+0.8)),head=0.0,rh=(0.26,0.86,0.3),lh=None,sit=sit)
     if t<T_KNEEL: d.update(base=(lerp(-2.2,-0.75,sm(seg01(t,T_KNEEL-0.9,T_KNEEL))),0.0,lerp(1.2,2.25,sm(seg01(t,T_KNEEL-0.9,T_KNEEL)))),walk=t*7.0,sit=0.0,lean=0.05)
     if t>=T_PLACE[0]-0.3:                                                                          # the right hand carries the coin to the chest
         u=sm(seg01(t,T_PLACE[0]-0.3,T_PLACE[0]+0.35)); d['rh']=lerp3((0.26,0.86,0.3),(0.55,0.52,0.78),u)
         if t>=T_PLACE[0]+0.5: d['rh']=lerp3((0.55,0.52,0.78),(0.26,0.86,0.3),sm(seg01(t,T_PLACE[0]+0.5,T_PLACE[1]+0.3)))
-    if t>=T_SHUT[0]-0.2: d.update(sit=0.55*(1-sm(seg01(t,T_SHUT[0]-0.2,T_SHUT[0]+0.7))),lean=0.18*(1-sm(seg01(t,T_SHUT[0]-0.2,T_SHUT[0]+0.7))))
+    if t>=T_SHUT[0]-0.2: d.update(sit=0.3*(1-sm(seg01(t,T_SHUT[0]-0.2,T_SHUT[0]+0.7))),lean=0.34*(1-sm(seg01(t,T_SHUT[0]-0.2,T_SHUT[0]+0.7))))
     return d
 
 # ======================= set: stone alcove + corridor, one torch =======================
@@ -231,7 +231,7 @@ def render3d(t):
     if hs is not None: layers.append(lum_lit(hero_knight(**hs),cp,0.7))
     ks=kstate(t)
     if ks is not None: layers.append(lum_lit(FB.knight(**ks),cp,0.7))
-    img,vi,zb=zrender(RND,cam,layers,lights(t),fov=sh['fov'],fog_start=3,fog_end=16,ambient=0.14,shake=shake_px(t),return_z=True)
+    img,vi,zb=zrender(RND,cam,layers,lights(t),fov=sh['fov'],fog_start=3,fog_end=16,ambient=0.2,shake=shake_px(t),return_z=True)
     return post.ps1(img),vi
 def flash_alpha(t):
     return 0.35*(1.0-seg01(t,T_FLASH,T_FLASH+0.18)) if T_FLASH-F<=t<T_FLASH+0.18 else 0.0

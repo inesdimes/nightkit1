@@ -65,3 +65,5 @@ Scores (PC session, 21 Nov 2026, rounds 1-2 merged; Claude cannot listen, sound 
 | sound vs picture | 8 | -14.0 LUFS, -1.4 dBTP, no silent half second; 14.5-16.7 s is the planned quiet after the clang (two far drips only); Enes judges |
 | pacing | 8 | no still stretch |
 Top fixes left: a real kneel pose; better hand models for the montage; brighter opening frame.
+
+Round 3 (21 Nov 2026): kneel pose changed to a forward bow (sit 0.3, lean 0.34) and ambient raised 0.14 -> 0.2 (brighter opening frame); re-rendered, scene_qa clean, check.py 12/13. Limbs + contacts: 7 -> 8 by eye on the test frames; montage hands still plain.

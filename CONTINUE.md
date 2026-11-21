@@ -103,7 +103,7 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - **Why do mimics pretend to be chests?** (30.5 s, 02:00 slot): `examples/mimic.py` (voice `tools/tts/mm.py` + `vc.py mm`; chest with a hinged lid, teeth/tongue/eyes only after "learned to bite", coin, hero hands, stone alcove, one torch). `scene_qa` clean, `check.py` 12/13 -> `renders/mimic/why_do_mimics_pretend_to_be_chests_30s.mp4`; not posted; captions `captions/mimic.md`.
 - Voice for both: Kokoro bm_george (speed 1.0, no stress marks) -> ChatterboxVC -> Enes timbre; `sc_check.py` all lines ok (pitch +5..+11 %). **Enes must listen.**
 - Sound: new `nightkit.audio.soft_fire()` (day-1 crackle fix) is used in mimic only; npc_well has no fire. Jumps > 6x local level: mimic 379, npc_well 478 (planned SFX; no per-sample gate anywhere).
-- Weak spots: see `reviews/npc_well.md` and `reviews/mimic.md` (limbs + contacts scored 7 in both: the ring hand-over and the kneeling pose; the mimic opening frame is very dark; the old man glides instead of walking; the 14.5-16.7 s stretch in mimic is a planned quiet).
+- Weak spots: see `reviews/npc_well.md` and `reviews/mimic.md` (limbs + contacts scored 7 in both: the ring hand-over and the montage hands in mimic (kneel pose and opening brightness fixed in round 3); the old man glides instead of walking; the 14.5-16.7 s stretch in mimic is a planned quiet).
 
 ## Next steps
 Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
