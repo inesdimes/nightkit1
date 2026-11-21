@@ -31,7 +31,6 @@ def build(D,name,mode):
         for i,(sx,sp,st,g,pause) in enumerate(ss):
             y,sr=sf.read(os.path.join(src,f'{k}_{i}.wav')); y=y if y.ndim==1 else y.mean(1)
             if sr!=SR: y=__import__('scipy.signal',fromlist=['x']).resample_poly(y,SR,sr)       # one sample rate for the whole line
-            if mode=='own': y=emph.trim(y,0.01,120,360)      # Enes's own recordings: only trim the silence
             if mode=='vc':                                  # pull each sentence to ~+5 % of the reference pitch (clamped +-2.5 st)
                 import fp_check_lib as C
                 p_=C.f0(y,SR)
@@ -39,7 +38,11 @@ def build(D,name,mode):
                     st_=float(np.clip(12*np.log2(C.REF*1.05/np.median(p_)),-2.5,2.5))
                     if abs(st_)>0.15: y=emph.shape(y,st_,1.0,0.0)
             z=np.zeros(int(pause*SR)); parts+=[z,y]; pos+=len(z); sent[k].append([round(pos/SR,3),round((pos+len(y))/SR,3),sx.replace('*','')]); pos+=len(y)
-        y=np.concatenate(parts); y=y/np.max(np.abs(y))*0.95; nz=np.where(np.abs(y)>0.01)[0]; y=y[:nz[-1]+1200]; sf.write(os.path.join(out,k+'.wav'),y,SR)
+        y=np.concatenate(parts)
+        if mode=='own':                                     # Enes's own recordings (tools/tts/own_prep.py): one loudness for every line (RMS of the voiced samples), soft limiter on the peaks
+            act=np.abs(y)>0.01; y=y*(0.11/np.sqrt((y[act]**2).mean())); pk=np.abs(y).max()
+            if pk>0.9: y=np.tanh(y/0.9)*0.9
+        y=y/np.max(np.abs(y))*0.95 if mode!='own' else y; nz=np.where(np.abs(y)>0.01)[0]; y=y[:nz[-1]+1200]; sf.write(os.path.join(out,k+'.wav'),y,SR)
         dur[k]=round(len(y)/SR,2); txt[k]=' '.join(x[0].replace('*','') for x in ss); print(k,dur[k],txt[k])
     print('TOTAL',round(sum(dur.values()),2),'words',sum(len(t.split()) for t in txt.values()))
     json.dump({'text':txt,'dur':dur,'sent':sent},open(os.path.join(out,'script.json'),'w'),indent=1)

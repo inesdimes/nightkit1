@@ -49,3 +49,28 @@ Top 3 fixes this round:
 
 All scores >= 8 -> final.
 Weak spots left: the frame-0 shot shows #47 + ticket, and the fight at the front only after the camera swings round (0.9-1.9 s), not in frame 0 itself (the brief's frame 0 had both); the hall is the loot_restocker hallway (the brief allowed it), so the sandbox reads as "corridor of chests".
+## Round 5 - 2026-11-21 - why_do_enemies_attack_one_at_a_time_45s.mp4
+
+- duration 45.38 s, 1089 frames, 21 cuts at 1.62, 1.67, 1.71, 1.75, 3.75, 3.96, 6.17, 13.38, 19.92, 26.12, 27.12, 27.17, 27.21, 29.21, 29.25, 29.29, 29.33, 30.54, 35.21, 38.08, 40.62
+- opening motion (first 1 s): 0.93
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 1.3 s
+- sheet: out\qa\enemies_queue\critique_r5.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3. 
+
