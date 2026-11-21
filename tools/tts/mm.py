@@ -3,7 +3,7 @@ import os, sys
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 import ss
 S=1.22; P=0.12
-D=[('1',[("Why do mimics pretend to be chests?",S,0.3,1.5,0)]),
+D=[('1',[("Why did this chest learn to *bite*?",S,0.3,1.5,0)]),
    ('2',[("This chest was opened by every hero for a hundred years.",S,0,0.5,0)]),
    ('3',[("They always took something.",S,-0.1,0.5,0),("Nobody ever put anything back.",S*0.95,-0.3,0.5,P)]),
    ('4',[("One day, it learned to bite.",S,0,0.5,0)]),

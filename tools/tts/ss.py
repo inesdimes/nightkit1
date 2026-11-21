@@ -31,6 +31,7 @@ def build(D,name,mode):
         for i,(sx,sp,st,g,pause) in enumerate(ss):
             y,sr=sf.read(os.path.join(src,f'{k}_{i}.wav')); y=y if y.ndim==1 else y.mean(1)
             if sr!=SR: y=__import__('scipy.signal',fromlist=['x']).resample_poly(y,SR,sr)       # one sample rate for the whole line
+            if mode=='own': y=emph.trim(y,0.01,120,360)      # Enes's own recordings: only trim the silence
             if mode=='vc':                                  # pull each sentence to ~+5 % of the reference pitch (clamped +-2.5 st)
                 import fp_check_lib as C
                 p_=C.f0(y,SR)

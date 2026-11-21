@@ -267,7 +267,7 @@ def finish(t):
     return img
 
 # ======================= subtitles (1080x1920, 1.25x, sentence timings from the voice) =======================
-SUB_F=7.0; ADV=6.9; HIL={'HUNDRED','BITE.','COIN.','BACK.','CHESTS?','LINE?'}
+SUB_F=7.0; ADV=6.9; HIL={'HUNDRED','BITE.','COIN.','BACK.','CHESTS?','LINE?','BITE?','YEARS?'}
 def _rows(text,n=17):
     out=[]; c=[]
     for w_ in text.split():
