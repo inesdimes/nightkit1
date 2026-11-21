@@ -67,3 +67,30 @@ Scores (PC session, 21 Nov 2026, rounds 1-2 merged; Claude cannot listen, sound 
 Top fixes left: a real kneel pose; better hand models for the montage; brighter opening frame.
 
 Round 3 (21 Nov 2026): kneel pose changed to a forward bow (sit 0.3, lean 0.34) and ambient raised 0.14 -> 0.2 (brighter opening frame); re-rendered, scene_qa clean, check.py 12/13. Limbs + contacts: 7 -> 8 by eye on the test frames; montage hands still plain.
+## Round 4 - 2026-11-21 - why_do_mimics_pretend_to_be_chests_23s.mp4
+
+- duration 23.17 s, 556 frames, 5 cuts at 6.12, 9.92, 12.54, 16.12, 18.29
+- opening motion (first 1 s): 1.06
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 1.2 s
+- sheet: out\qa\mimic\critique_r4.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3. 
+
+
+Round 4 (voice re-done at fp pace 1.22; 23.2 s): picture fixes from reviews/mimic_review.md: pointed teeth, dark mouth + tongue, frame 0 crack + glint, coin on the raised tongue with a glint. scene_qa no issues, check.py 12/13 (WARN = planned pops), -14.3 LUFS, no quiet stretch (longest voice gap 1.2 s). Scores by eye: readability 8, framing 8, pacing 8, rest unchanged >= 8.

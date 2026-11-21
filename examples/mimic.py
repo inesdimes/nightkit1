@@ -27,7 +27,7 @@ WHT=(242,238,226); YEL=(255,210,60); GOLD=(236,190,60); GOLD_D=(190,146,40)
 
 # ======================= voice timings (tools/tts/mm.py) =======================
 SCR=json.load(open(os.path.join(TTS_DIR,'mm','script.json')))
-GAP=0.55; EXTRA={'3':0.3,'4':1.5,'5':0.2,'6':0.5}
+GAP=0.3; EXTRA={'3':0.1,'4':0.7,'5':0.0,'6':0.2}
 def _lines():
     t=0.12; out=[]
     for k in [str(i) for i in range(1,8)]: out.append((k,round(t,3))); t+=SCR['dur'][k]+GAP+EXTRA.get(k,0.0)
@@ -56,7 +56,7 @@ def lid_angle(t):
     """the chest lid (0 = shut, ~1.2 = wide open)"""
     a=0.0
     if t<MONT[0]:                                                     # frame 0: the lid twitches
-        a=0.05*max(0.0,math.sin(2*PI*seg01(t,0.5,1.1)))+0.1*max(0.0,math.sin(2*PI*seg01(t,1.35,1.8)))
+        a=(0.21+0.05*math.sin(2*PI*t/2.2))*(1-sm(seg01(t,MONT[0]-0.6,MONT[0]-0.15)))     # open a crack, breathing
     for k in range(N_PULSE):
         p=pulse(k)
         if p<=t<p+PD: a=1.05*sm(seg01(t,p+0.05,p+0.3))*(1-sm(seg01(t,p+PD-0.3,p+PD-0.05)))
@@ -71,7 +71,7 @@ def lid_angle(t):
     if T_SHUT[0]<=t: a=1.15*(1-sm(seg01(t,*T_SHUT)))
     return a
 def eyes_on(t): return T_BITE-0.2<=t<T_STILL-0.2
-def teeth_on(t): return t>=T_BITE-0.05                                   # before it learned to bite it is only a chest
+def teeth_on(t): return t<MONT[0]-0.15 or t>=T_BITE-0.05                                   # before it learned to bite it is only a chest
 def gold_level(t):
     """height of the gold left in the chest (the heroes take it all)"""
     if t<MONT[0]: return 0.16
@@ -91,17 +91,33 @@ def chest_model(t):
         for k in range(9):
             Q+=box(cx-0.42+0.1*k,cx-0.3+0.1*k,0.05,0.05+gl*(0.5+0.5*hsh(k)),cz-0.2+0.18*hsh(k,1),cz-0.05+0.18*hsh(k,1),GOLD if k%2 else GOLD_D)
     if teeth_on(t):
-        Q+=box(cx-0.3,cx+0.3,0.05,0.12,cz+0.02,cz+0.2,(110,24,36))                                            # tongue
-        for k in range(7): Q+=box(cx-0.36+0.12*k,cx-0.3+0.12*k,0.05,0.14,cz-d+0.06,cz-d+0.1,(236,232,216))   # lower teeth
+        Q+=box(cx-w+0.06,cx+w-0.06,0.05,0.07,cz-d+0.06,cz+d-0.06,(84,14,26))                                  # dark red mouth floor
+        calm=sm(seg01(t,T_STILL,T_STILL+0.7)); tt=0.2+0.14*calm                                              # once calm the tongue rises: the coin will sit on it
+        Q+=box(cx-0.3,cx+0.3,0.07,tt,cz-0.22,cz+0.26,(150,40,54))                                             # tongue
+        for k in range(9): Q+=tooth(cx-0.4+0.1*k,0.07,cz-d+0.0,cz-d+0.06,h,+1,sc=1.0-0.6*calm)                               # lower teeth on the front rim
     hinge=(cx,h,cz+d)
     def LID(p): return FB_rx(p,a,hinge)
     Lq=box(cx-w-0.02,cx+w+0.02,h,h+0.12,cz-d-0.02,cz+d+0.02,wood_d,xf=LID)+box(cx-w-0.02,cx+w+0.02,h+0.12,h+0.15,cz-d,cz+d,wood,xf=LID)
     Lq+=box(cx-w-0.03,cx+w+0.03,h,h+0.15,cz-d*0.1,cz+d*0.1,IRON,xf=LID)
     if teeth_on(t):
-        for k in range(7): Lq+=box(cx-0.36+0.12*k,cx-0.3+0.12*k,h-0.09,h,cz-d+0.06,cz-d+0.1,(236,232,216),xf=LID)   # upper teeth
+        Lq+=box(cx-w+0.04,cx+w-0.04,h-0.03,h,cz-d+0.04,cz+d-0.04,(74,12,26),xf=LID)                          # dark mouth inside the lid
+        for k in range(9): Lq+=tooth(cx-0.35+0.1*k,0.07,cz-d+0.0,cz-d+0.06,h,-1,xf=LID)                      # upper teeth (pointed, interleaved)
+        if t<MONT[0]:                                                                                          # frame 0: a glint on a tooth
+            g=max(0.0,math.sin(2*PI*(t-0.3)/1.4))*0.055
+            if g>0.004:
+                gx,gy,gz=cx-0.05,h+0.075,cz-d-0.01
+                Q+=box(gx-g,gx+g,gy-0.004,gy+0.004,gz-0.005,gz+0.005,(255,255,235),emit=True)+box(gx-0.004,gx+0.004,gy-g,gy+g,gz-0.005,gz+0.005,(255,255,235),emit=True)
     if eyes_on(t) and a>0.35:
         for sx in (-1,1): Lq+=box(cx+sx*0.18-0.03,cx+sx*0.18+0.03,h+0.0,h+0.05,cz-0.02,cz+0.0,(255,190,80),xf=LID,emit=True)
     return Q+Lq
+TOOTH=(240,236,214)
+def tooth(x,w_,z0,z1,y0,dirn,xf=None,sc=1.0):
+    """a stepped, pointed tooth: base at y0, grows up (dirn=+1) or down (-1) in three narrowing steps"""
+    Q=[]; y=y0
+    for wd,hh in ((w_*0.5,0.052*sc),(w_*0.34,0.046*sc),(w_*0.18,0.042*sc)):
+        ya,yb=(y,y+hh) if dirn>0 else (y-hh,y)
+        Q+=box(x-wd,x+wd,ya,yb,z0,z1,TOOTH,xf=xf); y+=dirn*hh
+    return Q
 def FB_rx(p,a,c):
     x,y,z=p[0]-c[0],p[1]-c[1],p[2]-c[2]; ca,sa=math.cos(a),math.sin(a)
     return (c[0]+x,c[1]+ca*y-sa*z,c[2]+sa*y+ca*z)
@@ -111,12 +127,14 @@ def coin_pos(t):
     ks=kstate(t)
     if t<T_PLACE[0]+0.45 and ks is not None:
         hp=np.array(ks['base'])+FB.Ry(ks['yaw'])@np.array(ks['rh'])+np.array([0,0.0,0.0]); return tuple(hp+np.array([0,0.06,0]))
-    return (0.03,0.07,2.95)
+    return (0.0,0.345,2.88)
 def coin_model(t):
     p=coin_pos(t)
     if p is None: return []
-    Q=box(p[0]-0.045,p[0]+0.045,p[1],p[1]+0.014,p[2]-0.045,p[2]+0.045,GOLD,emit=True)
-    if t>=T_PLACE[0]+0.45 and int(t*5)%3==0: Q+=box(p[0]-0.09,p[0]+0.09,p[1]+0.03,p[1]+0.036,p[2]-0.004,p[2]+0.004,(255,250,210),emit=True)
+    Q=box(p[0]-0.075,p[0]+0.075,p[1],p[1]+0.022,p[2]-0.075,p[2]+0.075,GOLD,emit=True)+box(p[0]-0.05,p[0]+0.05,p[1]+0.022,p[1]+0.03,p[2]-0.05,p[2]+0.05,(255,226,120),emit=True)
+    if t>=T_PLACE[0]+0.4:                                                                                      # a slow, steady glint
+        g=0.07+0.08*(0.5+0.5*math.sin(2*PI*(t-T_PLACE[0])/1.1)); y=p[1]+0.045
+        Q+=box(p[0]-g,p[0]+g,y,y+0.007,p[2]-0.006,p[2]+0.006,(255,250,210),emit=True)+box(p[0]-0.006,p[0]+0.006,y,y+0.007,p[2]-g,p[2]+g,(255,250,210),emit=True)+box(p[0]-0.006,p[0]+0.006,y,y+g*1.6,p[2]-0.006,p[2]+0.006,(255,250,210),emit=True)
     return Q
 
 # ======================= heroes (hands in the montage, one hero who jumps back) =======================
@@ -194,7 +212,9 @@ def motes(t):
     return Q
 def lights(t):
     fl=1.0+0.07*math.sin(t*9)+0.05*math.sin(t*17.5+1)
-    return [(TORCH,(255,160,84),1.5*fl),((0.0,1.4,1.0),(255,170,110),0.18*fl)]
+    L=[(TORCH,(255,160,84),1.5*fl),((0.0,1.4,1.0),(255,170,110),0.18*fl)]
+    if t>=T_PLACE[0]+0.2: L.append(((0.0,0.6,2.8),(255,205,110),0.55*sm(seg01(t,T_PLACE[0]+0.2,T_PLACE[0]+0.6))))
+    return L
 
 # ======================= cameras =======================
 def creep(t,t0,rate=0.0014): return motion.creep(t,t0,rate,FPS)
@@ -209,7 +229,7 @@ def cam_shot(t):
     if t<CUTS[4]:      # E: the knight kneels, the teeth stop (two-shot from the right)
         tgt=(-0.25,0.55,2.75); return dict(cam=motion.dolly((1.6,0.95,1.5),tgt,creep(t,CUTS[3],0.0012)),tgt=tgt,fov=54)
     if t<CUTS[5]:      # F: the gauntlet puts the coin in (close, from above)
-        tgt=(0.0,0.35,2.95); return dict(cam=motion.dolly((0.2,1.05,1.55),tgt,creep(t,CUTS[4],0.0016)),tgt=tgt,fov=40)
+        tgt=(0.0,0.35,2.9); return dict(cam=motion.dolly((0.2,1.3,1.45),tgt,creep(t,CUTS[4],0.0016)),tgt=tgt,fov=36)
     tgt=(0.0,0.4,3.0)  # G: the lid closes like a breath
     return dict(cam=motion.dolly((0.3,1.0,1.6),tgt,creep(t,CUTS[5],0.0014)),tgt=tgt,fov=42)
 
