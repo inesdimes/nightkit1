@@ -98,6 +98,13 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 
 - **21 Nov 2026 audio fix (GO.md):** the day-1 crackle line (`rng.random(n)<p` gate) is replaced by `nightkit.audio.soft_fire()` in `skip_speech.py` and `enemies_queue.py`; audio + mux re-run, both MP4s overwritten (picture unchanged), `check.py` 12/13 as before. Jumps > 6x local level: skip_speech 1793 -> 600, enemies_queue 1910 -> 378; the rest are the planned square-wave SFX (the same count with the fire removed: 578 / 351). Fire = -44 / -48 dBFS RMS, voice -12 dBFS. The old line still sits in the already posted `four_phases.py` and `save_killed.py` (not touched). **Enes must listen.**
 
+## Day 2 (21 Nov 2026, PC, no-stop run, Tone 2.0)
+- **Why do NPCs repeat the same line?** (53.0 s, 22:00 slot): `examples/npc_well.py` (voice `tools/tts/nw.py` + `tools/tts/vc.py nw`; new old villager + wife box humans, stone well + windlass + rope, dusk village, lantern, ring, RPG dialogue box; knight reused, heroes recoloured by cape only). `scene_qa` clean (one planned contact: the old man takes the ring), `check.py` 12/13 (WARN = hard cuts / dialogue box pops) -> `renders/npc_well/why_do_npcs_repeat_the_same_line_53s.mp4`; not posted; captions `captions/npc_well.md`. Longer than the brief's ~55 s only in the sense that it is 53 s: all 13 lines kept, 0.45-0.55 s between sentences, a 2.4 s silent climb.
+- **Why do mimics pretend to be chests?** (30.5 s, 02:00 slot): `examples/mimic.py` (voice `tools/tts/mm.py` + `vc.py mm`; chest with a hinged lid, teeth/tongue/eyes only after "learned to bite", coin, hero hands, stone alcove, one torch). `scene_qa` clean, `check.py` 12/13 -> `renders/mimic/why_do_mimics_pretend_to_be_chests_30s.mp4`; not posted; captions `captions/mimic.md`.
+- Voice for both: Kokoro bm_george (speed 1.0, no stress marks) -> ChatterboxVC -> Enes timbre; `sc_check.py` all lines ok (pitch +5..+11 %). **Enes must listen.**
+- Sound: new `nightkit.audio.soft_fire()` (day-1 crackle fix) is used in mimic only; npc_well has no fire. Jumps > 6x local level: mimic 379, npc_well 478 (planned SFX; no per-sample gate anywhere).
+- Weak spots: see `reviews/npc_well.md` and `reviews/mimic.md` (limbs + contacts scored 7 in both: the ring hand-over and the kneeling pose; the mimic opening frame is very dark; the old man glides instead of walking; the 14.5-16.7 s stretch in mimic is a planned quiet).
+
 ## Next steps
 Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
 New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
