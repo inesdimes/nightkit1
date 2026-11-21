@@ -9,6 +9,18 @@ Goal: stop switching genres; give YouTube (and viewers) one clear thing this cha
 - Lessons from reviews/four_phases_review.md: the close-up shows the character the line is about, props in hands,
   everyone inside the frame, frame 0 big and moving.
 
+## Tone 2.0 (from day 2, Enes: "the stories feel too childish")
+Keep the format (a game trope every player knows + a twist answer), change the depth. Model: Final Boss A, our best video,
+which was not a joke: the hero becomes the next prisoner.
+- One human truth per video: being forgotten, waiting, repetition, regret, letting go, getting old, a promise kept too long.
+- The character has a past: a number of years, a lost thing or person, a promise. The trope is what that past looks like from outside.
+- The twist reframes the trope as something sad or human. Humour only dry, never cute (no "+1 FAN", no DAY OFF emotes).
+- The ending is bittersweet and quiet: the last line lands softly, it is not a punchline.
+- Picture: darker palette, fog, one main light source, slower cameras with long creeping holds, fewer cuts, room for silence
+  (ambience, never a dead gap > 1.2 s). HUD only where it is part of the story, and at most one UI element at a time.
+- Voice: calm and slower than before; let lines breathe (0.4-0.7 s between sentences).
+- Sound: never a per-sample random gate (`rng.random(n) < p`) - that was the crackle in day 1.
+
 ## Posting rules (changed 21 Nov 2026, Enes's decision)
 - TWO videos a day, same slots every day:
   - **22:00 TR** (14:00 US Eastern): the longer story, ~60 s (as long as the story needs; 40-60 s is fine).
@@ -30,8 +42,8 @@ change the format based on what the retention curves show. Not before.
 |---|---|---|---|---|
 | 1 | 22:00 | Why Do Final Bosses Give a Speech Before the Fight? | wrote it 30 years ago, every hero presses SKIP / one knight doesn't / 11 minutes, the knight claps / "He lost in one hit. Best day of his life." | boss, knight, arena + throne, candles |
 | 3 | 02:00 | Why Do Enemies Attack One at a Time? | goblins take a number / #47 waited 3 h, the hero saves and quits / the hero comes back just for him / "He framed the ticket." | goblins, knight, hall |
-| 4 | 22:00 | Why Do NPCs Repeat the Same Line? | "Nice weather today" 10,000 times / it was a warning: a storm every day at noon / a knight finally listens / "The weather was not nice." | villager (new), knight, village street |
-| 2 | 02:00 | Why Do Mimics Pretend to Be Chests? | lonely mimic, being opened is its only visit / heroes fight it 2 s and leave / one knight has lunch with it / "It still bites. But only a little." | knight, chest (+ teeth, tongue) |
+| 4 | 22:00 | Why Do NPCs Repeat the Same Line? | (Tone 2.0) an old man at a well: "The well is dry" for 40 years / he says it so nobody climbs down where his wife's ring fell / one knight climbs down and brings the ring up / "He never said that line again. The village was quieter. So was he." | old villager (new), well, village at dusk, knight |
+| 2 | 02:00 | Why Do Mimics Pretend to Be Chests? | (Tone 2.0) a chest opened and emptied by every hero for a hundred years learned to bite / one knight opens it, takes nothing and leaves a coin inside / "For the first time in a hundred years, something was given back." | knight, chest (+ teeth), dungeon hall |
 | 5 | 22:00 | Why Is the Legendary Sword Only 50 Gold? | the shopkeeper was the last hero and failed / he sells it cheap so someone finishes / the knight brings back the boss's crown / "He still charged him 50 gold." | shopkeeper (new), knight, shop |
 | 6 | 02:00 | Why Do Heroes Smash Every Pot? | an old woman has replaced the pots for 40 years and hides a coin in each / the hero never says thanks / one knight brings her a new pot / "She smashed it. Habit." | old woman (new), knight, cottage |
 | 7 | 22:00 | Why Does the Tutorial Guy Never Come With You? | he has taught "press jump" 10,000 times / he is afraid to leave the starting field / the knight walks him one step past the fence / "Then he went back. He's really good at teaching jump." | tutorial NPC (new), knight, field + fence |

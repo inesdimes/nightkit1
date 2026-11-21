@@ -1,20 +1,11 @@
-# GO - the current task for the PC session (read this when Enes says "GO.md")
-Updated by the cloud session, 21 Nov 2026. FIX the crackle in the day-1 audio (Enes: "cızırtı var").
+# GO - the current tasks for the PC session (read this when Enes says "GO.md")
+Updated by the cloud session, 21 Nov 2026. Day 2: TWO videos, **Tone 2.0** (deeper, quieter, less childish).
 
-## What the cloud session measured
-Both day-1 MP4s (skip_speech 40 s, enemies_queue 29 s) contain many isolated sample spikes. The cause is the "torch crackle" line
-in `build_audio()`:  `s.filt(noise, lo=1500, hi=7000) * (s.rng.random(n) < 0.002)` - single random samples of high-passed noise,
-~96 per second, i.e. digital static / vinyl crackle, not a fire. In enemies_queue the paused stretch adds a second, louder copy
-(`< 0.004`, x0.5) -> clusters of clicks at 15.2-16.3, 17.6-18.0 and 19.7-20.4 s. skip_speech: clicks at 15.5, 22.5, 22.8 s.
-The same line exists in examples/four_phases.py (447) and examples/save_killed.py (419), already posted: do NOT re-upload those
-(posted videos are never re-edited); only stop using the line from now on.
-
-## Do
 1. `git pull origin ccr-91720a78-gihjic`.
-2. In `examples/skip_speech.py` and `examples/enemies_queue.py`: delete every `(s.rng.random(n)<...)` crackle line.
-   If a fire sound is wanted, use a soft bed instead: low-passed noise (200-1500 Hz) with a slow random amplitude wobble, at least
-   20 dB under the voice, and a few real crackles (3-6 per second, each a 5-15 ms burst with an exponential decay, never single samples).
-3. Re-run only the audio and the mux (`PART=audio`, then mux with the existing video parts; the picture does not change).
-4. Check: `python tools/qa/check.py <mp4>` passes; no sample-to-sample jump > 6x the local level (the cloud check); write the numbers.
-5. Never use a per-sample random gate (`rng.random(n) < p`) for sound again: add that sentence to PIPELINE.md (sound section).
-6. Overwrite the two MP4s in renders\skip_speech\ and renders\enemies_queue\, commit, **push**.
+2. Read `CLAUDE.md`, `CONTINUE.md`, `briefs/SERIES_14_DAYS.md` (the "Tone 2.0" section first) and `reviews/four_phases_review.md`.
+3. Build both, the 22:00 one first. No-stop rule: never wait for Enes.
+   a. `briefs/npc_well.md` - 22:00, ~55 s -> renders\npc_well\
+   b. `briefs/mimic.md`    - 02:00, ~30 s -> renders\mimic\
+   Voice: Kokoro bm_george -> ChatterboxVC to voice/enes_ref_main.wav, calmer and slower than day 1 (0.4-0.7 s between sentences).
+   Sound: never a per-sample random gate (the day-1 crackle).
+4. End: both MP4 paths, weak spots left; update `CONTINUE.md`; commit and **push**.
