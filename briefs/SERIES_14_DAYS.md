@@ -16,9 +16,10 @@ which was not a joke: the hero becomes the next prisoner.
 - The character has a past: a number of years, a lost thing or person, a promise. The trope is what that past looks like from outside.
 - The twist reframes the trope as something sad or human. Humour only dry, never cute (no "+1 FAN", no DAY OFF emotes).
 - The ending is bittersweet and quiet: the last line lands softly, it is not a punchline.
-- Picture: darker palette, fog, one main light source, slower cameras with long creeping holds, fewer cuts, room for silence
-  (ambience, never a dead gap > 1.2 s). HUD only where it is part of the story, and at most one UI element at a time.
-- Voice: calm and slower than before; let lines breathe (0.4-0.7 s between sentences).
+- Picture: darker palette, fog, one main light source, creeping holds, fewer cuts; keep the story moving: a new beat every 2-3 s. HUD only where it is part of the story, and at most one UI element at a time.
+- Voice (corrected 21 Nov after mimic: Enes found it too slow and did not like the voice): **same pace and settings as four_phases**
+  (`tools/tts/fp.py`: Kokoro bm_george speed 1.22, pauses 0-0.15 s inside a line, ~0.3 s between lines, then ChatterboxVC).
+  Depth comes from the story and the picture, NOT from a slower voice. No quiet stretch over ~1 s.
 - Sound: never a per-sample random gate (`rng.random(n) < p`) - that was the crackle in day 1.
 
 ## Posting rules (changed 21 Nov 2026, Enes's decision)
