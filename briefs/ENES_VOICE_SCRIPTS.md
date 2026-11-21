@@ -1,14 +1,77 @@
 # Enes'in seslendireceği hikayeler (21 Kasım 2026)
 
-Her cümleyi **ayrı bir dosya** olarak kaydet (aynı oda, aynı mikrofon mesafesi, aynı enerji, tek oturumda; cümle başı ve sonunda 0,3 sn sessizlik kalsın, kırpmayı ben yaparım).
-Dosya adı: `<video>_<satır>_<cümle>.wav` (örnek: `mm_3_1.wav`). Klasörü bana söylemen yeter; ben `tts/<mm|nw>_own/` içine koyup `python tools/tts/<mm|nw>.py build own` ile videoyu yeniden kurarım (altyazı zamanlamaları kayıttan otomatik çıkar, hiçbir şey elle ayarlanmaz).
-Tempo: tek nefeste, sakin ama akıcı; cümleler arası boşluğu ben ekliyorum (satırlar arası ~0,3 sn). Tablodaki süre, şu anki sentetik sesin süresi: sen daha uzun okursan video biraz uzar, sorun değil.
-Vurgulu kelimeler *yıldızla* gösterildi.
+## Nasıl kaydedilir
+- Telefon ya da mikrofon fark etmez; sessiz bir oda, ağzına aynı mesafe (yaklaşık bir karış), tüm kayıtlar tek oturumda, aynı enerji.
+- Her cümleyi **ayrı bir dosya** olarak kaydet. Her cümleyi 2-3 kez oku, en iyisini seç (ya da hepsini ver, ben seçerim). Dosya adı: `<video>_<satır>_<cümle>.wav`.
+- Cümlenin başında ve sonunda yarım saniye sessizlik bırak; kırpmayı, gürültü temizlemeyi ve seviyeyi ben yaparım.
+- İngilizce telaffuzun mükemmel olması gerekmiyor; doğal ve rahat olması, yapay-pürüzsüz olmasından iyidir. Yıldızlı kelimeye hafif vurgu yap.
+- Dosyaları bana ver, ben `tts/<video>_own/` içine koyup `python tools/tts/<video>.py build own` ile videoyu yeniden kuracağım (altyazı zamanlamaları kayıttan otomatik çıkar, cümleler arası boşluğu ben eklerim).
 
 
-## Video 1: MIMIC (02:00 slotu) - "Why did this chest learn to bite?"
+## enemies_queue (02:00) - "Why don't enemies ever attack all at once?"
 
-| dosya | cümle | süre |
+Klasör: `tts/eq2_own/`
+
+| dosya | cümle | yaklaşık süre |
+|---|---|---|
+| `eq_1_0.wav` | Why don't enemies ever attack all at *once*? | 2.6 sn |
+| `eq_2_0.wav` | Because of a *rule*. | 1.1 sn |
+| `eq_3_0.wav` | It was written after the *first* hero came. | 2.4 sn |
+| `eq_4_0.wav` | Nine goblins rushed him at *once*. | 2.1 sn |
+| `eq_5_0.wav` | He never came *back*. | 1.1 sn |
+| `eq_6_0.wav` | The goblins stood in the dark for a long time. | 2.5 sn |
+| `eq_7_0.wav` | Then the oldest one carved a *rule*... | 2.2 sn |
+| `eq_7_1.wav` | one at a time. | 1.1 sn |
+| `eq_8_0.wav` | So the next hero *lived*. | 1.4 sn |
+| `eq_8_1.wav` | And the next. | 0.8 sn |
+| `eq_9_0.wav` | Every goblin in this line knows he will *lose*. | 2.8 sn |
+| `eq_10_0.wav` | He steps up anyway. | 1.4 sn |
+| `eq_10_1.wav` | So you can reach level *two*. | 1.6 sn |
+| `eq_11_0.wav` | It was never a fight. | 1.2 sn |
+| `eq_11_1.wav` | It was a *welcome*. | 1.1 sn |
+
+Düz metin:
+
+> Why don't enemies ever attack all at once? Because of a rule. It was written after the first hero came. Nine goblins rushed him at once. He never came back. The goblins stood in the dark for a long time. Then the oldest one carved a rule... one at a time. So the next hero lived. And the next. Every goblin in this line knows he will lose. He steps up anyway. So you can reach level two. It was never a fight. It was a welcome.
+
+
+## skip_speech (22:00) - "Why do final bosses give a speech nobody hears?"
+
+Klasör: `tts/ss_own/`
+
+| dosya | cümle | yaklaşık süre |
+|---|---|---|
+| `ss_1_0.wav` | Why do final bosses give a speech nobody *hears*? | 3.1 sn |
+| `ss_2_0.wav` | This one wrote his speech *thirty years* ago. | 2.4 sn |
+| `ss_3_0.wav` | He rehearsed it every *night*. | 1.7 sn |
+| `ss_3_1.wav` | Pauses. | 0.7 sn |
+| `ss_3_2.wav` | Hand gestures. | 1.1 sn |
+| `ss_3_3.wav` | A dramatic *cape* flip. | 1.4 sn |
+| `ss_4_0.wav` | Then the first hero arrived, | 1.7 sn |
+| `ss_4_1.wav` | and pressed *skip*. | 1.0 sn |
+| `ss_5_0.wav` | So did the *next* one. | 1.2 sn |
+| `ss_5_1.wav` | And the next. | 0.8 sn |
+| `ss_6_0.wav` | Until one knight walked in... | 1.8 sn |
+| `ss_6_1.wav` | and didn't press *anything*. | 1.6 sn |
+| `ss_7_0.wav` | The boss *froze*. | 1.1 sn |
+| `ss_7_1.wav` | Nobody had ever heard his *second* sentence. | 2.5 sn |
+| `ss_8_0.wav` | He spoke for *eleven minutes*. | 1.5 sn |
+| `ss_9_0.wav` | When it ended, the knight *clapped*. | 1.8 sn |
+| `ss_10_0.wav` | Then the fight began. | 1.3 sn |
+| `ss_10_1.wav` | He was too *happy* to dodge. | 1.5 sn |
+| `ss_11_0.wav` | He lost in *one* hit. | 1.4 sn |
+| `ss_11_1.wav` | Best day of his *life*. | 1.4 sn |
+
+Düz metin:
+
+> Why do final bosses give a speech nobody hears? This one wrote his speech thirty years ago. He rehearsed it every night. Pauses. Hand gestures. A dramatic cape flip. Then the first hero arrived, and pressed skip. So did the next one. And the next. Until one knight walked in... and didn't press anything. The boss froze. Nobody had ever heard his second sentence. He spoke for eleven minutes. When it ended, the knight clapped. Then the fight began. He was too happy to dodge. He lost in one hit. Best day of his life.
+
+
+## mimic - "Why did this chest learn to bite?"
+
+Klasör: `tts/mm_own/`
+
+| dosya | cümle | yaklaşık süre |
 |---|---|---|
 | `mm_1_0.wav` | Why did this chest learn to *bite*? | 1.9 sn |
 | `mm_2_0.wav` | This chest was opened by every hero for a hundred years. | 3.4 sn |
@@ -22,14 +85,16 @@ Vurgulu kelimeler *yıldızla* gösterildi.
 | `mm_7_0.wav` | For the first time in a hundred years, | 2.2 sn |
 | `mm_7_1.wav` | something was given back. | 1.5 sn |
 
-Sırayla düz metin:
+Düz metin:
 
 > Why did this chest learn to bite? This chest was opened by every hero for a hundred years. They always took something. Nobody ever put anything back. One day, it learned to bite. Then a knight opened it, and didn't draw his sword. He took nothing. He left a coin. For the first time in a hundred years, something was given back.
 
 
-## Video 2: NPC KUYUSU (22:00 slotu) - "Why has this man said the same line for forty years?"
+## npc_well - "Why has this man said the same line for forty years?"
 
-| dosya | cümle | süre |
+Klasör: `tts/nw_own/`
+
+| dosya | cümle | yaklaşık süre |
 |---|---|---|
 | `nw_1_0.wav` | Why has this man said the same line for forty years? | 2.9 sn |
 | `nw_2_0.wav` | It is the only thing he says. | 1.5 sn |
@@ -51,6 +116,6 @@ Sırayla düz metin:
 | `nw_13_1.wav` | The village was quieter. | 1.6 sn |
 | `nw_13_2.wav` | So was he. | 0.9 sn |
 
-Sırayla düz metin:
+Düz metin:
 
 > Why has this man said the same line for forty years? It is the only thing he says. To every hero. Every day. The well is dry. Nobody ever asked him why. Forty years ago, his wife dropped her ring down this well. She went down to find it. She never came back up. So he stands here, and tells everyone it's dry. So nobody else goes down. Then one knight stopped. He didn't talk. He climbed. When he came back up, he held out a ring. For the first time in forty years, the old man said something new. He never said that line again. The village was quieter. So was he.
