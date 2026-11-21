@@ -136,3 +136,5 @@ New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scen
 - Setup note: `tools/tts/lr.py` must have been run once (loot_restocker.py reads `tts/lr/script.json` at import).
 
 - 20 Nov 2026: Enes scheduled four_phases and stolen_car (TR 23:00 and 21 Nov 02:00, for the Europe / USA evenings); thumbnails made with `tools/thumb.py`. Next: read both at 48 h, fill ANALYTICS.md section 13.
+
+- **21 Nov 2026 (Enes's request, both day-2 videos):** the question (line 1) is now a centred title card (outlined text, no box, ~34 % from the top); every other sentence uses a roomier subtitle box (scale 7.0, letter spacing 6.9, line height 12.8, wider padding, 130 px from the bottom). npc_well dialogue box moved up 18 internal px so a 4-line subtitle never touches it. Mimic bugs fixed: teeth poked through the closing lid (they retract now), the coin glint beam poked through the closed lid, frame-0 title no longer a subtitle. Re-rendered both MP4s, `check.py` 12/13 each (WARN = planned pops).

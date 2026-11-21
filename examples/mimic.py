@@ -94,14 +94,14 @@ def chest_model(t):
         Q+=box(cx-w+0.06,cx+w-0.06,0.05,0.07,cz-d+0.06,cz+d-0.06,(84,14,26))                                  # dark red mouth floor
         calm=sm(seg01(t,T_STILL,T_STILL+0.7)); tt=0.2+0.14*calm                                              # once calm the tongue rises: the coin will sit on it
         Q+=box(cx-0.3,cx+0.3,0.07,tt,cz-0.22,cz+0.26,(150,40,54))                                             # tongue
-        for k in range(9): Q+=tooth(cx-0.4+0.1*k,0.07,cz-d+0.0,cz-d+0.06,h,+1,sc=1.0-0.6*calm)                               # lower teeth on the front rim
+        for k in range(9): Q+=tooth(cx-0.4+0.1*k,0.07,cz-d+0.0,cz-d+0.06,h,+1,sc=(1.0-0.6*calm)*TS(t))                               # lower teeth on the front rim
     hinge=(cx,h,cz+d)
     def LID(p): return FB_rx(p,a,hinge)
     Lq=box(cx-w-0.02,cx+w+0.02,h,h+0.12,cz-d-0.02,cz+d+0.02,wood_d,xf=LID)+box(cx-w-0.02,cx+w+0.02,h+0.12,h+0.15,cz-d,cz+d,wood,xf=LID)
     Lq+=box(cx-w-0.03,cx+w+0.03,h,h+0.15,cz-d*0.1,cz+d*0.1,IRON,xf=LID)
     if teeth_on(t):
         Lq+=box(cx-w+0.04,cx+w-0.04,h-0.03,h,cz-d+0.04,cz+d-0.04,(74,12,26),xf=LID)                          # dark mouth inside the lid
-        for k in range(9): Lq+=tooth(cx-0.35+0.1*k,0.07,cz-d+0.0,cz-d+0.06,h,-1,xf=LID)                      # upper teeth (pointed, interleaved)
+        for k in range(9): Lq+=tooth(cx-0.35+0.1*k,0.07,cz-d+0.0,cz-d+0.06,h,-1,xf=LID,sc=TS(t))                      # upper teeth (pointed, interleaved)
         if t<MONT[0]:                                                                                          # frame 0: a glint on a tooth
             g=max(0.0,math.sin(2*PI*(t-0.3)/1.4))*0.055
             if g>0.004:
@@ -111,7 +111,9 @@ def chest_model(t):
         for sx in (-1,1): Lq+=box(cx+sx*0.18-0.03,cx+sx*0.18+0.03,h+0.0,h+0.05,cz-0.02,cz+0.0,(255,190,80),xf=LID,emit=True)
     return Q+Lq
 TOOTH=(240,236,214)
+def TS(t): return 1.0-sm(seg01(t,T_SHUT[0]-0.15,T_SHUT[0]+0.6))      # the teeth retract before the lid closes
 def tooth(x,w_,z0,z1,y0,dirn,xf=None,sc=1.0):
+    if sc<0.06: return []
     """a stepped, pointed tooth: base at y0, grows up (dirn=+1) or down (-1) in three narrowing steps"""
     Q=[]; y=y0
     for wd,hh in ((w_*0.5,0.052*sc),(w_*0.34,0.046*sc),(w_*0.18,0.042*sc)):
@@ -132,7 +134,7 @@ def coin_model(t):
     p=coin_pos(t)
     if p is None: return []
     Q=box(p[0]-0.075,p[0]+0.075,p[1],p[1]+0.022,p[2]-0.075,p[2]+0.075,GOLD,emit=True)+box(p[0]-0.05,p[0]+0.05,p[1]+0.022,p[1]+0.03,p[2]-0.05,p[2]+0.05,(255,226,120),emit=True)
-    if t>=T_PLACE[0]+0.4:                                                                                      # a slow, steady glint
+    if t>=T_PLACE[0]+0.4 and lid_angle(t)>0.6:                                                                                      # a slow, steady glint
         g=0.07+0.08*(0.5+0.5*math.sin(2*PI*(t-T_PLACE[0])/1.1)); y=p[1]+0.045
         Q+=box(p[0]-g,p[0]+g,y,y+0.007,p[2]-0.006,p[2]+0.006,(255,250,210),emit=True)+box(p[0]-0.006,p[0]+0.006,y,y+0.007,p[2]-g,p[2]+g,(255,250,210),emit=True)+box(p[0]-0.006,p[0]+0.006,y,y+g*1.6,p[2]-0.006,p[2]+0.006,(255,250,210),emit=True)
     return Q
@@ -265,8 +267,8 @@ def finish(t):
     return img
 
 # ======================= subtitles (1080x1920, 1.25x, sentence timings from the voice) =======================
-SUB_F=7.5; HIL={'HUNDRED','BITE.','COIN.','BACK.'}
-def _rows(text,n=20):
+SUB_F=7.0; ADV=6.9; HIL={'HUNDRED','BITE.','COIN.','BACK.','CHESTS?','LINE?'}
+def _rows(text,n=17):
     out=[]; c=[]
     for w_ in text.split():
         if len(' '.join(c+[w_]))>n and c: out.append(c); c=[w_]
@@ -276,27 +278,34 @@ def _subs():
     res=[]
     for k,t0 in LINES:
         for i,(a,b,tx) in enumerate(SCR['sent'][k]):
-            nxt=SCR['sent'][k][i+1][0] if i+1<len(SCR['sent'][k]) else b+0.25
-            res.append((t0+a-0.03,t0+nxt-0.02,_rows(tx),k))
+            nxt=SCR['sent'][k][i+1][0] if i+1<len(SCR['sent'][k]) else b+(0.6 if k=='1' else 0.25)
+            res.append((t0+a-0.03,t0+nxt-0.02,_rows(tx,14 if k=='1' else 17),k))
     return res
 SUBS=_subs()
+def _tw(wd,sc): return len(wd)*ADV*sc
 def sub_overlay(t):
+    """line 1 (the question) is a centred title card with an outline, no box; every other sentence is a roomy box near the bottom"""
     for a,b,rows,key in SUBS:
         if a<=t<b:
-            sc=SUB_F; lines=[' '.join(r) for r in rows]; lh=9.4*sc; pad=2*sc; wmax=max(font.width(l,sc) for l in lines)
-            w=wmax+2*pad; h=(len(lines)-1)*lh+7*sc+2*pad; x0=(W*S-w)/2; y0=H*S-36-h
+            card=(key=='1'); sc=9.0 if card else SUB_F; lh=(12.5 if card else 12.8)*sc
+            lines=[' '.join(r) for r in rows]; wmax=max(_tw(l,sc) for l in lines)-(ADV-6)*sc
+            padx=5.5*sc; pady=3.6*sc; w=wmax+2*padx; h=(len(lines)-1)*lh+7*sc+2*pady
+            x0=(W*S-w)/2; y0=(H*S*0.34-h/2) if card else (H*S-130-h)
             ov=Image.new('RGB',(W*S,H*S),(0,0,0)); m=Image.new('L',(W*S,H*S),0); do=ImageDraw.Draw(ov); dm=ImageDraw.Draw(m)
-            dm.rectangle([round(x0),round(y0),round(x0+w)-1,round(y0+h)-1],fill=255)
+            if not card: dm.rectangle([round(x0),round(y0),round(x0+w)-1,round(y0+h)-1],fill=255)
+            o=max(2,round(sc*0.55)); cells=[]
             for i,r in enumerate(rows):
-                x=x0+pad
+                lw=_tw(' '.join(r),sc)-(ADV-6)*sc; x=x0+(w-lw)/2
                 for wd in r:
                     col=YEL if wd.upper().strip(',!?:') in HIL or wd.upper() in HIL else WHT; font.check(wd)
                     for k_,ch in enumerate(wd.upper()):
                         for j,row in enumerate(font.FONT[ch]):
                             for i2,bit in enumerate(row):
-                                if bit=='1':
-                                    X=x+(k_*6+i2)*sc; Y=y0+pad+i*lh+j*sc; bx=[round(X),round(Y),round(X+sc)-1,round(Y+sc)-1]; do.rectangle(bx,fill=col); dm.rectangle(bx,fill=255)
-                    x+=font.width(wd,sc)+6*sc
+                                if bit=='1': X=x+(k_*ADV+i2)*sc; Y=y0+pady+i*lh+j*sc; cells.append((round(X),round(Y),round(X+sc)-1,round(Y+sc)-1,col))
+                    x+=_tw(wd,sc)+ADV*sc
+            if card:
+                for bx in cells: dm.rectangle([bx[0]-o,bx[1]-o,bx[2]+o,bx[3]+o],fill=255)
+            for bx in cells: do.rectangle(bx[:4],fill=bx[4]); dm.rectangle(bx[:4],fill=255)
             return ov,m
     return None
 def frame_final(t):

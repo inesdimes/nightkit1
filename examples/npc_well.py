@@ -363,7 +363,7 @@ def dialogue(d,t):
     """classic RPG box (one UI element at a time): the NPC's line typed out"""
     for tb,txt in BOXES:
         if tb<=t<tb+BOX_LEN:
-            x0,y0,x1,y1=8,204,W-9,244
+            x0,y0,x1,y1=8,186,W-9,226
             d.rectangle([x0,y0,x1,y1],fill=(12,14,38),outline=(236,234,226)); d.rectangle([x0+2,y0+2,x1-2,y1-2],outline=(70,82,150))
             n=int(len(txt)*min(1.0,(t-tb)/0.9)); sc=1; s=txt[:n]; cut=txt.rfind(' ',0,18) if len(txt)*6>W-26 else -1
             if cut>0:
@@ -394,8 +394,8 @@ def finish(t):
     return img
 
 # ======================= subtitles (1080x1920, 1.25x, sentence timings from the voice) =======================
-SUB_F=7.5; HIL={'FORTY','YEARS.','RING','CLIMBED.','NEW.','QUIETER.'}
-def _rows(text,n=20):
+SUB_F=7.0; ADV=6.9; HIL={'FORTY','YEARS.','RING','CLIMBED.','NEW.','QUIETER.','CHESTS?','LINE?'}
+def _rows(text,n=17):
     out=[]; c=[]
     for w_ in text.split():
         if len(' '.join(c+[w_]))>n and c: out.append(c); c=[w_]
@@ -405,27 +405,34 @@ def _subs():
     res=[]
     for k,t0 in LINES:
         for i,(a,b,tx) in enumerate(SCR['sent'][k]):
-            nxt=SCR['sent'][k][i+1][0] if i+1<len(SCR['sent'][k]) else b+0.25
-            res.append((t0+a-0.03,t0+nxt-0.02,_rows(tx),k))
+            nxt=SCR['sent'][k][i+1][0] if i+1<len(SCR['sent'][k]) else b+(0.6 if k=='1' else 0.25)
+            res.append((t0+a-0.03,t0+nxt-0.02,_rows(tx,14 if k=='1' else 17),k))
     return res
 SUBS=_subs()
+def _tw(wd,sc): return len(wd)*ADV*sc
 def sub_overlay(t):
+    """line 1 (the question) is a centred title card with an outline, no box; every other sentence is a roomy box near the bottom"""
     for a,b,rows,key in SUBS:
         if a<=t<b:
-            sc=SUB_F; lines=[' '.join(r) for r in rows]; lh=9.4*sc; pad=2*sc; wmax=max(font.width(l,sc) for l in lines)
-            w=wmax+2*pad; h=(len(lines)-1)*lh+7*sc+2*pad; x0=(W*S-w)/2; y0=H*S-36-h
+            card=(key=='1'); sc=9.0 if card else SUB_F; lh=(12.5 if card else 12.8)*sc
+            lines=[' '.join(r) for r in rows]; wmax=max(_tw(l,sc) for l in lines)-(ADV-6)*sc
+            padx=5.5*sc; pady=3.6*sc; w=wmax+2*padx; h=(len(lines)-1)*lh+7*sc+2*pady
+            x0=(W*S-w)/2; y0=(H*S*0.34-h/2) if card else (H*S-130-h)
             ov=Image.new('RGB',(W*S,H*S),(0,0,0)); m=Image.new('L',(W*S,H*S),0); do=ImageDraw.Draw(ov); dm=ImageDraw.Draw(m)
-            dm.rectangle([round(x0),round(y0),round(x0+w)-1,round(y0+h)-1],fill=255)
+            if not card: dm.rectangle([round(x0),round(y0),round(x0+w)-1,round(y0+h)-1],fill=255)
+            o=max(2,round(sc*0.55)); cells=[]
             for i,r in enumerate(rows):
-                x=x0+pad
+                lw=_tw(' '.join(r),sc)-(ADV-6)*sc; x=x0+(w-lw)/2
                 for wd in r:
                     col=YEL if wd.upper().strip(',!?:') in HIL or wd.upper() in HIL else WHT; font.check(wd)
                     for k_,ch in enumerate(wd.upper()):
                         for j,row in enumerate(font.FONT[ch]):
                             for i2,bit in enumerate(row):
-                                if bit=='1':
-                                    X=x+(k_*6+i2)*sc; Y=y0+pad+i*lh+j*sc; bx=[round(X),round(Y),round(X+sc)-1,round(Y+sc)-1]; do.rectangle(bx,fill=col); dm.rectangle(bx,fill=255)
-                    x+=font.width(wd,sc)+6*sc
+                                if bit=='1': X=x+(k_*ADV+i2)*sc; Y=y0+pady+i*lh+j*sc; cells.append((round(X),round(Y),round(X+sc)-1,round(Y+sc)-1,col))
+                    x+=_tw(wd,sc)+ADV*sc
+            if card:
+                for bx in cells: dm.rectangle([bx[0]-o,bx[1]-o,bx[2]+o,bx[3]+o],fill=255)
+            for bx in cells: do.rectangle(bx[:4],fill=bx[4]); dm.rectangle(bx[:4],fill=255)
             return ov,m
     return None
 def frame_final(t):
