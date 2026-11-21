@@ -210,3 +210,16 @@ Reading:
   a strong middle (people who stay watch ~half), but half of the feed swipes. Both fact videos sit far under the game-trope story (64 %).
 - For the 14-day test: watch **stayed %** first (target >= 60 % like Final Boss), then avg view %. Hypothesis to test later: a 02:00 video
   that is short and loops (end flows into the start) may collect rewatches like the cat video.
+
+## 16. Boss speech (day 1, 22:00 slot), first 17 minutes (YouTube Studio desktop, 21 Nov 2026 22:12)
+| Video | Age | Views | Stayed / swiped | Source |
+|---|---|---|---|---|
+| Why Do Final Bosses Give a Speech Before the Fight? (40 s) | 17 min | 59 | **5.1 %** / 94.9 % | Shorts feed 59 / other 0 |
+
+Reading (only ~59 viewers, i.e. 3 people stayed; very early):
+- 95 % swiped is far worse than any earlier video (Final Boss A 36 %, Purple Cabbage 59 %). The feed shows frame 0 first, so look there.
+- Frame 0 (cloud check): a dark red-brown close-up of the boss's torso, the head cut by the top of the frame, nothing moves for ~1.5 s,
+  and a blinking **"PRESS X TO SKIP"** prompt is on screen from the first frame - in a swipe feed that literally asks people to skip.
+- Lesson for every next video: frame 0 must read at a glance (clear silhouette, bright enough, a face or an action), must move in the
+  first second, and must never show a skip / exit / "loading" style prompt.
+- Re-check at 48 h before concluding; YouTube sometimes tests a new Short on a small random group first.
