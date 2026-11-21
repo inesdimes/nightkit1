@@ -8,3 +8,5 @@ Updated by the cloud session, 21 Nov 2026. 14-day single-format test, day 1: TWO
    b. `briefs/enemies_queue.md` - 02:00 slot, ~30 s                               -> renders\enemies_queue\
    Voice for both: Kokoro bm_george -> ChatterboxVC to voice/enes_ref_main.wav (as in four_phases).
 4. End: both MP4 paths, weak spots left; update `CONTINUE.md`; commit and **push**.
+
+**DONE on the PC, 21 Nov 2026** (both final, see CONTINUE.md video table). Next GO.md = day 2 briefs.
