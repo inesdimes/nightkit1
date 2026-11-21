@@ -87,6 +87,9 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 ## Next video (20 Nov 2026): "What happens to the guy whose car you steal?" (trend: new open-world crime game)
 - Brief `briefs/stolen_car.md`, captions `captions/stolen_car.md` (game name only as one hashtag in the description: Enes's decision). PC task in `GO.md`.
 
+## 14-day single-format test (from 21 Nov 2026)
+- Plan, posting rules and the topic queue: `briefs/SERIES_14_DAYS.md`. One "Why do <game trope>?" video per day at 20:00 TR. Day 1 = `briefs/skip_speech.md` (GO.md).
+
 ## Next steps
 Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
 New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).
