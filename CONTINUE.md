@@ -96,6 +96,8 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - enemies_queue: 29.2 s. Set = the loot_restocker hallway (the brief allowed hall or arena; the last10 hall needs `tts/l10`, not on this PC). Frame 0 shows #47's face + the ticket "47"; the fight at the front is revealed by a camera swing at 0.9-1.9 s (not in frame 0 as the brief said). Font has no '&': the menu says SAVE AND QUIT. Two silent gaps found by `check.py` (15.5 s after the quit, 26.5 s after the last hit) were filled with a low pause hum + torch crackle and a short "defeated" jingle.
 - Next (GO.md): Claude writes the day-2 briefs (queue #4 NPC weather, #2 mimic).
 
+- **21 Nov 2026 audio fix (GO.md):** the day-1 crackle line (`rng.random(n)<p` gate) is replaced by `nightkit.audio.soft_fire()` in `skip_speech.py` and `enemies_queue.py`; audio + mux re-run, both MP4s overwritten (picture unchanged), `check.py` 12/13 as before. Jumps > 6x local level: skip_speech 1793 -> 600, enemies_queue 1910 -> 378; the rest are the planned square-wave SFX (the same count with the fire removed: 578 / 351). Fire = -44 / -48 dBFS RMS, voice -12 dBFS. The old line still sits in the already posted `four_phases.py` and `save_killed.py` (not touched). **Enes must listen.**
+
 ## Next steps
 Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
 New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).

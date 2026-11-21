@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw
 from nightkit.engine import Renderer, Camera, quad
 from nightkit import motion, post, font
 from nightkit.zraster import zrender
-from nightkit.audio import Sound, duck_envelope
+from nightkit.audio import Sound, duck_envelope, soft_fire
 import final_boss as FB
 
 OUT='out'; os.makedirs(OUT,exist_ok=True)
@@ -492,7 +492,7 @@ def build_audio(path):
     # ---- bed: low drone + torch crackle
     BED+=s.filt(s.rng.normal(0,1,n),lo=30,hi=200)*0.09
     BED+=(np.sin(2*np.pi*55*t)+0.6*np.sin(2*np.pi*82.4*t+0.5))*0.022*(0.8+0.2*np.sin(2*np.pi*0.3*t))
-    BED+=s.filt(s.rng.normal(0,1,n),lo=1500,hi=7000)*(s.rng.random(n)<0.002)*0.6*0.25
+    BED+=soft_fire(s,level=0.006,crackles_per_s=4,seed=31)       # soft fire bed + real crackles (no per-sample gate)
     # ---- the boss's speech (murmur): hook + line 2, rehearsal (with the pause), each hero until the skip, the listener
     mwah(0.0,CUTS[1],seed=1); mwah(CUTS[1],ws('3',1)-0.05,seed=2); mwah(ws('3',2),ws('3',3)+0.4,rate=6.0,seed=3)
     for i,s_ in enumerate(SKIP): mwah(CUTS[2+i]+0.02,s_,seed=10+i)

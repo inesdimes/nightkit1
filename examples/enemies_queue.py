@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw
 from nightkit.engine import Renderer, Camera, quad
 from nightkit import motion, post, font
 from nightkit.zraster import zrender
-from nightkit.audio import Sound, duck_envelope
+from nightkit.audio import Sound, duck_envelope, soft_fire
 import final_boss as FB
 import loot_restocker as LR
 
@@ -409,7 +409,7 @@ def build_audio(path):
         for m,dt in ((88,0.0),(84,0.16)): tone(t0+dt,m,0.7,v,'sin',dec=4)
     # ---- bed: hall drone + torch crackle; the queue murmur (goblin chatter) while the lights are on
     BED+=s.filt(s.rng.normal(0,1,n),lo=30,hi=200)*0.08
-    BED+=s.filt(s.rng.normal(0,1,n),lo=1500,hi=7000)*(s.rng.random(n)<0.002)*0.15
+    BED+=soft_fire(s,level=0.004,crackles_per_s=3,seed=32)       # soft fire bed + real crackles (no per-sample gate)
     dk=np.array([dark(x) for x in t[::200]]); dk=np.interp(np.arange(n),np.arange(0,n,200),dk)
     rng=np.random.default_rng(7); tt=0.0
     while tt<DUR-0.2:                                                     # goblin murmur: short squeaky syllables, many voices
@@ -438,7 +438,7 @@ def build_audio(path):
     thud(T_DARK[0],48,0.2,0.5)
     # paused stretch: only the torches crackle + a low pause-menu hum (keeps the gap from going silent)
     pa,pb=T_GONE[1],T_CONT[0]; m=(t>=pa)&(t<pb); env=np.clip(np.minimum(t-pa,pb-t)/0.3,0,1)*m
-    FX+=s.filt(s.rng.normal(0,1,n),lo=1200,hi=6000)*(s.rng.random(n)<0.004)*0.5*m
+    FX+=soft_fire(s,level=0.012,crackles_per_s=5,mask=env,seed=33)
     FX+=(np.sin(2*np.pi*98*t)+0.5*np.sin(2*np.pi*147*t))*0.035*env
     k=0
     while T_DARK[1]+0.3+k*0.8<T_CONT[0]: tone(T_DARK[1]+0.3+k*0.8,100,0.04,0.012,'sin',dec=30); k+=1

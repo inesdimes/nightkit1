@@ -101,3 +101,22 @@ def duck_envelope(n,sr,windows,depth_db=-3.0,attack=0.05,release=0.25,pre=0.05):
     x=g.copy()
     for i in range(1,n): x[i]=x[i-1]+(g[i]-x[i-1])/(k1 if g[i]<x[i-1] else k2)
     return x
+
+
+def soft_fire(s, level=0.02, crackles_per_s=4.0, mask=None, seed=5):
+    """Fire sound that is NOT digital static: a low-passed noise bed (200-1500 Hz) with a slow random
+    amplitude wobble, plus a few real crackles (5-15 ms noise bursts with an exponential decay).
+    Never a per-sample random gate (rng.random(n) < p): that gives single-sample clicks.
+    level = RMS of the bed; mask = optional 0..1 array (length s.n) that switches it on/off."""
+    sr, n = s.sr, s.n; rng = np.random.default_rng(seed)
+    bed = s.filt(rng.normal(0, 1, n), lo=200, hi=1500)
+    wob = s.filt(rng.normal(0, 1, n), hi=2.5); wob = 1 + 0.6 * wob / (np.abs(wob).max() + 1e-9)
+    bed = bed * np.clip(wob, 0.2, None); bed *= level / (np.sqrt(np.mean(bed ** 2)) + 1e-9)
+    cr = np.zeros(n); t0 = rng.exponential(1 / crackles_per_s)
+    while t0 < n / sr - 0.02:
+        d = rng.uniform(0.005, 0.015); k = int(d * sr); i = int(t0 * sr)
+        ka = max(2, int(0.002 * sr)); ar_ = np.arange(k); burst = rng.normal(0, 1, k) * np.exp(-ar_ / (k / 4.0)) * np.minimum(1.0, ar_ / ka) * rng.uniform(0.4, 1.0)
+        cr[i:i + k] += burst[:max(0, n - i)][:k]; t0 += rng.exponential(1 / crackles_per_s)
+    cr = s.filt(cr, lo=600, hi=2500); cr *= level * 0.25 / (np.sqrt(np.mean(cr ** 2)) + 1e-9)
+    out = bed + cr
+    return out if mask is None else out * mask

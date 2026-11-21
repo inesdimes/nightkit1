@@ -121,3 +121,6 @@ Observations to apply in storyboards and to look for in critique rounds, not har
   word), `kick` (impact shake, sign flips each frame, decays over 7 frames; feed it to `render(shake=...)`).
 - **`nightkit.audio.duck_envelope`:** music gain that dips while the voice speaks, keyed from the voice lines' timings.
 - Not adopted: the Remotion/three.js renderer, toon-card characters, ink/lens-blur passes (different engine and look).
+
+## Added 21 Nov 2026: sound rule (crackle fix)
+- **Never use a per-sample random gate for sound** (`noise * (rng.random(n) < p)`): it makes single-sample spikes = digital static / vinyl crackle (found in day-1 audio: "cızırtı var"). For fire use `nightkit.audio.soft_fire()`: a low-passed (200-1500 Hz) noise bed with a slow random wobble, far under the voice, plus a few real crackles (3-6 per second, each a 5-15 ms burst with a 2 ms attack and an exponential decay). Check the final file: the count of sample-to-sample jumps > 6x the local level must not grow when the fire is added (compare a build without it).

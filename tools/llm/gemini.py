@@ -3,7 +3,7 @@ captions, hashtags, analytics tables from screenshots, summaries. Code, renders 
 The key is read from the environment variable GEMINI_API_KEY (Windows user variable on the PC). Never put the key in a file in the repo.
 Note: on the free tier Google may use prompts to improve its products; do not send anything private.
 
-  python tools/llm/gemini.py "task text" [--file a.md --file shot.jpg ...] [--out answer.md] [--model gemini-2.5-flash]
+  python tools/llm/gemini.py "task text" [--file a.md --file shot.jpg ...] [--out answer.md] [--model gemini-3.8-flash]
   python tools/llm/gemini.py --list          (shows the model names this key can use)
 Only the standard library is used (no pip install)."""
 import os, sys, json, base64, argparse, mimetypes, urllib.request, urllib.error
@@ -17,7 +17,7 @@ def call(url,body=None):
     except urllib.error.HTTPError as e: sys.exit(f'HTTP {e.code}: {e.read().decode(errors="replace")[:800]}')
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('task',nargs='?'); ap.add_argument('--file',action='append',default=[]); ap.add_argument('--out')
-    ap.add_argument('--model',default=os.environ.get('GEMINI_MODEL','gemini-2.5-flash')); ap.add_argument('--list',action='store_true'); a=ap.parse_args()
+    ap.add_argument('--model',default=os.environ.get('GEMINI_MODEL','gemini-3.8-flash')); ap.add_argument('--list',action='store_true'); a=ap.parse_args()
     if a.list:
         for m in call(f'{API}/models').get('models',[]):
             if 'generateContent' in m.get('supportedGenerationMethods',[]): print(m['name'].split('/')[-1])
