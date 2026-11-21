@@ -9,7 +9,7 @@ import numpy as np, soundfile as sf
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 TTS_DIR=os.environ.get('TTS_DIR',os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','tts'))
 S=1.18
-D=[('1',[("Why do final bosses always give a *speech* before the fight?",S,0.3,1.5,0)]),
+D=[('1',[("Why do final bosses give a speech nobody *hears*?",S,0.3,1.5,0)]),
    ('2',[("This one wrote his speech *thirty years* ago.",S,0.1,0.5,0)]),
    ('3',[("He rehearsed it every *night*.",S,0.1,0.5,0),("Pauses.",S,0,0.5,0.15),("Hand gestures.",S,0,0.5,0.12),("A dramatic *cape* flip.",S,0.1,0.5,0.12)]),
    ('4',[("Then the first hero arrived,",S,0.1,0.5,0),("and pressed *skip*.",S,0,0.5,0.08)]),

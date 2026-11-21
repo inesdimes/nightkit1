@@ -1,18 +1,21 @@
 # WHY DO ENEMIES ATTACK ONE AT A TIME? - brief (21 Nov 2026, Claude) - 14-day test, day 1, 02:00 slot (~30 s)
 Format and rules: briefs/SERIES_14_DAYS.md. PS1, nightkit, Enes-timbre voice.
 
-## Narration (~65 words)
-| # | line | picture (cue 0-3 frames before the key word) |
+## Narration v3 - NEW STORY (21 Nov 2026, Enes: "give it a new story, answer the same question differently") - 11 lines, ~33 s
+Answer: the goblins have a rule, carved after the first hero. Voice: tools/tts/eq2.py. Script: examples/enemies_queue.py.
+| # | line | picture |
 |---|---|---|
-| 1 | Why do enemies always attack one at a time? | frame 0: CLOSE on a small goblin holding a paper ticket "47", a queue of goblins behind him, the knight fighting one at the front |
-| 2 | Because they take a number. | a ticket machine on the wall + a sign "NOW SERVING: 45" (2D overlay on the sign, readable) |
-| 3 | Goblin forty-seven has been waiting for three hours. | #47 checks his ticket, sighs; HUD "WAIT: 3:02:11" |
-| 4 | Forty-five got hit. Forty-six got hit. | two quick hits at the front, the sign ticks to 46, then 47 |
-| 5 | Forty-seven stepped up... and the hero saved and quit. | #47 steps forward, raises his club; HUD pause menu "SAVE & QUIT" selected; the knight freezes and vanishes |
-| 6 | The dungeon went dark. Forty-seven kept waiting. | lights out, only torches; #47 alone at the front, still holding the ticket; HUD "PAUSED" |
-| 7 | The next morning, the hero came back. Just for him. | light returns, "CONTINUE"; the knight appears, looks at #47, nods |
-| 8 | Forty-seven lost in one hit. | one hit, #47 falls back, smiling |
-| 9 | He framed the ticket. | the ticket "47" in a little frame on the wall next to the ticket machine; end on the last word |
+| 1 | Why don't enemies ever attack all at once? | centred title card; knight hits the front goblin |
+| 2 | Because of a rule. | the wall board: RULE 1 / ONE AT A TIME |
+| 3 | It was written after the first hero came. | FLASHBACK (blue-grey): a small red-caped rookie walks into the hall |
+| 4 | Nine goblins rushed him at once. | nine goblins rush him, dogpile, red flash, he flickers out |
+| 5 | He never came back. | the ring of goblins where he stood, heads down |
+| 6 | The goblins stood in the dark for a long time. | lights out, only torches |
+| 7 | Then the oldest one carved a rule... one at a time. | a grey elder goblin with a hat chisels the board, letters appear one by one |
+| 8 | So the next hero lived. And the next. | present: the knight hits goblin 45, then 46 |
+| 9 | Every goblin in this line knows he will lose. | faces in the queue, #47 gulps |
+| 10 | He steps up anyway. So you can reach level two. | #47 steps up, club up, one hit, LEVEL 2 pops |
+| 11 | It was never a fight. It was a welcome. | the whole queue waves at the knight |
 
 ## Assets
 Reuse: goblin() (examples/loot_restocker.py, colour/scale variants), knight(), the hall (examples/last10_collapse.py) or the arena.

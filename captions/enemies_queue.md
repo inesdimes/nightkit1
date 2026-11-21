@@ -1,22 +1,22 @@
-# Why Do Enemies Attack One at a Time? - captions (21 Nov 2026)
+# Why Don't Enemies Ever Attack All at Once? - captions (21 Nov 2026)
 
 ## YouTube Shorts
-**Title:** Why Do Enemies Attack One at a Time? 💿
+**Title:** Why Don't Enemies Ever Attack All at Once? 💿
 **Description:**
-Goblin #47 waited three hours for his turn. Then the hero saved and quit. 🎟️
-A tiny PS1-style story about the enemies at the back of the line.
+Nine goblins once rushed a level-1 hero. He never came back. So the oldest goblin carved one rule: one at a time. 🪧
+A tiny PS1-style story about why every goblin steps up knowing he will lose.
 Would you have come back for him? 👇
 
 💿 New disc every day — Please Insert Disc 2
 #ps1 #retrogaming #goblin #rpg #videogamelogic #gamingshorts #lowpoly #pleaseinsertdisc2
 
 ## TikTok
-Enemies attack one at a time because they take a number. 🎟️ Would you come back for #47? 👇
+Enemies never attack all at once because of a rule written after the first hero. 🪧 Did you ever notice they let you win? 👇
 #ps1 #retrogaming #goblin #rpg #videogamelogic #lowpoly #indiegame #gamingtiktok #pleaseinsertdisc2
 
 ## Instagram Reels
-Goblin #47 waited three hours.
-The hero came back just for him. 🎟️
+Every goblin in the line knows he will lose.
+So you can reach level two. 🪧
 
 💿 Tiny stories from retro games that never existed.
 #ps1 #retrogaming #goblin #rpg #videogamelogic #lowpoly #indiegame #retrogamer #gamingreels #pleaseinsertdisc2
