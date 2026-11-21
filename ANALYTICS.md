@@ -162,3 +162,16 @@ Reading:
 
 - Why these hours (Enes's decision): they target the evening of Europe (23:00 TR) and the evening of the USA (02:00 TR); earlier notes assumed a Turkish 19:00-21:00 slot. First time the channel posts at these hours, so compare against the earlier posts with that in mind.
 - To do: read both at 48 h (views, engaged views, stayed %, subs, and the country split if YouTube shows it), then fill in this section. Also note whether the #GTA6 hashtag changed the first-hours views of `stolen_car`.
+
+## 13. Lighthouse and the red-cabbage (anthocyanin) loop, first 2 days (Enes, 21 Nov 2026; views only, platform assumed YouTube)
+| Video | Type | Views after ~2 days |
+|---|---|---|
+| Why Do Lighthouses Blink? (60 s, maritime horror, real-world fact) | real fact + horror twist | ~500 |
+| Anthocyanin loop (red cabbage, 2D pixel art, science loop) | real science, no game | ~100 |
+| (for comparison) Final Boss A (30 s, game trope + lore twist) | game trope | 3.0 K in 34 h (section 12) |
+| (for comparison) Final Boss B (60 s, same story) | game trope | 1.6 K in ~3 days |
+
+Reading:
+- Supports the section 12 hypothesis: game tropes with a story twist get 3-6x the views of real-world fact videos (500) and ~15-30x
+  the science loop without a game (100). Still a handful of videos, and only views (no stayed %, no retention curve yet).
+- Missing for both: stayed / swiped %, average view duration, retention curve, subscribers. Ask Enes for the screenshots.
