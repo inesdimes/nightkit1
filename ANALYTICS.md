@@ -196,14 +196,17 @@ Reading (too early to judge; hypotheses only):
 |---|---|---|---|---|---|---|---|---|
 | Why Does Purple Cabbage ...? (52 s, science loop, no game) | 38 h | 123 | 52 | 41 | 0:16 = **30.8 %** | **41.1 %** / 58.9 % | 0 | "807 below normal" |
 | Why Do Cats Knock Things ...? (15 s) | 2 days | **1.1 K** | 264 | 257 | 0:15 = **96.8 %** | **24.1 %** / 75.9 % | +1 | "about the same as usual" |
+| Why Do Lighthouses Blink? (60 s, real fact + horror) | ~2 days | 447 | 201 | 171 | 0:30 = **49.8 %** (avg time "at normal") | **45.8 %** / 54.2 % | 0 | "553 below normal" |
 
 Retention curves:
 - Cabbage: 100 % for ~2 s, then a cliff at ~3-5 s down to ~40 %, slow decline to ~5 % at 0:52. The hook and the first seconds lose most viewers.
+- Lighthouse: starts at ~115 %, drops to ~65 % by ~6 s, then a slow decline to ~45 % at mid-video and ~10 % at 1:00.
 - Cats: starts at ~125 % (rewatching / looping), declines evenly to ~55 % at 0:15. Few people stay (24 %), but those who stay watch it all and loop.
 
 Reading:
 - YouTube's "normal" for this channel at ~38 h is now ~930 views (123 + 807): the channel is being shown; single videos fail or pass on their own.
 - Two different ways to get views: (1) high **stayed %** with a story (Final Boss A: 64 %, 3.0 K); (2) a very short loop where few stay but they rewatch (Cats: 24 % stayed, 97 % avg view, 1.1 K).
-- The non-game science video fails on both: 59 % swipe and a 3-5 s cliff. Third data point against real-world fact videos (sections 13-14).
+- The non-game science video fails on both: 59 % swipe and a 3-5 s cliff. Lighthouse (real fact + horror) is in between: 46 % stayed,
+  a strong middle (people who stay watch ~half), but half of the feed swipes. Both fact videos sit far under the game-trope story (64 %).
 - For the 14-day test: watch **stayed %** first (target >= 60 % like Final Boss), then avg view %. Hypothesis to test later: a 02:00 video
   that is short and loops (end flows into the start) may collect rewatches like the cat video.
