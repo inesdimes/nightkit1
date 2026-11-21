@@ -1,5 +1,5 @@
 # WHY DO FINAL BOSSES GIVE A SPEECH BEFORE THE FIGHT? - brief (21 Nov 2026, Claude) - 14-day test, day 1
-Format and rules: briefs/SERIES_14_DAYS.md. ~32 s, PS1, nightkit. Post at 20:00 TR.
+Format and rules: briefs/SERIES_14_DAYS.md. ~32 s, PS1, nightkit. Post at 22:00 TR (the longer slot; as long as the story needs).
 
 ## Narration (~95 words)
 | # | line | picture (cue 0-3 frames before the key word) |

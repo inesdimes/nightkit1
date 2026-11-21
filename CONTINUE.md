@@ -88,7 +88,7 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - Brief `briefs/stolen_car.md`, captions `captions/stolen_car.md` (game name only as one hashtag in the description: Enes's decision). PC task in `GO.md`.
 
 ## 14-day single-format test (from 21 Nov 2026)
-- Plan, posting rules and the topic queue: `briefs/SERIES_14_DAYS.md`. One "Why do <game trope>?" video per day at 20:00 TR. Day 1 = `briefs/skip_speech.md` (GO.md).
+- Plan, posting rules and the topic queue: `briefs/SERIES_14_DAYS.md`. Two "Why do <game trope>?" videos a day: 22:00 TR (~60 s story) and 02:00 TR (~30 s). Day 1 = `briefs/skip_speech.md` + `briefs/enemies_queue.md` (GO.md).
 
 ## Next steps
 Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
