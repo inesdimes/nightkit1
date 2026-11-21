@@ -190,3 +190,20 @@ Reading (too early to judge; hypotheses only):
 - #GTA6 on a video with no footage of that game may bring viewers who expect the game and swipe away early, which would lower "stayed".
   Check the car video's stayed % against Four Phases before using a trend hashtag again.
 - Needed: stayed / swiped %, average view, retention curve and traffic source for both.
+
+## 15. Purple Cabbage (anthocyanin, 52 s) and Cats Knock Things (15 s) - YouTube, read from Enes's screenshots 21 Nov 2026
+| Video | Age | Views | Engaged | Unique | Avg view | Stayed / swiped | Subs | YouTube's verdict |
+|---|---|---|---|---|---|---|---|---|
+| Why Does Purple Cabbage ...? (52 s, science loop, no game) | 38 h | 123 | 52 | 41 | 0:16 = **30.8 %** | **41.1 %** / 58.9 % | 0 | "807 below normal" |
+| Why Do Cats Knock Things ...? (15 s) | 2 days | **1.1 K** | 264 | 257 | 0:15 = **96.8 %** | **24.1 %** / 75.9 % | +1 | "about the same as usual" |
+
+Retention curves:
+- Cabbage: 100 % for ~2 s, then a cliff at ~3-5 s down to ~40 %, slow decline to ~5 % at 0:52. The hook and the first seconds lose most viewers.
+- Cats: starts at ~125 % (rewatching / looping), declines evenly to ~55 % at 0:15. Few people stay (24 %), but those who stay watch it all and loop.
+
+Reading:
+- YouTube's "normal" for this channel at ~38 h is now ~930 views (123 + 807): the channel is being shown; single videos fail or pass on their own.
+- Two different ways to get views: (1) high **stayed %** with a story (Final Boss A: 64 %, 3.0 K); (2) a very short loop where few stay but they rewatch (Cats: 24 % stayed, 97 % avg view, 1.1 K).
+- The non-game science video fails on both: 59 % swipe and a 3-5 s cliff. Third data point against real-world fact videos (sections 13-14).
+- For the 14-day test: watch **stayed %** first (target >= 60 % like Final Boss), then avg view %. Hypothesis to test later: a 02:00 video
+  that is short and loops (end flows into the start) may collect rewatches like the cat video.
