@@ -175,3 +175,18 @@ Reading:
 - Supports the section 12 hypothesis: game tropes with a story twist get 3-6x the views of real-world fact videos (500) and ~15-30x
   the science loop without a game (100). Still a handful of videos, and only views (no stayed %, no retention curve yet).
 - Missing for both: stayed / swiped %, average view duration, retention curve, subscribers. Ask Enes for the screenshots.
+
+## 14. Early numbers: Stolen Car and Four Phases (Enes, 21 Nov 2026, a few hours after posting)
+| Video | Posted (TR time) | Views so far |
+|---|---|---|
+| What Happens to the Guy Whose Car You Steal? (#GTA6 in the description) | 23:00 | ~70 |
+| Why Do Final Bosses Always Have Three Phases? | 02:00, ~3 h after the car video | ~150, "stuck" |
+
+Reading (too early to judge; hypotheses only):
+- Final Boss B also had "~0 views" on its first evening and reached 1.6 K later; Final Boss A got its second push after ~28 h.
+  So a few hours of views says little; the 48 h check decides.
+- Two posts ~3 h apart on the same channel: the same pattern as 16 Nov (Final Boss B was the 2nd post of the evening and started at ~0).
+  The rule in CONTINUE.md is one video per day; keep it.
+- #GTA6 on a video with no footage of that game may bring viewers who expect the game and swipe away early, which would lower "stayed".
+  Check the car video's stayed % against Four Phases before using a trend hashtag again.
+- Needed: stayed / swiped %, average view, retention curve and traffic source for both.
