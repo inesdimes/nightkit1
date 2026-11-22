@@ -243,3 +243,16 @@ Instagram insights for the speech video (Enes, 22 Nov 16:36, ~18 h after posting
 - Instagram's skip rate (swiped in the first seconds) was 26.8 %; YouTube's first sample swiped 95 % (only 59 viewers, section 16).
   Same frame 0, very different reaction: the frame-0 hypothesis is weaker than it looked; the YouTube sample was tiny. Wait for its 48 h numbers.
 - Instagram is currently the better platform for these videos. KPI per Reel from now on: skip rate (target < 30 %) and avg watch %.
+
+## 18. YouTube channel audience, last 28 days (Enes's screenshots, 22 Nov 2026)
+- **Location (views):** US 24.3 %, Türkiye 15.4 %, Indonesia 4.5 %.
+- **Age:** 13-17 17.3 %, 18-24 16.3 %, **25-34 37.8 %**, 35-44 21.1 %, 45-54 6.7 %, 55-64 0.8 %. **Gender:** male 80.8 %, female 19.2 %.
+- **Device (watch time):** phone 75.9 %, computer 9.1 %, tablet 7.7 %, TV 7.2 %.
+- **Subtitle language:** none 91.5 %, English 1.7 % (our subtitles are burned in, so this only means the YouTube CC track is unused).
+- **When viewers are on YouTube (TR time):** strongest **18:00-01:00**, brightest on **Saturday and Sunday evenings (18:00-24:00)**;
+  weakest ~05:00-12:00.
+Reading:
+- Correction to an earlier assumption: the audience is mostly **25-34**, not 13-17, so "US teens are in school at 22:00 TR" is a weak argument.
+- 22:00 TR sits inside the active window; 23:00-23:30 adds the US East afternoon (15:00-15:30) while Europe is still in its evening.
+  02:00 TR is at the edge of the active band; ~01:00 is safer. Best videos -> Saturday/Sunday evenings.
+- Türkiye is 15 % of views: the channel is already mostly foreign; keep everything English (titles, captions, hashtags).
