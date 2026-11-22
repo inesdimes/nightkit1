@@ -1,4 +1,4 @@
-"""Placeholder voice for the mechanism-style mimic test (Kokoro bm_george, four_phases pace: speed 1.22, short pauses).
+"""Placeholder voice for the One Take mimic test (Kokoro bm_george, four_phases pace: speed 1.22, short pauses).
 The PC can replace these files with the Enes-timbre VC / own-voice versions (same keys). Writes $TTS_DIR/mmx/<key>.wav + script.json."""
 import os, sys, json
 import numpy as np, soundfile as sf

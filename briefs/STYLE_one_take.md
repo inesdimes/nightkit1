@@ -1,4 +1,4 @@
-# MECHANISM style - an optional extra look (22 Nov 2026). Does NOT replace the Insert Disc 2 PS1 look or its rules.
+# ONE TAKE - an optional extra system (22 Nov 2026). Does NOT replace the Insert Disc 2 PS1 look or its rules.
 Use it per video when a topic has a mechanism to show. Lessons measured on two reference explainers (an engine cutaway in low-poly 3D,
 a pixel-art fission chain reaction); their numbers vs ours: motion 2.7-4.0 vs 1.5-1.8, brightness 42-62 vs 32-36, contrast 32-50 vs 16-23.
 
@@ -12,6 +12,6 @@ a pixel-art fission chain reaction); their numbers vs ours: motion 2.7-4.0 vs 1.
 8. Voice: four_phases pace; no gap > ~0.5 s.
 
 Tools: `python tools/qa/look_metrics.py <mp4>` (targets: motion >= 3, brightness >= 50, contrast >= 35).
-Test videos: `examples/mech/mimic_mech.py` (v1, chest only) and `examples/mech/mimic_mech2.py` (v2, story: the camera pulls back to the heroes and the knight and pushes in on the chest; 26 s, loops). Placeholder Kokoro voice `tools/mech/voice_mimic.py`.
+Test videos: `examples/onetake/mimic_v1.py` (v1, chest only) and `examples/onetake/mimic_v2.py` (v2, story: the camera pulls back to the heroes and the knight and pushes in on the chest; 26 s, loops). Placeholder Kokoro voice `tools/onetake/voice_mimic.py`.
 Result of the test (cloud, 22 Nov): motion 2.31, brightness 49.5, contrast 49.4 (ours before: 1.52 / 31.7 / 15.9).
 v2 (22 Nov): motion 2.40, brightness 51.7, contrast 46.7.

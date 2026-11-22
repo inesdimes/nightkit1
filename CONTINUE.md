@@ -105,6 +105,9 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - Sound: new `nightkit.audio.soft_fire()` (day-1 crackle fix) is used in mimic only; npc_well has no fire. Jumps > 6x local level: mimic 379, npc_well 478 (planned SFX; no per-sample gate anywhere).
 - Weak spots: see `reviews/npc_well.md` and `reviews/mimic.md` (limbs + contacts scored 7 in both: the ring hand-over and the montage hands in mimic (kneel pose and opening brightness fixed in round 3); the old man glides instead of walking; mimic's quiet stretch is gone (longest voice gap 1.2 s, npc_well 0.8 s). Mimic picture fixes done: big pointed teeth + dark red mouth + tongue, frame 0 lid open a crack with breathing and a tooth glint, the tongue rises when calm so the coin sits visibly on it with a steady glint).
 
+## ONE TAKE (optional extra system, 22 Nov 2026)
+- Named by Enes. One continuous take, the camera breathes with the story, bright hero object, counters, loops. Rules `briefs/STYLE_one_take.md`, test `examples/onetake/mimic_v2.py` (26 s), tool `tools/qa/look_metrics.py`. PC final render: GO.md.
+
 ## Next steps
 Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
 New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scene_qa.py examples/<script>.py`).

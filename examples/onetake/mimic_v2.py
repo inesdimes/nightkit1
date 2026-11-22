@@ -1,14 +1,14 @@
-"""MECHANISM style, mimic v2 - the story version (Enes, 22 Nov): one continuous take whose camera BREATHES with the story:
+"""ONE TAKE, mimic v2 - the story version (Enes, 22 Nov): one continuous take whose camera BREATHES with the story:
 close on the chest -> pulls back: heroes come, take the gold, leave (time-lapse) -> pushes in: empty chest, dust, it learns to bite ->
 pulls back: one knight comes, does not draw his sword, kneels -> close on his hand: a coin -> back to the opening close-up (loop).
-Reuses the chest from examples/mech/mimic_mech.py and the locked knight from examples/final_boss.py. Separate from the main look.
-Voice: tools/mech/voice_mimic.py (placeholder). Run: TEST=1,5,9,12,15,17.5,21 python examples/mech/mimic_mech2.py | PART=a:b | PART=audio"""
+Reuses the chest from examples/onetake/mimic_v1.py and the locked knight from examples/final_boss.py. Separate from the main look.
+Voice: tools/onetake/voice_mimic.py (placeholder). Run: TEST=1,5,9,12,15,17.5,21 python examples/onetake/mimic_v2.py | PART=a:b | PART=audio"""
 import os, sys, math
 HERE=os.path.dirname(os.path.abspath(__file__)); ROOT=os.path.join(HERE,'..','..')
 sys.path.insert(0,HERE); sys.path.insert(0,os.path.join(ROOT,'examples')); sys.path.insert(0,ROOT)
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
-import mimic_mech as M
+import mimic_v1 as M
 import final_boss as FB
 from nightkit.engine import Camera, quad
 from nightkit.zraster import zrender
@@ -155,7 +155,7 @@ if __name__=='__main__':
         sh.save(os.path.join(ROOT,'test.png')); sys.exit()
     if os.environ.get('PART')=='audio':
         # extra footsteps for the heroes and the knight on top of the v1 sound design
-        print(M.build_audio(os.path.join(OUT,'mimic_mech2.wav'))); sys.exit()
+        print(M.build_audio(os.path.join(OUT,'one_take_mimic_v2.wav'))); sys.exit()
     if os.environ.get('PART'):
         import subprocess
         a,b=map(int,os.environ['PART'].split(':'))

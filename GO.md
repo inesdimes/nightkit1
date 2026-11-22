@@ -1,14 +1,15 @@
-# GO - the current tasks for the PC session (read this when Enes says "GO.md")
-Updated by the cloud session, 21 Nov 2026. Day 2 FIXES (Enes: the mimic story is too slow and he did not like its voice).
+# GO - the current task for the PC session (read this when Enes says "GO.md")
+Updated by the cloud session, 22 Nov 2026. ONE TAKE: final render of the mimic story (Enes liked the system and the camera moves).
 
-Cause: the day-2 voices (`tools/tts/mm.py`, `tools/tts/nw.py`) use speed 1.0 and 0.45 s pauses ("Tone 2.0: calm, slow").
-The voice Enes liked is four_phases (`tools/tts/fp.py`): speed 1.22, pauses 0-0.15 s. Tone 2.0 is now corrected in briefs/SERIES_14_DAYS.md.
+ONE TAKE is an optional extra system, separate from the main Insert Disc 2 look: one continuous take whose camera pulls back and
+pushes in with the story, a big bright hero object, counters/tags, the end loops into the start. Rules: `briefs/STYLE_one_take.md`.
 
-1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/SERIES_14_DAYS.md` (Tone 2.0, voice bullet) and `reviews/mimic_review.md`.
-2. Voice for BOTH day-2 videos (mimic and npc_well): same settings as fp.py (S=1.22, pauses inside a line 0-0.15 s, the same pitch trim),
-   ~0.3 s between lines, same Kokoro bm_george -> ChatterboxVC chain. Re-time every picture cue to the new sentence timings.
-   The videos get shorter; that is wanted (mimic ~22-25 s, npc_well ~40-45 s). No quiet stretch over ~1 s (mimic 14.5-16.7 s goes).
-3. Mimic picture fixes (reviews/mimic_review.md): the coin clearly visible inside the chest with a glint, held on "He left a coin";
-   teeth bigger and pointed with a dark mouth inside the lid (+ tongue) so the bite reads; frame 0: lid open a crack, teeth glint, a slow breath.
-4. No-stop rule: never wait for Enes. All QA (scene_qa, critique >= 8, check.py, no jumps > 6x local level from noise).
-5. Overwrite renders\mimic\ and renders\npc_well\; update CONTINUE.md; commit and **push**.
+1. `git pull origin ccr-91720a78-gihjic`.
+2. Voice: replace the placeholder lines in `$TTS_DIR/mmx/` (keys 1-7, text in `tools/onetake/voice_mimic.py`) with Enes's voice
+   (his own recording via `tools/tts/own_prep.py`, or the Kokoro -> ChatterboxVC chain, four_phases pace). Re-time `M.LINES` in
+   `examples/onetake/mimic_v2.py` to the new durations (keep the camera keys in step with the lines).
+3. Fix the known visual bugs: the knight's armour blows out to white in the close-ups (lower the key light on him / the bloom);
+   the coin must read clearly (bigger, glint, a beat longer); the time-lapse heroes a little bigger in frame; the chest interior
+   not over-lit; aim for `python tools/qa/look_metrics.py` motion >= 3 (more teeth / gold / particle motion), keep brightness >= 50, contrast >= 35.
+4. Render with `PART=a:b` in parallel + `PART=audio`, mux, `python tools/qa/check.py` must pass. Output: renders\one_take_mimic\.
+5. No-stop rule: never wait for Enes. End: MP4 path + look_metrics numbers; update CONTINUE.md; commit and **push**.

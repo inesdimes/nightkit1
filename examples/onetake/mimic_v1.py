@@ -1,10 +1,10 @@
-"""MECHANISM STYLE (extra system, separate from the main Insert Disc 2 look) - test on "Why do mimics pretend to be chests?"
-Lessons from two reference explainers (see briefs/STYLE_mechanism.md): one big hero object in the centre of a dark clean stage,
+"""ONE TAKE (extra system, separate from the main Insert Disc 2 look) - test on "Why do mimics pretend to be chests?"
+Lessons from two reference explainers (see briefs/STYLE_one_take.md): one big hero object in the centre of a dark clean stage,
 bright and high-contrast, glowing key parts, the object itself always moving, the animation SHOWS the mechanism (cutaway,
 time-lapse tag, ticking counters), one camera move with no cuts, one boxed label at a time, the end loops into the start.
 Smooth (not pixelated): rendered at 360x640, upscaled x3 with LANCZOS + bloom. Does not touch examples/mimic.py.
-Voice: python tools/mech/voice_mimic.py (placeholder Kokoro; the PC can swap in the Enes-timbre lines, same keys).
-Run: TEST=1,5,11,17 python examples/mech/mimic_mech.py -> test.png | PART=a:b | PART=audio"""
+Voice: python tools/onetake/voice_mimic.py (placeholder Kokoro; the PC can swap in the Enes-timbre lines, same keys).
+Run: TEST=1,5,11,17 python examples/onetake/mimic_v1.py -> test.png | PART=a:b | PART=audio"""
 import os, sys, math, json
 ROOT=os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..'); sys.path.insert(0,ROOT)
 TTS_DIR=os.environ.get('TTS_DIR',os.path.join(ROOT,'tts'))
@@ -246,7 +246,7 @@ if __name__=='__main__':
         ims=[frame_full(float(x)) for x in os.environ['TEST'].split(',')]; sh=Image.new('RGB',(len(ims)*W//3,H//3))
         for i,im in enumerate(ims): sh.paste(im.resize((W//3,H//3),Image.LANCZOS),(i*W//3,0))
         sh.save(os.path.join(ROOT,'test.png')); sys.exit()
-    if os.environ.get('PART')=='audio': print(build_audio(os.path.join(OUT,'mimic_mech.wav'))); sys.exit()
+    if os.environ.get('PART')=='audio': print(build_audio(os.path.join(OUT,'one_take_mimic_v1.wav'))); sys.exit()
     if os.environ.get('PART'):
         import subprocess
         a,b=map(int,os.environ['PART'].split(':'))

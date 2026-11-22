@@ -1,4 +1,4 @@
-"""Look metrics for the optional MECHANISM style (briefs/STYLE_mechanism.md). Separate tool: the main pipeline does not use it.
+"""Look metrics for the optional ONE TAKE system (briefs/STYLE_one_take.md). Separate tool: the main pipeline does not use it.
   python tools/qa/look_metrics.py <video.mp4> [...]
 Per video: motion (mean abs change per frame, 0-255, at 90x160), brightness (mean luma), contrast (mean per-frame luma std),
 saturation, the share of held frames, and the opening motion (first second). Targets measured on two reference explainers:
