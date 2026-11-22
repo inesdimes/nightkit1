@@ -24,17 +24,20 @@ which was not a joke: the hero becomes the next prisoner.
   first second, and never a skip / exit / loading-style prompt on screen in the first seconds.
 - Sound: never a per-sample random gate (`rng.random(n) < p`) - that was the crackle in day 1.
 
-## Posting rules (changed 21 Nov 2026, Enes's decision)
-- TWO videos a day, same slots every day:
-  - **22:00 TR** (14:00 US Eastern): the longer story, ~60 s (as long as the story needs; 40-60 s is fine).
-  - **02:00 TR** (18:00 US Eastern): the shorter one, ~30 s.
+## Posting rules (updated 22 Nov 2026 from the YouTube audience data, ANALYTICS.md sections 18-19)
+Target audience: Europe and America. YouTube is the main platform (it reaches abroad: US 24 %, TR 15 %); Instagram and TikTok
+get the same videos but are not used for decisions (TikTok is 82 % Türkiye; Instagram shows no country split yet).
+- TWO videos a day, scheduled (YouTube Studio "Schedule", Instagram/Meta scheduling, TikTok Studio on the computer):
+  - **1st video, ~60 s story: 22:30-23:30 TR** (Europe 19:30-21:30, US East 14:30-15:30).
+  - **2nd video, ~30 s: ~01:00 TR** (US East 17:00, US West 14:00; 02:00 TR is at the edge of the active band).
+  - **Best videos on Saturday and Sunday evenings** (the brightest cells in YouTube's "when your viewers are on YouTube").
   Length follows the topic, not the slot: never pad a story to reach 60 s.
-- Claude's note (kept as an observation, not a rule): on 16 Nov and 20 Nov the second post of the night started near 0 views.
-  The slots are 4 h apart, which may be enough. Track the two slots separately in ANALYTICS.md; if the 02:00 videos keep starting
-  near 0 while 22:00 ones do not, revisit the spacing (Enes decides).
-- No trend hashtags (until the Stolen Car numbers say otherwise, ANALYTICS.md section 14). Never delete or re-upload.
+- Everything in English (titles, captions, hashtags, voice). No trend hashtags. Never delete or re-upload.
+- Success is measured on **YouTube**: stayed-to-watch % first (target >= 60 %), then views. Instagram KPI kept as a side note:
+  skip rate (< 30 %) and average watch %.
 - 48 h after each post: Enes sends YouTube screenshots (overview, stayed/swiped, avg view + retention curve, traffic source);
   Claude logs them in ANALYTICS.md (with the slot) and names at most 3 changes.
+- Track the two slots separately; if the 2nd video keeps starting near 0 while the 1st does not, revisit the spacing (Enes decides).
 
 ## Day 14 decision
 Keep the format if median views or stayed % rise over the 14 days. If both stay flat (median < 300 views and stayed < 50 %),
