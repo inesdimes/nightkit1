@@ -256,3 +256,12 @@ Reading:
 - 22:00 TR sits inside the active window; 23:00-23:30 adds the US East afternoon (15:00-15:30) while Europe is still in its evening.
   02:00 TR is at the edge of the active band; ~01:00 is safer. Best videos -> Saturday/Sunday evenings.
 - Türkiye is 15 % of views: the channel is already mostly foreign; keep everything English (titles, captions, hashtags).
+
+## 19. TikTok viewers, last 7 days (Enes's screenshots, 22 Nov 2026)
+- **Locations:** **Türkiye 81.9 %**, Malaysia 3.4 %, Philippines 1.1 %, Azerbaijan 0.9 %, Serbia 0.9 %.
+- **Most active:** Monday 18:00-19:00; daily curve low 02:00-07:00, plateau 12:00-23:00, highest 18:00-21:00 (device time, TR).
+- **Creators your viewers also watched:** Typical Gamer, PUBG Mobile, GothamChess, Mobile Legends -> a gaming audience (fits the niche).
+Reading:
+- TikTok distributes mostly inside the uploader's country: 82 % Türkiye even with English videos. Posting time alone will not move it
+  to Europe/US. YouTube is the platform that already reaches abroad (US 24 %, TR 15 %, section 18).
+- Instagram shows no country split for these Reels (Instagram usually needs enough followers/reach before it shows audience demographics).
