@@ -12,5 +12,6 @@ a pixel-art fission chain reaction); their numbers vs ours: motion 2.7-4.0 vs 1.
 8. Voice: four_phases pace; no gap > ~0.5 s.
 
 Tools: `python tools/qa/look_metrics.py <mp4>` (targets: motion >= 3, brightness >= 50, contrast >= 35).
-Test video: `examples/mech/mimic_mech.py` (23.5 s; placeholder Kokoro voice `tools/mech/voice_mimic.py`, key names = lines 1-7).
+Test videos: `examples/mech/mimic_mech.py` (v1, chest only) and `examples/mech/mimic_mech2.py` (v2, story: the camera pulls back to the heroes and the knight and pushes in on the chest; 26 s, loops). Placeholder Kokoro voice `tools/mech/voice_mimic.py`.
 Result of the test (cloud, 22 Nov): motion 2.31, brightness 49.5, contrast 49.4 (ours before: 1.52 / 31.7 / 15.9).
+v2 (22 Nov): motion 2.40, brightness 51.7, contrast 46.7.

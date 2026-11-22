@@ -205,7 +205,7 @@ def subs(d,t):
 def frame_full(t):
     im=render3d(t).resize((W,H),Image.LANCZOS)
     a=np.asarray(im).astype(np.float32); lum=a.max(axis=2)
-    br=np.clip((lum-215)/40,0,1)[...,None]*a; bl=np.asarray(Image.fromarray(br.astype(np.uint8)).filter(ImageFilter.GaussianBlur(18))).astype(np.float32)
+    br=np.clip((lum-228)/27,0,1)[...,None]*a; bl=np.asarray(Image.fromarray(br.astype(np.uint8)).filter(ImageFilter.GaussianBlur(18))).astype(np.float32)
     a=np.clip(a*1.1+bl*0.7,0,255)
     im=Image.fromarray(a.astype(np.uint8)); d=ImageDraw.Draw(im); ui(d,t); subs(d,t); return im
 
