@@ -223,3 +223,16 @@ Reading (only ~59 viewers, i.e. 3 people stayed; very early):
 - Lesson for every next video: frame 0 must read at a glance (clear silhouette, bright enough, a face or an action), must move in the
   first second, and must never show a skip / exit / "loading" style prompt.
 - Re-check at 48 h before concluding; YouTube sometimes tests a new Short on a small random group first.
+
+## 17. YouTube vs Instagram, same video (Enes, 22 Nov 2026)
+| Video (22:00 slot) | YouTube views | Instagram views | Instagram likes |
+|---|---|---|---|
+| Why Do Final Bosses Give a Speech Before the Fight? (posted 21 Nov ~22:00) | ~100 | **~2,000** | **~50** (~2.5 % of views) |
+| the earlier 22:00 post (Enes: "74 views") | 74 | - | - |
+
+Reading:
+- The same video gets ~20x more views on Instagram: the content itself is not the problem. On YouTube this video had 95 % swiped in the
+  first minutes (section 16); YouTube's Shorts feed distributes on "stayed to watch", so it stopped showing it.
+- No evidence that YouTube is "telling us to post less": YouTube says it does not penalise posting often, and the drop matches this
+  video's own first-second numbers. Small channel + 2 posts a night may still split the small test audience (sections 14, 16) - a hypothesis.
+- Needed from Instagram for a real comparison: average watch time and the skip rate (Reels insights), plus shares and saves.
