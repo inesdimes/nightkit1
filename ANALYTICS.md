@@ -236,3 +236,10 @@ Reading:
 - No evidence that YouTube is "telling us to post less": YouTube says it does not penalise posting often, and the drop matches this
   video's own first-second numbers. Small channel + 2 posts a night may still split the small test audience (sections 14, 16) - a hypothesis.
 - Needed from Instagram for a real comparison: average watch time and the skip rate (Reels insights), plus shares and saves.
+Instagram insights for the speech video (Enes, 22 Nov 16:36, ~18 h after posting):
+| Views | Viewers | Avg watch | Follows | Skip rate | Curve |
+|---|---|---|---|---|---|
+| 1,816 | 1,273 | 18 s of ~41 s (~44 %) | +1 | **26.8 %** ("lower than usual") | ~1.8 K within the first hours, then flat; ~2.6x a typical Reel of this account at 1 day |
+- Instagram's skip rate (swiped in the first seconds) was 26.8 %; YouTube's first sample swiped 95 % (only 59 viewers, section 16).
+  Same frame 0, very different reaction: the frame-0 hypothesis is weaker than it looked; the YouTube sample was tiny. Wait for its 48 h numbers.
+- Instagram is currently the better platform for these videos. KPI per Reel from now on: skip rate (target < 30 %) and avg watch %.
