@@ -12,7 +12,18 @@
 6. **Research kit** (`research/README.md`): `tools/llm/gemini.py --youtube <link>` + `research/hook_template.txt` to analyse reference Shorts with Gemini.
 7. `vocal/` is in `.gitignore`: Enes's raw recordings are never committed.
 
-## Current task - THE LAST RESPAWN, fixes after the first full preview (cloud review 23 Nov 2026)
+## Current task - WHAT IF EVERY HEALING POTION MADE SOMEONE FORGET YOU? (Blender, ~45 s, 22:30 slot)
+1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/forget_potion.md` (it overrides `briefs/forget_potion_gpt.txt`: note the logic fix).
+2. Use **Opus** for the new characters and places; reuse the rigid-puppet rig, lighting and render setup from `blender/last_respawn/`.
+3. Voices: narrator = Enes's takes in `vocal/forget_potion/` if present; every missing line gets a Kokoro placeholder (listed in the brief).
+   Time the picture to the real line durations; no time-stretching of speech.
+4. No-stop: build, preview, fix, final render at 1080x1920. QA: `python tools/qa/check.py <mp4>` must pass (-14 LUFS, 1080x1920),
+   `python tools/qa/look_metrics.py <mp4>` contrast >= 35, frame 0 readable and moving, subtitles in the channel's big boxed style,
+   no object closer than ~1 m to the lens unless it is the subject.
+5. Output `renders\forget_potion\`; captions are in the brief. Update CONTINUE.md, commit scripts (not renders), **push**.
+
+## Still open - THE LAST RESPAWN fixes (below) - do these first if they are not done yet
+## THE LAST RESPAWN, fixes after the first full preview (cloud review 23 Nov 2026)
 The Blender look works (depth, fog, lamps; motion 6.7, the hook moves from frame 0). Fix before the final:
 1. **Subtitles are unreadable on a phone** (small, thin, low contrast). Use the channel's standard burned-in style: big pixel
    font (~7.5 px per font pixel at 1080 wide), black box behind, lower third, one highlighted word in cyan or amber.
