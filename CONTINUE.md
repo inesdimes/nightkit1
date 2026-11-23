@@ -52,6 +52,7 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 | The Last Respawn (58 s loop, Blender, 23 Nov) | blender/last_respawn.py (puppets + frame handler, numpy sound, mastered final.wav; voices `tools/tts/lrs.py` PLACEHOLDER) | final rendered -> `renders/last_respawn/last_respawn_final_1080x1920.mp4`; **SHELVED** (Enes did not like the story or the render), not posted |
 | The Last Respawn - nightkit version (58 s, same camera / staging / timing) | examples/last_respawn_nk.py (reads the Blender export `MODE=export`; zraster + Format 3.0 look) | final rendered -> `renders/last_respawn/last_respawn_nightkit_1080x1920.mp4`, `check.py` 10/11 (WARN = planned pops); **SHELVED** with the Blender version, not posted |
 | What if every healing potion made someone forget you? (36.3 s final = 43.5 s x 1.2, 24 Nov, **nightkit HD figures**) | examples/forget_potion.py (voices `tools/tts/fpo.py` + `vc.py fpo`; new `nightkit/hd.py` many-face humans; camp / battle flashback / inn / stone bridge night + dawn) | FINAL 24 Nov (no-stop, Enes approved): `check.py` 9/11 (WARN = planned cut to black + scene cuts / subtitle pops), look_metrics motion 4.1, brightness 52.8, contrast 35.3 -> `renders/forget_potion/what_if_every_healing_potion_made_someone_forget_you_36s.mp4` (1x in `scratch_old/`); not posted; captions `captions/forget_potion.md` |
+| What if the dragon was stealing the king's taxes back? (38.6 s final = 46.3 s x 1.2, 23 Nov, **nightkit HD**) | examples/dragon_taxes.py (voices `tools/tts/dt.py` + `vc.py dt`; new HD dragon (jaw, opening claw, folding wings, roll/pitch for flight), horse + rider, knight plate pieces, old woman, captain, soldiers, villagers, kid, tax sacks with seal / patch, coins, torches; cave with a mouth onto the night road + the Last Castle; Hearthmoor square + gate at dawn) | draft round 2: `check.py` 10/11 (WARN = planned cuts / subtitle pops), look_metrics brightness 59.0, contrast 38.0, motion 2.6 (LOW) -> `renders/dragon_taxes/what_if_the_dragon_was_stealing_the_kings_taxes_back_39s.mp4` (1x in `scratch_old/`); not posted; **waiting for Enes**; captions `captions/dragon_taxes.md`, review `reviews/dragon_taxes.md` |
 Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`, `captions/safe_zone.md`, `captions/smallest_umbrella.md`, `captions/camera_under_bed.md`.
 
 ## Newest work (18 Nov 2026)
@@ -202,3 +203,16 @@ Next: Enes's rewritten stories (tutorial_guy / pots) or a new brief; build the c
   then `sh tools/speedup.sh <1x> <final>` (~4 min total on this PC, ~0.5 s/frame per process).
 - Known weak spots (only seen on stills, not watched in motion): kneeling legs / sitting skirt clip into the ground, the battle shot
   is small and dark, the inn interior is a flat glowing wall, hand contacts (grab, horse hand-over) are approximate; sound judged by measurement only.
+
+## 23 Nov 2026 - Dragon Taxes in nightkit (PC)
+- Enes approved Forget Potion ("güzel") and decided: **every short in nightkit from now on**, even when a brief says Blender.
+- Brief riefs/dragon_taxes.md built as examples/dragon_taxes.py, lines exact. Story additions approved by Enes before the build:
+  frame-0 HUD "QUEST: SLAY THE DRAGON" (struck through on "I found the real thief", paid off by QUEST UPDATED - PROTECT THE VILLAGE);
+  wordless patch beat (the old woman finds her own sewn patch on the torn sack, strokes it, hugs it); wordless kid beat at dawn
+  (first coin, waves at the dragon's shadow, the dragon dips a wing).
+- Voices PLACEHOLDER: narrator Kokoro -> ChatterboxVC; Knight am_adam, dragon bm_george at -7 st (the brief's -4.5 st measured almost the
+  narrator's pitch) + cave echo in the mix, woman bf_emma (same voice as Mira in forget_potion), captain bm_lewis. Own takes: 	ts/dt_own/<key>_<i>.wav, python tools/tts/dt.py build own.
+- Rebuild: python tools/render_parts.py examples/dragon_taxes.py --prefix dt --audio dragon_taxes.wav --out ../renders/dragon_taxes/scratch_old/dragon_taxes_1x.mp4 --parts 8
+  (~8 min on this PC) then sh tools/speedup.sh <1x> <final>. Asset sheets: ASSET=dragon|cast|horse|props; frames: TEST=t1,t2.
+- Weak spots (seen on stills only): hand contacts on sacks / coin approximate, the knight's face pales in torchlight, wing tips cropped in the
+  wingbeat, 23 cuts, motion metric LOW; sound judged by measurement only.

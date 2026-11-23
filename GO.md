@@ -1,4 +1,4 @@
-# GO - read this when Enes says "GO.md"
+﻿# GO - read this when Enes says "GO.md"
 
 ## What changed in the cloud session (21-22 Nov 2026) - read these before any new video
 1. **Posting rules** (`briefs/SERIES_14_DAYS.md`, "Posting rules"): target Europe + America, YouTube is the main platform;
@@ -23,7 +23,8 @@
    no object closer than ~1 m to the lens unless it is the subject.
 5. Output `renders\forget_potion\`; captions are in the brief. Update CONTINUE.md, commit scripts (not renders), **push**.
 
-## Next task (after forget_potion) - WHAT IF THE DRAGON WAS STEALING THE KING'S TAXES BACK? (Blender, ~45 s)
+## Next task (after forget_potion) - WHAT IF THE DRAGON WAS STEALING THE KING'S TAXES BACK? (~45 s)
+**DRAFT DONE 23 Nov in nightkit (Enes: always nightkit): see CONTINUE.md. Waiting for Enes's verdict.**
 Read `briefs/dragon_taxes.md` (overrides `briefs/dragon_taxes_gpt.txt`). Opus for the dragon rig. Voices from `vocal/dragon_taxes/`
 or Kokoro placeholders (listed in the brief). Same QA and no-stop rule as forget_potion. Output `renders\dragon_taxes\`. Push.
 
