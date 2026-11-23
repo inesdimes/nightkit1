@@ -230,3 +230,14 @@ Next: Enes's rewritten stories (tutorial_guy / pots) or a new brief; build the c
   (only 08 re-voiced; old VC files backed up in `tts/fpo_vc_backup_23nov`), the ring portrait shows grown-up Mira, the wooden horse is removed
   everywhere (line 13: her hand rises to his face and stops), the gulp hand sits beside the chin, the ring hand stays in front of the chest.
   **LOOP**: after the black, 1 s of the camp just before frame 0 (he lifts the next potion).
+
+## 23 Nov 2026 (night) - Enes's own voice in Dragon Taxes + Forget Potion
+- Enes recorded every line himself, one file per LINE (`vocal/Dragon Taxes/Kayit (1..15).m4a`, `vocal/forget_potion/Kayit (1..16).m4a`; not committed).
+- New: `python tools/tts/own_prep.py <dt|fpo> <folder> --lines` -> `tts/<name>_own/<key>_all.wav`; `multi.py build own` uses a whole-line take,
+  trims clicks / faint breaths (< 0.06 s or < -33 dB at the ends; quiet spoken words stay), levels quiet parts gently (max +12 dB, pauses untouched)
+  and places each sentence break at the pause nearest its text-length position (for subtitle timing). Every dropped part was checked by numbers only.
+- Voice totals: dt 40.5 s (AI 33.5), fpo 45.0 s (AI 39.1): his reading is slower with dramatic pauses; the pictures re-time from script.json.
+- Forget Potion own voice -> `renders/forget_potion/what_if_every_healing_potion_made_someone_forget_you_enes_44s.mp4` (43.6 s, check 9/11 = planned black + pops,
+  -14.1 LUFS, motion 3.7). Dragon Taxes own voice -> `renders/dragon_taxes/what_if_the_dragon_was_stealing_the_kings_taxes_back_enes_45s.mp4`.
+- Enes must listen: line fpo 09 ("One potion could save her.") holds only ~0.7 s of loud speech in the raw take; the dragon lines are his natural
+  pitch + the cave echo (no pitch shift).

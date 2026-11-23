@@ -1,13 +1,13 @@
-"""Prepare Enes's own recordings for a video's voice build.
+﻿"""Prepare Enes's own recordings for a video's voice build.
   python tools/tts/own_prep.py <module: eq2|ss|mm|nw> <folder with Kayit (1).m4a ... in sentence order>
 Maps the files by their number to the sentences of tools/tts/<module>.py (D order), cleans them (high-pass 80 Hz,
 removes the record-button click, trims, levels), and writes $TTS_DIR/<module>_own/<key>_<i>.wav (mono, 44.1 kHz). Then: python tools/tts/<module>.py build own"""
 import os, sys, re, glob, subprocess, importlib.util, shutil
 HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,HERE)
 TTS_DIR=os.environ.get('TTS_DIR',os.path.join(HERE,'..','..','tts'))
-mod=sys.argv[1]; folder=sys.argv[2]
+mod=sys.argv[1]; folder=sys.argv[2]; LINES='--lines' in sys.argv     # --lines: one file per LINE (Kayit (n) = line n) -> <key>_all.wav
 sys.argv=['x','none']; spec=importlib.util.spec_from_file_location(mod,os.path.join(HERE,mod+'.py')); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
-keys=[f'{k}_{i}' for k,ss in m.D for i,_ in enumerate(ss)]
+keys=[f'{x[0]}_all' for x in m.D] if LINES else [f'{x[0]}_{i}' for x in m.D for i,_ in enumerate(x[-1])]
 files={}
 for f in glob.glob(os.path.join(folder,'*')):
     g=re.search(r'\((\d+)\)',os.path.basename(f))

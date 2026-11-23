@@ -68,3 +68,28 @@ Top 3 fixes this round:
 Judged from stills only (critique sheet), not watched in motion. Not all scores >= 8: stopped after round 2 to get Enes's eyes on it.
 Round 1 -> 2 fixes: cave + night regrade (contrast 34.4 -> 38.0, brightness 45.8 -> 59.0, no black frames), camera moves x1.8,
 the wingbeat shot moved above/behind the dragon (was inside the wing span), cave mouth hole opened (it hid the riders' heads).
+## Round 3 - 2026-11-23 - what_if_the_dragon_was_stealing_the_kings_taxes_back_enes_45s.mp4
+
+- duration 45.71 s, 1097 frames, 29 cuts at 2.96, 5.62, 5.67, 7.46, 7.58, 7.62, 7.71, 8.96, 11.46, 14.96, 17.79, 19.92, 21.29, 23.62, 23.67, 23.71, 26.04, 27.54, 29.71, 30.54, 30.92, 33.58, 36.00, 36.96, 40.17, 44.12, 44.17, 44.21, 45.12
+- opening motion (first 1 s): 1.97
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 0.5 s
+- sheet: out\qa\dragon_taxes\critique_r3.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3. 
+
