@@ -1,42 +1,44 @@
-# WHY DO HEROES SMASH EVERY POT? - brief (23 Nov 2026, Claude) - day 3, 02:00 slot (~32 s), Tone 2.0
-Rules: briefs/SERIES_14_DAYS.md ("Tone 2.0" + frame 0 lesson), othercreators/RAPOR.md Aşama A (subject >= 50 % of frame height in frame 0, ONE accent colour,
-ONE HUD counter, last frame = frame 0). PS1, nightkit, Enes-timbre voice (Kokoro bm_george S=1.22 -> ChatterboxVC, `tools/tts/fp.py` settings).
+# WHY DO HEROES SMASH EVERY POT? - brief v2 (23 Nov 2026, Claude) - day 3, 02:00 slot (~30 s FINAL time at 1.2x), Tone 2.0 + Format 3.0
+Rules: briefs/SERIES_14_DAYS.md ("Tone 2.0" + "Format 3.0": constant camera, subject in focus + group framing, character cards, several voices, 1.2x).
+PS1, nightkit. Narrator = Kokoro bm_george S=1.22 -> ChatterboxVC (Enes timbre). Characters = other Kokoro voices, raw.
 
 ## Story
-An old woman in a cottage at the edge of a village sets out a new clay pot every morning. Every hero who walks in smashes it for the coin inside.
-Forty years, no thank you. The coin is hers on purpose: her son left to be a hero and never wrote. She hides a coin in every pot so each hero leaves
-with something in his pocket - hoping someone is doing the same for him. One knight walks in and does not swing. He finds the coin, puts it back,
-sits down at her table. She makes him tea. The pot stays on the shelf.
-Human truth: waiting for someone who left / a small kindness sent out into the world.
-(Different from day 2 on purpose: nobody leaves a coin, nobody is dead; the knight gives her his time, not an object.)
+An old woman sets out a new clay pot every morning; every hero smashes it for the coin inside. Forty years, no thank you. She hides the coin on purpose: her son
+left to be a hero and never wrote, and she hopes someone does the same for him. One knight does not swing: he puts the coin back and sits down; she makes tea.
+The pot stays on the shelf. Human truth: waiting for someone who left / a small kindness sent out into the world.
+(Not a copy of day 2: nobody leaves an object, the knight gives her his time.)
 
-## Narration (~85 words, 0.3 s between lines)
-| # | line | picture |
-|---|---|---|
-| 1 | Why do heroes smash every pot? | frame 0: CLOSE on a clay pot at the cottage door as a sword shatters it, shards + one gold coin fly toward the camera (moves at once, gold = the only accent); HUD top-left: "POTS: 14,600" |
-| 2 | This woman sets out a new one every morning. For forty years. | wide: the old woman carries a fresh pot to a shelf, counter ticks, light changes (day/dusk) |
-| 3 | She hides a coin in each one. | close on her hands pressing a coin into the clay before the lid |
-| 4 | Nobody has ever said thank you. | three heroes in three quick beats: swing, smash, grab the coin, leave (cape colours only); she sweeps the shards each time |
-| 5 | Her son left to be a hero, and never wrote. | warm-grey flash: a small box boy at the door with a wooden sword, then an empty doorway; the counter freezes |
-| 6 | So every hero leaves her house with a coin. Maybe someone is doing the same for him. | slow close on her face, one tear-free dry look; a hero's back disappearing down the lane with the coin glint |
-| 7 | One knight walked in, and didn't swing. | the knight at the door, sword down, looking at the pot |
-| 8 | He found the coin, put it back, and sat down. | gauntlet lifts the lid, sees the coin, closes the lid; he pulls up a stool at her table |
-| 9 | She made him tea. | she sets two cups; steam; she sits across from him; HUD swaps to "POTS SMASHED TODAY: 0" (the only UI, it replaces the old one) |
-| 10 | That pot is still on the shelf. The only one she never had to replace. | the pot, unbroken, glowing slightly gold in the window light; last frame composed like frame 0 but whole; end on the last word |
+## Character cards
+| Who | Silhouette / prop | Idle loop | Signature gesture | Reaction to the subject | Voice (test first) | Subtitle colour |
+|---|---|---|---|---|---|---|
+| **Old woman (SUBJECT)** | grey bun, apron, shawl, broom | dusts a pot, hums (a few notes), glances at the door every 3 s | presses the coin into the clay, pats the pot | fussy, warm, hopeful each time the door opens | warm old female (bf_emma slowed a touch, or af_nicole lowered) | gold |
+| **Hero 1** (grey cape, loud) | big swing | swings before he is in the door | smash, grab, leave | does not see her | am_adam, gruff: "Ha!" | red |
+| **Hero 2** (blue cape, greedy) | counts out loud | rubs hands | shakes the shards for loose coins | "Is that all?" | bm_lewis, sneering | blue |
+| **Hero 3** (green cape, in a hurry) | runs | already out the door | kicks the pot | "Out of my way!" | am_michael | green |
+| **Knight** | locked knight | still, head tilts at the pot | lifts the lid, sees the coin, puts it back, takes off his helmet | gentle | am_michael low: "I won't. Sorry." | white-blue |
+| **Boy (flashback only)** | small, wooden sword | swings at air | waves | - | no speech: a child's laugh SFX | - |
+| **Narrator** | - | - | - | - | Enes timbre | white |
+
+## Script and picture (times are FINAL; ~88 words)
+| # | speaker | line | picture + camera move |
+|---|---|---|---|
+| 1 | Narrator | Why do heroes smash every pot? | frame 0: CLOSE on a pot at the door: a sword shatters it, shards + a gold coin fly at the camera; the camera swings left and settles on the woman's face in the doorway (>= 50 % of height, she flinches and picks up her broom); HUD "POTS: 14,600" |
+| 2 | Woman | "Come in, dear. Mind the step." (hopeful, to Hero 1) | tracking shot beside her as she carries a new pot to the shelf; group framing holds her + Hero 1 |
+| 3 | Hero 1 / Hero 2 / Hero 3 | "Ha!" / "Is that all?" / "Out of my way!" | orbit of 15 degrees around the shelf: three heroes, three smashes; each leaves; she sweeps after each, shoulders a little lower; counter ticks |
+| 4 | Narrator | Forty years. Nobody ever said thank you. | slow push-in on her hands pressing a coin into a pot |
+| 5 | Narrator | Her son left to be a hero, and never wrote. | flashback (warm-grey) crane down on the boy at the door with a wooden sword; the doorway empties; counter freezes |
+| 6 | Narrator | So every hero leaves her house with a coin. Maybe someone is doing the same for him. | pull-back: a hero's back going down the lane, coin glint; she watches from the doorway |
+| 7 | Narrator | One knight walked in, and didn't swing. | camera tracks the knight in; group framing: knight + woman + the pot |
+| 8 | Knight | "I won't. Sorry." | push-in: gauntlet lifts the lid, sees the coin, puts it back, sits on the stool |
+| 9 | Woman | "Oh... sit, sit. Tea?" | two-shot orbit at the table; she sets two cups, steam; HUD becomes "POTS SMASHED TODAY: 0" (the only UI) |
+| 10 | Narrator | That pot is still on the shelf. The only one she never had to replace. | slow crane up to the whole pot on the shelf, glowing gold in the window light; ends on the frame-0 composition (door, pot, woman), whole this time |
 
 ## Assets
-- Reuse: knight(), motion helpers, HUD code, `tools/render_parts.py`, the clay-pot and coin from the existing sets if present (loot_restocker / last10), the woman model
-  of npc_well.py is NOT reused (a new old woman: bun of grey hair, apron, shawl; a recoloured old-man body is acceptable if time is short).
-- NEW: clay pots (box + lid, 4-5 on a shelf), cottage doorway + table + two cups (boxes), a few shards (small quads that scatter), a small boy (flashback only, a smaller box human).
-- One accent colour: gold (the coin, the glow on the last pot). Interior otherwise dark warm brown, one window as the main light.
-
-## Camera (4 setups, hard cuts 2.5-4 s)
-A close on the pot/door (frame 0) -> B wide cottage (counter, heroes passing) -> C the old woman close (hands, then face, creeping) ->
-D two-shot at the table (knight + woman, tea) -> end on the shelf, frame-0 composition.
+Reuse knight(), motion helpers, HUD, `tools/render_parts.py`, `follow_group()` (built in the tutorial_guy session; if that session has not happened yet, build it here). NEW: old woman,
+three recoloured heroes, clay pots + shards, cottage doorway + table + two cups, the boy. One accent colour gold (coin, last-pot glow). Interior dark warm brown, one window as main light.
 
 ## Sound
-Morning birds, soft clay "tock" when the pot is set down, shatter (short noise burst, filtered, no per-sample gate), coin clink, soft footsteps, one kettle, steam hiss, the cup set down;
-flashback: room goes quiet, a wooden-sword tap; last line: a low two-note pad. Never a per-sample random gate.
+Morning birds, "tock" of a pot set down, filtered shatter (no per-sample gate), coin clink, her humming (4-5 soft notes), kettle, steam, cup set down; flashback goes quiet, a wooden-sword tap; low two-note pad under the last line.
 
 ## No-stop rule
-Never wait for Enes. All QA (script_lint, scene_qa, critique >= 8, check.py). Render to renders\pots\. Captions: captions/pots.md.
+Never wait for Enes. All QA (script_lint, scene_qa, critique >= 8, check.py; add: subject inside the middle third in >= 95 % of frames, no speaker cropped). Render to renders\pots\. Captions: captions/pots.md.
