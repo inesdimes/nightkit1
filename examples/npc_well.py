@@ -44,7 +44,7 @@ HEROES=[(T0['2']+1.0,(196,60,52),3.8),(ws('3',0)+0.55,(70,150,84),4.3),(ws('3',1
 HERO_V=4.4
 BOXES=[(0.0,'THE WELL IS DRY, TRAVELER.'),(HEROES[0][0]-0.35,'THE WELL IS DRY, TRAVELER.'),(HEROES[1][0]-0.35,'THE WELL IS DRY, TRAVELER.'),
        (HEROES[2][0]-0.3,'THE WELL IS DRY, TRAVELER.'),(HEROES[3][0]-0.3,'THE WELL IS DRY, TRAVELER.'),
-       (T0['7']+0.75,'THE WELL IS DRY, TRAVELER.'),(ws('12',0)+0.25,'...THANK YOU.')]
+       (T0['7']+0.75,'THE WELL IS DRY, TRAVELER.'),(ws('12',1)-0.05,'...THANK YOU.')]       # Enes's own recording: he now says it (line 12, sentence 1)
 BOX_LEN=1.9
 SEAS=[('leaves',ws('3',0)-0.3,ws('3',1)-0.3),('snow',ws('3',1)-0.3,ws('3',2)-0.3),('rain',ws('3',2)-0.3,T0['4']+0.5)]
 T_FB=(T0['5']-0.2,T0['7']-0.1)                       # flashback window
@@ -55,7 +55,7 @@ T_K_IN=T0['9']-0.45; T_K_STOP=T0['9']+0.85           # knight walks in, stops
 T_K_RIM=(T0['10']+0.05,T0['10']+0.8); T_K_UP=(T0['10']+0.8,T0['10']+1.15); T_K_DOWN=(T0['10']+1.2,T0['10']+2.1)
 T_K_ASC=(T0['10']+2.3,T0['11']+0.35); T_K_OUT=(T0['11']+0.35,T0['11']+1.0)
 T_HOLD=ws('11',0)+1.1                                # he holds out the ring
-T_TAKE=(ws('12',0)+1.1,ws('12',0)+2.3)               # the old man takes the ring
+T_TAKE=(we('12',0)-1.7,we('12',0)-0.5)               # the old man takes the ring (just before he says "Thank you")
 T_WALK=(T0['13']+0.15,DUR)                           # the old man walks away
 CUTS=[0.0,T0['3']-0.06,T0['4']-0.06,T_FB[0],T0['7']-0.1,T0['8']-0.06,T0['9']-0.06,ws('10',1)+0.35,T0['11']-0.15,T_HOLD-0.2,T0['12']-0.06,T0['13']-0.1,DUR]
 

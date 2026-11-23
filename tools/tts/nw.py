@@ -16,7 +16,7 @@ D=[('1',[("Why has this man said the same line for forty years?",S,0.3,1.5,0)]),
    ('9',[("Then one knight stopped.",S,0,0.5,0)]),
    ('10',[("He didn't talk.",S,0,0.5,0),("He climbed.",S*0.95,-0.1,0.5,P)]),
    ('11',[("When he came back up, he held out a ring.",S,0,0.5,0)]),
-   ('12',[("For the first time in forty years, the old man said something new.",S,0,0.5,0)]),
+   ('12',[("For the first time in forty years, the old man said something new.",S,0,0.5,0),("Thank you.",S,0,0.5,0.3)]),
    ('13',[("He never said that line again.",S,-0.1,0.5,0),("The village was quieter.",S*0.95,-0.2,0.5,P),("So was he.",S*0.92,-0.4,1.0,0.15)])]
 D=[(k,[(sx,sp,st-0.6-(0.2 if k=='1' else 0),g,pause) for sx,sp,st,g,pause in s_]) for k,s_ in D]
 if __name__=='__main__':

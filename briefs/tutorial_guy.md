@@ -14,7 +14,7 @@ his spot, and now leaves the gate open. Human truth: being the one who stays beh
 | **Guide (SUBJECT)** | old, big hat, pointing stick, "?" patch, green tunic | bounces on his toes, stick tapping the post every 2 s | claps once, stick up: "Press SPACE!" | proud of every hero, a flicker of envy when they leave | warm old Kokoro male (bm_fable or bm_lewis), cheerful, slightly rushed | gold |
 | **Hero 1** (red cape) | fast, rude | already running | jumps without listening | "Yeah, yeah!" | am_michael, bored | red |
 | **Hero 2** (blue cape) | nervous, over-careful | checks the fence twice | tiny hop | "Is it safe?" | af_nicole, quick | blue |
-| **Hero 3** (purple cape) | cocky | flexes | show-off flip | "Watch this!" | bm_george-pitched-down is NOT allowed (narrator): use am_adam | purple |
+| **Hero 3** (purple cape) | cocky | flexes | show-off flip | "Watch this!" | am_adam, loud (bm_george is the narrator, do not reuse it) | purple |
 | **Knight** (SUBJECT's mirror) | locked knight | stands still, head turns slowly | turns back, holds out a gauntlet | patient | one line only, am_michael low, soft: "Just one step." | white-blue |
 | **Slime** | one green box | wobble | fills the frame | menace that is actually tiny | squelch SFX only | - |
 | **Narrator** | - | - | - | - | Enes timbre | white |
