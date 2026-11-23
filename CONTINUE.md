@@ -161,3 +161,12 @@ New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scen
 - Rebuild: `python tools/tts/<tg|pt>.py src`, `<chatterbox python> tools/tts/vc.py <tg|pt>`, `python tools/tts/<tg|pt>.py build vc`, `python tools/render_parts.py examples/<tutorial_guy|pots>.py --prefix <tg|pt> --audio <tutorial_guy|pots>.wav --out ../renders/<name>/scratch_old/<name>_1x.mp4`, `sh tools/speedup.sh <1x> <final>`.
 
 - **23 Nov 2026 (later): Enes REJECTED both day-3 videos** (many bugs; stories too simple and boring; emotion does not land) and deleted the renders (the MP4 paths in the video table no longer exist; they are not posted). The code, voices recipe and tools stay in the repo. Enes will review and rewrite the stories himself and send them back; do not rebuild tutorial_guy / pots from the old briefs. Lessons: plant a detail that the twist reverses, give the key emotional beat a wordless 2-3 s, narrator states less; never call a video good from tool output alone (Claude cannot watch/listen).
+
+## 23 Nov 2026 - THE LAST RESPAWN, phases 1-3 (PC, Blender) - STOPPED at the gate
+- Merged the cloud branch `ccr-91720a78-gihjic` into `misty-pilot` (ANALYTICS: the PC's Four Phases section is now 20).
+- `blender/last_respawn.py` (alley + tower + chamber, puppets posed by a frame handler, numpy sound, loop-time design) and
+  `tools/tts/lrs.py` (Kokoro placeholders). Outputs in `renders/last_respawn/`: `frame0_1080x1920.png`, `last_respawn_hook_0001-0192.mp4`,
+  `last_respawn_loop_0001-0216.mp4`, `sheet_mid.png`. Details, measurements, problems and the time estimate: `reviews/last_respawn.md`.
+- **Waiting for Enes:** continue in Blender or move the episode to nightkit; knight pop at the loop boundary OK or not; his 13 voice takes
+  (`briefs/last_respawn_voice_sheet.md` -> `vocal/last_respawn/`).
+

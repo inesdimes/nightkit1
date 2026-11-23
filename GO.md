@@ -13,6 +13,7 @@
 7. `vocal/` is in `.gitignore`: Enes's raw recordings are never committed.
 
 ## Current task - THE LAST RESPAWN (Blender, phases 1-3, then STOP)
+**Status 23 Nov 2026: phases 1-3 DONE on the PC, stopped at the gate** (`reviews/last_respawn.md`). Next = Enes's decision (Blender or nightkit) + his voice takes, then phase 4.
 1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/last_respawn.md` FIRST (it overrides parts of `briefs/last_respawn_gpt.md`), then the GPT brief.
 2. Use **Opus** for this task (new world, new rigs). Blender 5.3 per CLAUDE.md; characters are rigid-part puppets keyframed from Python.
 3. Run phase 1 (blockout + frame-0 still), phase 2 (hook test 00:00-00:08, preview quality, placeholder voices) and phase 3
