@@ -65,12 +65,15 @@ def frustum(yb,yt,hwb,hdb,hwt,hdt,col,xf):
     v=[(-hwb,yb,-hdb),(hwb,yb,-hdb),(hwt,yt,-hdt),(-hwt,yt,-hdt),(-hwb,yb,hdb),(hwb,yb,hdb),(hwt,yt,hdt),(-hwt,yt,hdt)]
     v=[xf(p) for p in v]; Fc=[(0,1,2,3),(5,4,7,6),(4,0,3,7),(1,5,6,2),(3,2,6,7),(4,5,1,0)]
     return [quad([v[i] for i in f],col) for f in Fc]
-def human(base,yaw,kind='man',lean=0.0,head=0.0,tilt=0.0,rh=None,lh=None,blink=0.0,walk=0.0,gaze=0.0,cane=True,**_):
+def human(base,yaw,kind='man',lean=0.0,head=0.0,tilt=0.0,rh=None,lh=None,blink=0.0,walk=0.0,gaze=0.0,cane=True,hair=None,coat_col=None,acc=None,**_):
+    """kind: 'man' (old, grey beard) | 'woman' | 'boy' (man proportions, short brown hair, no beard). Format 3.0 additions (all optional, default = the old output):
+    hair = colour override for every hair part; coat_col = (coat, coat_dark); acc(Hh, T, Wd) -> extra faces in head space / torso space / world space (hat, bun, apron...)."""
     b=np.array(base,float); Rb=FB.Ry(yaw)
     def Wd(p): return tuple(b+Rb@np.array(p,float))
-    man=(kind=='man'); hy=0.62 if man else 0.7
+    man=(kind in ('man','boy')); old=(kind=='man'); hy=0.62 if man else 0.7; hairc=hair or (GREY if old else (96,62,40) if kind=='boy' else None)
     def T(p): p=np.array(p,float); piv=np.array([0,hy,0]); return Wd(piv+FB.Rx(lean)@(p-piv))
     Q=[]; coat=COAT if man else (150,66,64); coat_d=COAT_D if man else (112,48,48)
+    if coat_col: coat,coat_d=coat_col
     sw=0.45*math.sin(walk)
     for sx,ph in ((-1,1),(1,-1)):
         hp=np.array([sx*0.07,hy,0]); a=ph*sw; ft=hp+np.array([0,-0.6*math.cos(a),0.6*math.sin(a)]); ft[1]=max(0.04,ft[1])
@@ -93,17 +96,23 @@ def human(base,yaw,kind='man',lean=0.0,head=0.0,tilt=0.0,rh=None,lh=None,blink=0
         Q+=box(sx*0.05-0.028,sx*0.05+0.028,1.275,1.315,0.114,0.122,(228,222,206),xf=Hh)             # eye whites
         Q+=box(sx*0.05-0.014+gaze*0.012,sx*0.05+0.014+gaze*0.012,1.28,1.31,0.121,0.128,(26,22,22),xf=Hh)   # pupils
         if blink>0: Q+=box(sx*0.05-0.03,sx*0.05+0.03,1.272,1.272+0.046*blink,0.123,0.13,SKIN,xf=Hh)
-        Q+=seg((sx*0.095,1.342-0.0,0.13),(sx*0.02,1.362,0.13),0.026,GREY if man else (92,60,40),0.02) if man else seg((sx*0.09,1.345,0.13),(sx*0.02,1.35,0.13),0.016,(92,60,40),0.02)   # brows (sad)
+        Q+=seg((sx*0.095,1.342-0.0,0.13),(sx*0.02,1.362,0.13),0.026,hairc if man else (92,60,40),0.02) if man else seg((sx*0.09,1.345,0.13),(sx*0.02,1.35,0.13),0.016,hair or (92,60,40),0.02)   # brows (sad)
     Q+=box(-0.018,0.018,1.2,1.285,0.114,0.15,SKIN_D,xf=Hh)                                           # nose
-    if man:
-        Q+=box(-0.075,0.075,1.18,1.21,0.114,0.14,GREY,xf=Hh)                                         # moustache
-        Q+=box(-0.11,0.11,1.02,1.18,-0.02,0.128,GREY,xf=Hh)                                          # beard
-        for sx in (-1,1): Q+=box(sx*0.115,sx*0.14,1.2,1.34,-0.09,0.06,GREY,xf=Hh)                    # side hair
-        Q+=box(-0.115,0.115,1.2,1.34,-0.14,-0.115,GREY,xf=Hh)
+    if old:
+        Q+=box(-0.075,0.075,1.18,1.21,0.114,0.14,hairc,xf=Hh)                                        # moustache
+        Q+=box(-0.11,0.11,1.02,1.18,-0.02,0.128,hairc,xf=Hh)                                         # beard
+        for sx in (-1,1): Q+=box(sx*0.115,sx*0.14,1.2,1.34,-0.09,0.06,hairc,xf=Hh)                   # side hair
+        Q+=box(-0.115,0.115,1.2,1.34,-0.14,-0.115,hairc,xf=Hh)
         for yy in (1.375,1.39): Q+=box(-0.07,0.07,yy,yy+0.007,0.114,0.12,SKIN_D,xf=Hh)               # forehead wrinkles
+    elif man:                                                                                        # boy: short hair cap, no beard
+        Q+=box(-0.125,0.125,1.36,1.43,-0.125,0.125,hairc,xf=Hh)+box(-0.125,0.125,1.2,1.43,-0.14,-0.115,hairc,xf=Hh)
+        for sx in (-1,1): Q+=box(sx*0.115,sx*0.14,1.26,1.40,-0.09,0.06,hairc,xf=Hh)
+        Q+=box(-0.02,0.02,1.17,1.19,0.114,0.12,(150,70,70),xf=Hh)                                    # mouth
     else:
-        Q+=box(-0.125,0.125,1.34,1.42,-0.125,0.125,(96,62,40),xf=Hh)+box(-0.125,0.125,1.0,1.42,-0.14,-0.115,(96,62,40),xf=Hh)   # long hair
+        hc=hair or (96,62,40)
+        Q+=box(-0.125,0.125,1.34,1.42,-0.125,0.125,hc,xf=Hh)+box(-0.125,0.125,1.0,1.42,-0.14,-0.115,hc,xf=Hh)   # long hair
         Q+=box(-0.02,0.02,1.17,1.19,0.114,0.12,(150,70,70),xf=Hh)                                      # mouth
+    if acc: Q+=acc(Hh,T,Wd)
     return Q
 def loc(base,yaw,P): return tuple(FB.Ry(yaw).T@(np.array(P,float)-np.array(base,float)))
 def lum_lit(Q,cam_p,lum=0.7,warm=0.15,tint=(1.0,1.0,1.0)):

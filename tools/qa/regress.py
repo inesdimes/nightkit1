@@ -11,7 +11,7 @@ from scene_qa import load
 ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..','..')); BASE=os.path.join(os.path.dirname(os.path.abspath(__file__)),'baseline.json')
 def scripts(args):
     if args: return args
-    return sorted(p for p in glob.glob(os.path.join(ROOT,'examples','*.py')) if 'QA=dict(' in open(p).read())
+    return sorted(p for p in glob.glob(os.path.join(ROOT,'examples','*.py')) if 'QA=dict(' in open(p,encoding='utf-8').read())
 def fingerprint(path):
     env=os.environ.pop('TEST',None); os.environ.pop('PART',None)
     try:

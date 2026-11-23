@@ -126,41 +126,42 @@ Klasör: `tts/tg_own/`. Bu videoda KARAKTERLER de konuşuyor: her karakteri fark
 
 | dosya | kim | cümle |
 |---|---|---|
-| `tg_1_0.wav` | Anlatıcı | Why does the tutorial guy never come with you? |
-| `tg_2_0.wav` | Rehber | Press SPACE to jump! |
-| `tg_3_0.wav` | Kahraman 1 (sıkılmış) | Yeah, yeah! |
-| `tg_3_1.wav` | Kahraman 2 (ürkek) | Is it safe? |
-| `tg_3_2.wav` | Kahraman 3 (havalı) | Watch this! |
-| `tg_4_0.wav` | Anlatıcı | Nobody ever looks back. |
-| `tg_5_0.wav` | Anlatıcı | Forty years ago, he tried it himself. |
-| `tg_6_0.wav` | Anlatıcı | He saw the first slime, and froze. |
-| `tg_7_0.wav` | Anlatıcı | He walked back. |
-| `tg_7_1.wav` | Anlatıcı | He has stood here ever since. |
-| `tg_8_0.wav` | Rehber (yorgun, kendi kendine) | Press SPACE to jump. |
-| `tg_9_0.wav` | Anlatıcı | Then one knight finished the lesson, and didn't leave. |
-| `tg_10_0.wav` | Şövalye | Just one step. |
-| `tg_11_0.wav` | Anlatıcı | The old man looked at the grass on the other side. |
-| `tg_12_0.wav` | Anlatıcı | He took one step. |
-| `tg_13_0.wav` | Anlatıcı | Then he went back to his spot. |
-| `tg_13_1.wav` | Anlatıcı | But now he leaves the gate open. |
+| `1_0.wav` | Anlatıcı | Why does the tutorial guy never come with you? |
+| `2_0.wav` | Rehber | Press SPACE to jump! |
+| `3a_0.wav` | Kahraman 1 (sıkılmış) | Yeah, yeah! |
+| `3b_0.wav` | Kahraman 2 (ürkek) | Is it safe? |
+| `3c_0.wav` | Kahraman 3 (havalı) | Watch this! |
+| `4_0.wav` | Anlatıcı | Nobody ever looks back. |
+| `5_0.wav` | Anlatıcı | Forty years ago, he tried it himself. |
+| `6_0.wav` | Anlatıcı | He saw the first slime, and froze. |
+| `7_0.wav` | Anlatıcı | He walked back. |
+| `7_1.wav` | Anlatıcı | He has stood here ever since. |
+| `8_0.wav` | Rehber (yorgun, kendi kendine) | Press SPACE to jump. |
+| `9_0.wav` | Anlatıcı | Then one knight finished the lesson, |
+| `9_1.wav` | Anlatıcı | and didn't leave. |
+| `10_0.wav` | Şövalye | Just one step. |
+| `11_0.wav` | Anlatıcı | The old man looked at the grass on the other side. |
+| `12_0.wav` | Anlatıcı | He took one step. |
+| `13_0.wav` | Anlatıcı | Then he went back to his spot. |
+| `13_1.wav` | Anlatıcı | But now he leaves the gate open. |
 
 ## pots (02:00) - day 3 - "Why do heroes smash every pot?"
-Klasör: `tts/pots_own/`. Karakter sesleri farklı olsun (kadın: sıcak, hafif titrek; kahramanlar: kaba / sinsi / aceleci; şövalye: alçak, nazik).
+Klasör: `tts/pt_own/`. Karakter sesleri farklı olsun (kadın: sıcak, hafif titrek; kahramanlar: kaba / sinsi / aceleci; şövalye: alçak, nazik).
 
 | dosya | kim | cümle |
 |---|---|---|
-| `pots_1_0.wav` | Anlatıcı | Why do heroes smash every pot? |
-| `pots_2_0.wav` | Kadın | Come in, dear. Mind the step. |
-| `pots_3_0.wav` | Kahraman 1 (kaba) | Ha! |
-| `pots_3_1.wav` | Kahraman 2 (sinsi) | Is that all? |
-| `pots_3_2.wav` | Kahraman 3 (aceleci) | Out of my way! |
-| `pots_4_0.wav` | Anlatıcı | Forty years. |
-| `pots_4_1.wav` | Anlatıcı | Nobody ever said thank you. |
-| `pots_5_0.wav` | Anlatıcı | Her son left to be a hero, and never wrote. |
-| `pots_6_0.wav` | Anlatıcı | So every hero leaves her house with a coin. |
-| `pots_6_1.wav` | Anlatıcı | Maybe someone is doing the same for him. |
-| `pots_7_0.wav` | Anlatıcı | One knight walked in, and didn't swing. |
-| `pots_8_0.wav` | Şövalye | I won't. Sorry. |
-| `pots_9_0.wav` | Kadın | Oh... sit, sit. Tea? |
-| `pots_10_0.wav` | Anlatıcı | That pot is still on the shelf. |
-| `pots_10_1.wav` | Anlatıcı | The only one she never had to replace. |
+| `1_0.wav` | Anlatıcı | Why do heroes smash every pot? |
+| `2_0.wav` | Kadın | Come in, dear. Mind the step. |
+| `3a_0.wav` | Kahraman 1 (kaba) | Ha! |
+| `3b_0.wav` | Kahraman 2 (sinsi) | Is that all? |
+| `3c_0.wav` | Kahraman 3 (aceleci) | Out of my way! |
+| `4_0.wav` | Anlatıcı | Forty years. |
+| `4_1.wav` | Anlatıcı | Nobody ever said thank you. |
+| `5_0.wav` | Anlatıcı | Her son left to be a hero, and never wrote. |
+| `6_0.wav` | Anlatıcı | So every hero leaves her house with a coin. |
+| `6_1.wav` | Anlatıcı | Maybe someone is doing the same for him. |
+| `7_0.wav` | Anlatıcı | One knight walked in, and didn't swing. |
+| `8_0.wav` | Şövalye | I won't. Sorry. |
+| `9_0.wav` | Kadın | Oh... sit, sit. Tea? |
+| `10_0.wav` | Anlatıcı | That pot is still on the shelf. |
+| `10_1.wav` | Anlatıcı | The only one she never had to replace. |
