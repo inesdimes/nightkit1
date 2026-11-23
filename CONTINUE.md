@@ -241,3 +241,12 @@ Next: Enes's rewritten stories (tutorial_guy / pots) or a new brief; build the c
   -14.1 LUFS, motion 3.7). Dragon Taxes own voice -> `renders/dragon_taxes/what_if_the_dragon_was_stealing_the_kings_taxes_back_enes_45s.mp4`.
 - Enes must listen: line fpo 09 ("One potion could save her.") holds only ~0.7 s of loud speech in the raw take; the dragon lines are his natural
   pitch + the cave echo (no pitch shift).
+
+## 23 Nov 2026 (late night) - Betül's voice for the female lines (extra versions)
+- Betül recorded Dragon Taxes lines 2, 6, 13 (old woman) and Forget Potion 11, 15 (Mira): `vocal/<folder>/Betül/` (not committed).
+- Separate builds with `TTS_DIR=renders/<project>/betul_tts` (mix folder = Enes's takes + hers); Enes's own-voice versions untouched.
+  -> `renders/dragon_taxes/what_if_the_dragon_was_stealing_the_kings_taxes_back_betul_45s.mp4` (44.7 s, -14.3 LUFS)
+  -> `renders/forget_potion/what_if_every_healing_potion_made_someone_forget_you_betul_43s.mp4` (43.1 s, -14.1 LUFS)
+- Fix: `own_prep.py` skipped all speech of takes without the record-button click + digital silence (her phone); now the click is
+  skipped only when digital zeros follow in the first half. Enes's takes give identical results.
+- DT 06 subtitle split set by hand to the 1.25 s pause (auto split was 0.26 s). Waiting for Enes: which version to post.

@@ -21,7 +21,9 @@ for n,key in enumerate(keys,1):
     y,sr=sf.read(dst); fr=int(sr*0.01); nf=len(y)//fr; db=20*np.log10(np.sqrt((y[:nf*fr].reshape(nf,fr)**2).mean(1))+1e-9)
     i0=0
     while i0<nf and db[i0]<=-80: i0+=1                                 # leading digital zeros
-    while i0<nf and db[i0]>-80: i0+=1                                  # the record-button click at the start, then digital silence
+    c=i0
+    while c<nf and db[c]>-80: c+=1                                     # the record-button click at the start, then digital silence
+    if c<nf*0.5: i0=c                                                  # click = burst then digital zeros early on; no digital zeros (other phones, e.g. Betul) -> keep the speech
     i1=i0
     while i1<nf and db[i1]<-62: i1+=1                                  # first voiced frame
     last=max(j for j in range(nf) if db[j]>-66)
