@@ -12,7 +12,15 @@
 6. **Research kit** (`research/README.md`): `tools/llm/gemini.py --youtube <link>` + `research/hook_template.txt` to analyse reference Shorts with Gemini.
 7. `vocal/` is in `.gitignore`: Enes's raw recordings are never committed.
 
-## Current task
+## Current task - THE LAST RESPAWN (Blender, phases 1-3, then STOP)
+1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/last_respawn.md` FIRST (it overrides parts of `briefs/last_respawn_gpt.md`), then the GPT brief.
+2. Use **Opus** for this task (new world, new rigs). Blender 5.3 per CLAUDE.md; characters are rigid-part puppets keyframed from Python.
+3. Run phase 1 (blockout + frame-0 still), phase 2 (hook test 00:00-00:08, preview quality, placeholder voices) and phase 3
+   (loop test 00:52-00:58 + 00:00-00:03 joined). Then STOP and give Enes the two preview MP4s + the frame-0 still + an honest note
+   on how long the full film would take in Blender.
+4. Commit scripts (not renders) and push. Enes's raw voice takes live in `vocal/last_respawn/` (gitignored); do not wait for them in phases 1-3.
+
+## Earlier task (One Take mimic final render) - still open, lower priority
 Updated by the cloud session, 22 Nov 2026. ONE TAKE: final render of the mimic story (Enes liked the system and the camera moves).
 
 ONE TAKE is an optional extra system, separate from the main Insert Disc 2 look: one continuous take whose camera pulls back and
