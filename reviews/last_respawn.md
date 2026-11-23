@@ -96,3 +96,17 @@ camera moves (crane, orbit) and the depth of the alley.
   white wash at 51-52 s is 0.5 s shorter. 11 cuts in the middle now (all listed as 'CUT' in `CAM_CH`).
 - Still open: the blocky puppet look; the goblin still overlaps the knight's arm a little while held (1.5-3 s); the 15-16 s shot
   is the knight's back (tan box) running away; Enes's 23 takes; final render.
+
+## 23 Nov 2026 (evening) - Enes: "GO.md, finalize, don't wait for me" -> finals (placeholder voices)
+Enes's 23 takes are not in `vocal/last_respawn/` yet, so both finals carry the Kokoro placeholders (NOT his performance); when the
+takes arrive: replace `tts/lrs/*.wav`, re-time `SCRIPT`, `python blender/last_respawn.py audio`, re-render (both versions read the same tracks).
+- **Mastered sound** `renders/last_respawn/audio/final.wav`: BS.1770 loudness in numpy + 4x-oversampled look-ahead limiter
+  (`master()` in the script, gain curves on a circularly padded signal): -14.2 LUFS (ffmpeg ebur128 agrees), -1.6 dBTP,
+  loop boundary jump 0.0000.
+- **Blender final** `renders/last_respawn/last_respawn_final_1080x1920.mp4`: 1080x1920, EEVEE 64 samples, two processes (~3 s/frame).
+- **nightkit version** `renders/last_respawn/last_respawn_nightkit_1080x1920.mp4` (`examples/last_respawn_nk.py`): Blender exports
+  per frame the camera, every part's world matrix and the lights (`MODE=export`); nightkit draws it with zraster (flat shading,
+  two-tone faces instead of noise textures, depth outline, PS1 dither, 270x480 x4), block-font speaker-coloured subtitles and
+  HUD. Same camera, staging and timing frame for frame; same mastered audio. ~0.35 s/frame, the whole film in ~2 min (6 parts).
+  `tools/qa/check.py`: 10/11 PASS, WARN frame pops = the planned cuts, the respawn flash and subtitle on/off.
+  zraster got an optional per-face `nobias` (no emissive depth bias for real geometry); existing scripts are unaffected.

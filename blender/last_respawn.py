@@ -696,6 +696,56 @@ def build_audio():
     sf.write(os.path.join(d, 'hook.wav'), out[:, :int(8 * SR)].T, SR, subtype='PCM_16')
     loop = np.concatenate([out[:, int(52 * SR):], out[:, :int(3 * SR)]], 1)
     sf.write(os.path.join(d, 'loop.wav'), loop.T, SR, subtype='PCM_16')
+    fin = master(out)
+    sf.write(os.path.join(d, 'final.wav'), fin.T, SR, subtype='PCM_16')
+    print('AUDIO final: %.1f LUFS, peak %.2f dBFS (4x oversampled), loop boundary jump %.4f' % (
+        lufs(fin), 20 * np.log10(true_peak(fin)), np.abs(fin[:, 0] - fin[:, -1]).max()))
+
+
+def lufs(x):
+    """BS.1770 integrated loudness (K-weighting, 400 ms blocks, absolute + relative gate). x: (2, n) at SR=48k."""
+    from scipy.signal import lfilter
+    y = lfilter([1.53512485958697, -2.69169618940638, 1.19839281085285], [1, -1.69065929318241, 0.73248077421585], x, axis=1)
+    y = lfilter([1, -2, 1], [1, -1.99004745483398, 0.99007225036621], y, axis=1)
+    b, h = int(0.4 * SR), int(0.1 * SR)
+    ms = np.array([(y[:, i:i + b] ** 2).mean(1).sum() for i in range(0, y.shape[1] - b + 1, h)])
+    L = -0.691 + 10 * np.log10(ms + 1e-12)
+    g = ms[L > -70]
+    rel = -0.691 + 10 * np.log10(g.mean()) - 10
+    g = g[-0.691 + 10 * np.log10(g) > rel]
+    return -0.691 + 10 * np.log10(g.mean())
+
+
+def true_peak(x):
+    from scipy.signal import resample_poly
+    return np.abs(resample_poly(x, 4, 1, axis=1)).max()
+
+
+def master(x, target=-14.0, ceil_db=-1.5):
+    """Loudness to `target` LUFS with a look-ahead peak limiter (ceiling ceil_db, 4x oversampled). Gain curves are computed
+    on a circularly padded signal so the loop boundary stays seamless."""
+    from scipy.signal import resample_poly
+    from scipy.ndimage import minimum_filter1d, uniform_filter1d
+    c = 10 ** (ceil_db / 20)
+    w = int(0.005 * SR)
+    pad = int(0.5 * SR)
+    gain = 10 ** ((target - lufs(x)) / 20)
+    for _ in range(6):
+        y = x * gain
+        pk = np.abs(resample_poly(y, 4, 1, axis=1)).max(0).reshape(-1, 4).max(1)[:y.shape[1]]
+        need = np.minimum(1.0, c * 0.97 / np.maximum(pk, 1e-9))
+        need = np.pad(need, pad, mode='wrap')
+        g = uniform_filter1d(minimum_filter1d(need, 2 * w + 1), w + 1)
+        rel = np.exp(-1 / (0.08 * SR))                     # 80 ms release (forward), attack is the look-ahead
+        gs = g.copy()
+        for i in range(1, len(gs)):                        # one-pole release, never above the required gain
+            gs[i] = min(g[i], gs[i - 1] * rel + (1 - rel) * g[i]) if g[i] > gs[i - 1] else g[i]
+        y = y * gs[pad:-pad]
+        err = target - lufs(y)
+        if abs(err) < 0.2:
+            break
+        gain *= 10 ** (err / 20)
+    return y
     b = int(6 * SR)                                        # boundary inside loop.wav
     jump = np.abs(loop[:, b] - loop[:, b - 1]).max()
     print('loop boundary sample jump %.4f (typical neighbour %.4f)' % (jump, np.abs(np.diff(loop[:, b - 2000:b], axis=1)).mean()))
@@ -744,9 +794,12 @@ if MODE != 'audio':
         p.inputs['Base Color'].default_value = (*col, 1)
         p.inputs['Roughness'].default_value = rough
         p.inputs['Metallic'].default_value = metal
+        m['nk'] = list(col) + [0.0, metal]
         if emit:
             p.inputs['Emission Color'].default_value = (*emit, 1)
             p.inputs['Emission Strength'].default_value = estr
+            if estr >= 1.0:
+                m['nk'] = list(emit) + [1.0, 0.0]
         return m
 
     def M_emit(name, col, strength):
@@ -758,6 +811,7 @@ if MODE != 'audio':
         e.inputs['Color'].default_value = (*col, 1)
         e.inputs['Strength'].default_value = strength
         nt.links.new(e.outputs[0], nt.nodes['Material Output'].inputs['Surface'])
+        m['nk'] = list(col) + [1.0, 0.0]
         return m
 
     def M_noise_mix(name, colA, colB, roughA, roughB, metal=0.0, scale=6.0, thr=(0.45, 0.62), bumpstr=0.0, voronoi=False):
@@ -765,6 +819,8 @@ if MODE != 'audio':
         m, nt = new_mat(name)
         p = bsdf(nt)
         p.inputs['Metallic'].default_value = metal
+        m['nk'] = list(colA) + [0.0, metal]
+        m['nk2'] = list(colB)
         tc = nt.nodes.new('ShaderNodeTexCoord')
         noi = nt.nodes.new('ShaderNodeTexNoise')
         noi.inputs['Scale'].default_value = scale
@@ -1955,7 +2011,7 @@ if MODE != 'audio':
         hud(t, u)
 
     def mux(cut):
-        frames_dir = os.path.join(OUT, 'preview')
+        frames_dir = os.path.join(OUT, os.environ.get('OUTSUB', 'preview'))
         if cut == 'hook':
             fr = list(range(1, 193))
         elif cut == 'full':
@@ -1996,8 +2052,68 @@ if MODE != 'audio':
         print('MUX done', r.filepath)
 
     # ======================================================================================
+    def export_nk(path, f0, f1):
+        """nightkit port: every mesh once (local verts, polygons <= 4 verts else triangles, flat colour per polygon) and per frame
+        the world matrix + visibility of every mesh object, the camera (pos, target), the lights and the wash amount."""
+        sc = bpy.context.scene
+        obs = [o for o in sc.objects if o.type == 'MESH' and o.data.materials and 'nk' in o.data.materials[0]
+               and o.parent != R['cam']]
+        meshes, mid_of = [], {}
+        for o in obs:
+            me = o.data
+            if me.name in mid_of:
+                continue
+            V = np.array([v.co[:] for v in me.vertices], np.float32)
+            polys = []
+            for pg in me.polygons:
+                mat = me.materials[pg.material_index] if pg.material_index < len(me.materials) else me.materials[0]
+                c = list(mat['nk'])
+                c2 = list(mat['nk2']) if 'nk2' in mat else c[:3]
+                if len(pg.vertices) <= 4:
+                    polys.append((list(pg.vertices), c, c2))
+            me.calc_loop_triangles()
+            for tri in me.loop_triangles:
+                if len(me.polygons[tri.polygon_index].vertices) > 4:
+                    mat = me.materials[me.polygons[tri.polygon_index].material_index]
+                    c = list(mat['nk'])
+                    c2 = list(mat['nk2']) if 'nk2' in mat else c[:3]
+                    polys.append((list(tri.vertices), c, c2))
+            mid_of[me.name] = len(meshes)
+            meshes.append(dict(name=me.name, V=V.tolist(), P=polys))
+        names = [o.name for o in obs]
+        mesh_ix = [mid_of[o.data.name] for o in obs]
+        lights = [o for o in sc.objects if o.type == 'LIGHT']
+        frames = []
+        for f in range(f0, f1 + 1):
+            sc.frame_set(f)
+            vis = np.array([not (o.hide_render or (o.parent is not None and o.parent.hide_render and o.parent.type == 'MESH'))
+                            for o in obs])
+            M = np.array([np.array(o.matrix_world, np.float32) for o in obs])
+            cam = R['cam'].matrix_world
+            fwd = cam.to_3x3() @ Vector((0, 0, -1))
+            L = [(list(o.matrix_world.translation), list(o.data.color), float(o.data.energy), o.data.type,
+                  list((o.matrix_world.to_3x3() @ Vector((0, 0, -1)))[:])) for o in lights if o.data.energy > 0]
+            frames.append(dict(f=f, vis=vis, M=M, cam=list(cam.translation), fwd=list(fwd), lights=L,
+                               wash=float(R['wash_fac'].default_value) if not R['wash'].hide_render else 0.0))
+        np.savez_compressed(path, names=np.array(names), mesh_ix=np.array(mesh_ix),
+                            vis=np.array([fr['vis'] for fr in frames]), M=np.array([fr['M'] for fr in frames]),
+                            cam=np.array([fr['cam'] for fr in frames]), fwd=np.array([fr['fwd'] for fr in frames]),
+                            wash=np.array([fr['wash'] for fr in frames]), f=np.array([fr['f'] for fr in frames]))
+        with open(path.replace('.npz', '_meshes.json'), 'w') as fh:
+            json.dump(meshes, fh)
+        with open(path.replace('.npz', '_lights.json'), 'w') as fh:
+            json.dump([fr['lights'] for fr in frames], fh)
+        print('EXPORT done', path, len(obs), 'objects', len(meshes), 'meshes', sum(len(m['P']) for m in meshes), 'polys')
+
     if MODE == 'mux':
         mux(os.environ.get('CUT', 'hook'))
+    elif MODE == 'export':
+        build()
+        bpy.app.handlers.frame_change_pre.append(update)
+        a, b = map(int, os.environ.get('FRAMES', '1-1392').split('-'))
+        d = os.path.join(OUT, 'nk')
+        os.makedirs(d, exist_ok=True)
+        export_nk(os.path.join(d, 'scene_%04d_%04d.npz' % (a, b)), a, b)
     else:
         sc = build()
         bpy.app.handlers.frame_change_pre.append(update)
@@ -2007,7 +2123,7 @@ if MODE != 'audio':
         if os.environ.get('SAVE'):
             bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, 'last_respawn.blend'))
         frames = os.environ.get('FRAMES', '1')
-        sub = 'stills' if MODE == 'still' else 'preview'
+        sub = os.environ.get('OUTSUB') or ('stills' if MODE == 'still' else 'preview')
         d = os.path.join(OUT, sub)
         os.makedirs(d, exist_ok=True)
         if '-' in frames and MODE == 'anim':

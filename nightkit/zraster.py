@@ -4,7 +4,7 @@ The stock renderer uses the painter's algorithm (faces sorted by average depth).
 interpenetrating low-poly parts (legs inside a body, a jaw inside a skull) that ordering
 breaks and you "see inside" models. This one keeps a per-pixel depth (1/Z), so every pixel
 shows the nearest surface. Same projection, lighting and fog maths as engine.Renderer.
-layers: list of face lists. bias: optional list of per-layer depth multipliers (>1 pulls a
+layers: list of face lists. A face with nobias=True (real geometry, e.g. the Last Respawn port) gets no emissive depth bias. bias: optional list of per-layer depth multipliers (>1 pulls a
 layer slightly towards the camera, used for decals that sit 0.5 cm above a surface)."""
 import math
 import numpy as np
@@ -39,7 +39,7 @@ def zrender(R,cam,layers,lights=(),fov=70,fog_start=4,fog_end=24,ambient=0.06,sh
             x0=max(0,int(math.floor(sx.min()))); x1=min(W,int(math.ceil(sx.max()))+1)
             y0=max(0,int(math.floor(sy.min()))); y1=min(H,int(math.ceil(sy.max()))+1)
             if x0>=x1 or y0>=y1: continue
-            iz=np.array([1.0/(Z-(0.08 if q['emit'] else 0.0)) if Z>0.12 else 1.0/Z for (X,Y,Z) in out])*lb
+            iz=np.array([1.0/(Z-(0.08 if q['emit'] and not q.get('nobias') else 0.0)) if Z>0.12 else 1.0/Z for (X,Y,Z) in out])*lb
             # colour (identical to engine.Renderer)
             wc,nrm=q['c'],q['n']
             if q['emit']: col=np.array(q['col'],float)
