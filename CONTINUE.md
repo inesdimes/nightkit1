@@ -249,4 +249,5 @@ Next: Enes's rewritten stories (tutorial_guy / pots) or a new brief; build the c
   -> `renders/forget_potion/what_if_every_healing_potion_made_someone_forget_you_betul_43s.mp4` (43.1 s, -14.1 LUFS)
 - Fix: `own_prep.py` skipped all speech of takes without the record-button click + digital silence (her phone); now the click is
   skipped only when digital zeros follow in the first half. Enes's takes give identical results.
-- DT 06 subtitle split set by hand to the 1.25 s pause (auto split was 0.26 s). Waiting for Enes: which version to post.
+- DT 06 subtitle split set by hand to the 1.25 s pause (auto split was 0.26 s).
+- **Enes chose the Betül versions of both to post** (23 Nov); not posted yet.
