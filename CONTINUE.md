@@ -173,4 +173,9 @@ New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scen
   `renders/last_respawn/last_respawn_full_0001-1392.mp4`. Waiting for: Enes's look OK, his voice takes, then the final render.
   **After the Blender film: make the same film in nightkit** (identical camera / timing / staging, only our graphics) - import the
   track data from `blender/last_respawn.py`.
+- **Later still (Enes: "visual bugs; the story is good but far too many silent parts"):** script v2 = 23 lines (10 new, all
+  placeholder Kokoro; `SCRIPT` in `blender/last_respawn.py` is the source, the voice sheet is updated), a quiet score bed
+  (pad + heartbeat, ducked under voices, music-free loop boundary) and a camera/staging pass (11 new cuts, every speaker in frame,
+  no camera inside bodies/gears, HUD at the top, shells in a V, emblem above the panel, the 14.6 s wipe no longer flies through
+  the knight). Full preview remuxed; details in `reviews/last_respawn.md`. **Enes now has 23 lines to record, not 13.**
 

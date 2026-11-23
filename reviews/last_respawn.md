@@ -75,3 +75,24 @@ camera moves (crane, orbit) and the depth of the alley.
 - Still open: the look is the blocky puppet look (Enes to OK or ask for changes before the final 1080p render); the shells look
   like copies of the knight in warm light; no visor reflections; the ending framing keeps the goblin small (empty space where
   the knight ran - intended); Enes's 13 voice takes; final 1080x1920 render (~1 h); then the nightkit version.
+
+## 23 Nov 2026 (later) - Enes: "visual bugs, story good, far too many silent parts" -> v2 pass
+- **Silence:** before, 13 lines = 16 s of voice in 58 s, gaps up to 11 s. Now 23 lines (30.4 s of placeholder voice; NEW lines
+  4, 6, 7, 11, 13, 14, 16, 17, 20, 22 in `briefs/last_respawn_voice_sheet.md`). New lines plant the twist ("Empty armour. They follow
+  the bell." / "Then why are they following US?!" is answered by "They remember their commander."), and the ending reach gets a
+  whispered "Knight...?". Plus a quiet score bed (string-like pad, chord per beat, heartbeat that speeds up 36-47.5 s, ducked 6 dB
+  under every line; a thin high chord alone in the alley 52.4-56.9, gone before the arrow so the loop boundary stays music-free).
+  Measured: the longest stretch under -30 dBFS between 8 and 52 s is now 1.5 s (was 6 s); full mix -22.6 dBFS RMS, -1.5 peak;
+  loop boundary sample jump 0.0000.
+- **Visual bugs found on a 0.5 s contact sheet and fixed:** goblin held further out of the knight's chest; HUD moved to the top
+  (was over the heads); camera shifted right behind them at 5-8 s (knight was cut by the edge), darker cape; the B1 -> chamber wipe
+  cut moved to 14.62 s (the camera used to fly through the knight's body, flashing interiors 14.67-14.96 s); the Bellwright side-on
+  beside the gear while he speaks (was hidden behind it); "Take mine!" / "You gave yours" / "Gave what?" as medium shots + reverse
+  shots (was a 4 s static wide with a tiny knight); the 27.5 s empty frame (wall only) gone; shells walk in as a file through the
+  gap (they used to walk through the wall) and kneel in a V, shot from above the knight's shoulder (was a jumble); the commander is
+  visible between the kneeling shells; the emblem sits above a bigger panel (it was hidden, and the spark ring peeked out before the
+  reveal); the Bellwright in frame for "Restart it"; no camera through the knight at 36 and 40.5 s or the core gear at 41-44 s;
+  the goblin's head is no longer a blurry blob at 44-47.5 s; a wide shot for the bell + soul (was looking into the bell); the
+  white wash at 51-52 s is 0.5 s shorter. 11 cuts in the middle now (all listed as 'CUT' in `CAM_CH`).
+- Still open: the blocky puppet look; the goblin still overlaps the knight's arm a little while held (1.5-3 s); the 15-16 s shot
+  is the knight's back (tan box) running away; Enes's 23 takes; final render.

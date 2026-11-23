@@ -36,18 +36,50 @@ T_CATCH = 1.5
 T_SNAP = 3.4                           # HUD 1 -> 0
 T_END_RESPAWN = -5.8                   # goblin restored in the alley (u)
 
-# placeholder line starts (film time t). Durations come from tts/lrs/script.json.
-LINES = {'l01': 1.85, 'l02': 3.75, 'l03': 5.9, 'l04': 9.0, 'l05': 16.0, 'l06': 18.6, 'l07': 23.0, 'l08': 26.0,
-         'l09': 31.0, 'l10': 38.5, 'l11': 41.5, 'l12': 45.4, 'l13': T_END - 1.05}
-SPK = {'l01': 'G', 'l02': 'K', 'l03': 'G', 'l04': 'G', 'l05': 'B', 'l06': 'K', 'l07': 'B', 'l08': 'G', 'l09': 'B',
-       'l10': 'B', 'l11': 'G', 'l12': 'K', 'l13': 'G'}
-TEXT = {'l01': 'Not again!', 'l02': 'Who keeps doing that?', 'l03': 'The bell stopped!', 'l04': "And they're coming!",
-        'l05': 'The bell needs one last life!', 'l06': 'Take mine!', 'l07': 'You gave yours years ago.',
-        'l08': "You're hollow?", 'l09': 'They remember their commander.', 'l10': "Restart it, and you're gone.",
-        'l11': 'There has to be another way!', 'l12': 'Then make this one count.', 'l13': 'No... NOT AGAIN!'}
-HILITE = {'l01': ('again!', 'c'), 'l02': ('Who', 'a'), 'l03': ('bell', 'a'), 'l04': ('coming!', 'a'), 'l05': ('life!', 'c'),
-          'l06': ('mine!', 'c'), 'l07': ('years', 'a'), 'l08': ('hollow?', 'c'), 'l09': ('commander.', 'a'),
-          'l10': ('gone.', 'c'), 'l11': ('another', 'a'), 'l12': ('count.', 'c'), 'l13': ('AGAIN!', 'c')}
+# the script (v2, 23 Nov: Enes "too many silent parts" -> 23 lines, no gap over ~3 s except the bell and the wordless reach).
+# (key, start t, speaker, text, highlighted word, colour c=cyan a=amber). Durations come from tts/lrs/script.json.
+SCRIPT = [
+    ('l01', 1.85, 'G', 'Not again!', 'again!', 'c'),
+    ('l02', 3.75, 'K', 'Who keeps doing that?', 'Who', 'a'),
+    ('l03', 5.9, 'G', 'The bell stopped!', 'bell', 'a'),
+    ('l04', 7.1, 'K', 'Then we wake it up.', 'wake', 'a'),
+    ('l05', 9.0, 'G', "And they're coming!", 'coming!', 'a'),
+    ('l06', 10.7, 'K', 'Empty armour. They follow the bell.', 'Empty', 'c'),
+    ('l07', 13.3, 'G', 'Then why are they following US?!', 'US?!', 'a'),
+    ('l08', 16.0, 'B', 'The bell needs one last life!', 'life!', 'c'),
+    ('l09', 18.6, 'K', 'Take mine!', 'mine!', 'c'),
+    ('l10', 20.0, 'B', 'You gave yours years ago.', 'years', 'a'),
+    ('l11', 22.2, 'G', 'Gave what?', 'what?', 'a'),
+    ('l12', 25.4, 'G', "You're hollow?", 'hollow?', 'c'),
+    ('l13', 26.8, 'K', 'For a very long time.', 'long', 'a'),
+    ('l14', 28.75, 'G', 'They followed us here!', 'here!', 'a'),
+    ('l15', 31.0, 'B', 'They remember their commander.', 'commander.', 'a'),
+    ('l16', 33.9, 'B', 'He built this bell. He was its first life.', 'first', 'c'),
+    ('l17', 37.0, 'K', "And I'll be its last.", 'last.', 'c'),
+    ('l18', 38.7, 'B', "Restart it, and you're gone.", 'gone.', 'c'),
+    ('l19', 41.5, 'G', 'There has to be another way!', 'another', 'a'),
+    ('l20', 43.6, 'K', "There isn't.", "isn't.", 'a'),
+    ('l21', 45.4, 'K', 'Then make this one count.', 'count.', 'c'),
+    ('l22', 54.0, 'G', 'Knight...?', 'Knight...?', 'c'),
+    ('l23', T_END - 1.05, 'G', 'No... NOT AGAIN!', 'AGAIN!', 'c'),
+]
+LINES = {k: t for k, t, *_ in SCRIPT}
+SPK = {k: s for k, _, s, *_ in SCRIPT}
+TEXT = {k: x for k, _, _, x, *_ in SCRIPT}
+HILITE = {k: (w, c) for k, _, _, _, w, c in SCRIPT}
+LAST = SCRIPT[-1][0]
+
+
+def lines_of(spk):
+    return [k for k in LINES if SPK[k] == spk]
+
+
+def talking(spk, t, durs):
+    """0..1 mouth / nod amount while one of this speaker's lines plays at film time t."""
+    for k in lines_of(spk):
+        if LINES[k] <= t < LINES[k] + durs.get(k, 0.8):
+            return 0.5 + 0.5 * abs(math.sin(2 * math.pi * 5.5 * (t - LINES[k])))
+    return 0.0
 
 
 def line_durs():
@@ -196,51 +228,78 @@ def cr_at(keys, t):
     return tuple(out)
 
 
-CAM_CH = [   # t, camera xyz, target xyz (chamber-local)
+CAM_CH = [   # t, camera xyz, target xyz (chamber-local). v2 (23 Nov): every speaker in frame, no empty frames, no
+    #          camera through bodies or gears; a CUT wherever the old path whipped across the room.
+    (14.62, 0.1, -10.5, 1.75, 0.0, -5.8, 1.55),     # cut on the frame his torso fills (14.62), never through him
     (15.0, 0.1, -8.7, 1.75, 0.0, -4.0, 1.55),       # knight's back fills the lens, he runs away from us (occlusion reveal)
-    (16.3, -0.9, -5.2, 1.8, -2.4, 0.6, 1.5),        # the Bellwright bracing the slipping gear across the room
+    (15.95, 0.0, -6.3, 1.75, -0.3, -2.3, 1.5),
+    'CUT',                                          # the Bellwright, side-on beside the slipping gear (gear edge-on)
+    (16.0, 0.6, -0.7, 1.85, -2.4, 0.55, 1.5),
+    (16.85, 0.35, -0.9, 1.8, -2.4, 0.55, 1.5),
+    'CUT',
     (16.9, -2.3, -2.7, 1.75, -0.4, -2.4, 1.6),
     (17.5, -0.9, 0.4, 1.7, -0.45, -2.5, 1.7),       # front: the sword knocks the falling hook away from the goblin
-    (19.6, -3.7, 2.5, 2.25, 0.6, -0.6, 1.5),        # over the Bellwright's shoulder: "Take mine!"
-    (21.5, -3.6, 2.4, 2.2, 0.6, -0.6, 1.5),
-    (23.5, -3.4, 2.2, 2.15, 0.6, -0.6, 1.5),        # his arm points at the emblem
+    (18.3, -1.3, 0.5, 1.75, -0.1, -1.6, 1.55),      # "Take mine!": medium shot, he steps up to the Bellwright
+    (19.95, -1.5, 0.35, 1.75, 0.6, -0.6, 1.55),
+    'CUT',                                          # the Bellwright answers (reverse shot from beside the knight)
+    (20.0, -0.4, -0.05, 1.7, -2.4, 0.75, 1.5),
+    (22.1, -0.75, 0.1, 1.65, -2.4, 0.75, 1.5),
+    'CUT',                                          # the goblin: "Gave what?"
+    (22.15, 1.2, -3.6, 1.35, -0.6, -2.8, 0.9),
+    (23.45, 1.4, -2.6, 1.35, -0.6, -1.0, 0.9),
     'CUT',                                          # cut on the knight's turn
     (23.5, -1.3, -2.7, 1.6, 0.6, -0.6, 1.4),
     (24.8, -0.55, -1.95, 1.55, 0.55, -0.6, 1.35),   # push in: the open breastplate
-    (26.2, -1.6, -2.7, 1.5, 0.0, -0.9, 1.25),
-    (28.2, 2.9, -1.5, 1.7, -0.2, -3.6, 1.3),        # the shells arrive at the entrance
-    (29.2, 3.2, -1.2, 1.9, 0.0, -3.4, 0.9),         # they kneel in unison
-    (30.4, 3.0, -2.6, 1.4, -0.4, -3.2, 1.0),
-    (31.0, 3.7, -5.2, 1.3, 0.6, -1.0, 1.5),         # around the end of the line, not through it
-    (31.9, 0.6, -6.1, 1.3, 0.6, -0.6, 1.8),         # low, behind the kneeling shells, up at their commander
-    (33.2, 2.4, -2.9, 2.3, 0.0, 2.8, 1.7),          # the same emblem on the central gear
-    (35.2, 1.6, -2.3, 1.75, 0.6, -0.6, 1.9),
+    (25.6, -0.5, -4.8, 1.5, -0.2, -1.0, 1.15),      # both: the goblin recoils, the knight's open chest
+    (27.35, -0.55, -5.0, 1.5, -0.2, -1.0, 1.2),
+    'CUT',                                          # the shells arrive through the entrance
+    (27.4, 2.6, -1.0, 1.6, 0.0, -6.5, 1.3),
+    (28.4, 2.9, -1.5, 1.7, -0.2, -3.8, 1.2),
+    (28.95, 2.9, -1.6, 1.75, -0.2, -3.8, 1.1),
+    'CUT',                                          # from above the knight's shoulder: they kneel in unison (V formation)
+    (29.0, -0.3, -0.2, 2.5, 0.0, -4.4, 0.5),
+    (30.85, -0.3, -0.3, 2.5, 0.0, -4.4, 0.55),
+    'CUT',                                          # low, behind the kneeling shells, up at their commander
+    (30.9, 0.9, -6.6, 2.3, 0.6, -0.6, 1.6),
+    (32.55, 0.7, -6.4, 2.25, 0.6, -0.6, 1.6),
+    'CUT',                                          # the same emblem on the central gear (above the panel)
+    (32.6, 2.0, -2.2, 2.2, 0.0, 2.8, 3.0),
+    (34.0, 2.3, -2.6, 2.3, 0.0, 2.8, 3.0),
+    (35.2, 1.6, -2.3, 1.75, 0.6, -0.6, 1.9),        # tilt down onto the knight
+    (36.15, 1.5, -2.1, 1.75, 0.6, -0.6, 1.9),
+    'CUT',                                          # the mechanism: the Bellwright opens the panel
+    (36.2, -1.6, -0.6, 1.75, 0.0, 2.4, 1.7),
     (37.0, -1.4, -1.2, 1.75, 0.0, 2.0, 1.6),
-    (39.5, -1.2, -0.4, 1.7, 0.6, 1.9, 1.5),
-    (41.0, 1.25, 3.45, 1.6, 1.1, 1.8, 1.4),         # in front of them, beside the crank: his hand, the goblin's hands on his wrist
-    (43.5, 1.2, 3.35, 1.5, 1.2, 1.8, 1.35),
-    (45.0, 2.8, 0.75, 1.9, 0.9, 1.55, 1.85),        # over the goblin's head onto the visor
-    (47.6, 2.6, 0.2, 1.8, 1.1, 1.7, 1.7),
-    (48.9, 2.9, -0.6, 1.5, 0.5, 1.6, 4.5),          # the bell swings, the soul runs up into it
-    (49.9, 1.2, 2.3, 1.25, 1.75, 1.2, 1.05),        # from where the knight stood: the goblin's face as the light washes over him
+    (39.5, -1.2, -0.4, 1.7, -0.5, 2.0, 1.5),
+    (40.55, -1.0, -0.2, 1.7, -0.4, 2.0, 1.5),
+    'CUT',                                          # beside the crank: his hand, the goblin's hands on his wrist
+    (40.6, 1.95, 3.4, 1.6, 1.1, 1.8, 1.4),
+    (43.5, 2.3, 3.4, 1.95, 0.9, 1.55, 1.7),
+    (45.0, 3.3, 0.4, 2.15, 1.0, 1.6, 1.8),          # over the goblin's head onto the visor
+    (47.6, 3.1, 0.1, 2.1, 1.1, 1.7, 1.7),
+    (48.9, 3.6, -2.6, 1.2, 0.6, 1.2, 3.6),          # wide: the bell swings, the soul runs up into it, the armour falls
+    (49.55, 3.5, -2.4, 1.25, 0.6, 1.2, 3.4),
+    'CUT',                                          # from where the knight stood: the goblin's face as the light washes over him
+    (49.6, 1.25, 2.25, 1.25, 1.75, 1.2, 1.05),
     (52.0, 1.35, 2.0, 1.1, 1.75, 1.2, 1.05),
 ]
 
-KN_POS = [(15.0, 0.05, -7.6), (16.2, -0.3, -2.2), (18.6, -0.3, -2.2), (19.2, 0.6, -0.6), (38.0, 0.6, -0.6), (39.3, 0.9, 1.55)]
+KN_POS = [(14.6, 0.05, -9.4), (15.0, 0.05, -7.6), (16.2, -0.3, -2.2), (18.6, -0.3, -2.2), (19.2, 0.6, -0.6), (38.0, 0.6, -0.6), (39.3, 0.9, 1.55)]
 KN_ROT = [(15.0, 0.0), (18.6, 0.0), (19.0, 1.19), (23.3, 1.19), (24.0, 2.42), (27.6, 2.42), (28.4, math.pi),
           (35.5, math.pi), (36.6, 0.15), (44.2, 0.15), (45.0, -1.96), (46.8, -1.96), (47.2, -1.22)]
-GB_POS = [(15.0, 0.7, -8.3), (16.4, -0.6, -2.95), (22.0, -0.6, -2.95), (23.0, -0.6, -0.95), (25.3, -0.6, -0.95),
+GB_POS = [(14.6, 0.7, -10.1), (15.0, 0.7, -8.3), (16.4, -0.6, -2.95), (22.0, -0.6, -2.95), (23.0, -0.6, -0.95), (25.3, -0.6, -0.95),
           (25.8, -1.0, -1.35), (40.4, -1.0, -1.35), (40.8, 1.9, 0.9), (41.2, 1.65, 2.0), (44.3, 1.65, 2.0), (45.0, 1.75, 1.2)]
 GB_ROT = [(15.0, 0.0), (22.0, 0.0), (23.0, -1.33), (27.6, -1.33), (28.2, -3.14), (36.0, -3.14), (36.6, 0.0),
           (40.3, 0.0), (40.5, -0.75), (41.0, -0.75), (41.3, 1.07), (44.4, 1.07), (45.0, 1.1)]
 BW_POS = [(15.0, -2.4, 0.75), (36.0, -2.4, 0.75), (37.4, -0.7, 2.0)]
-BW_ROT = [(15.0, math.pi), (20.5, math.pi), (21.5, 4.33), (30.8, 4.33), (31.4, 5.50), (38.3, 5.42), (38.7, 4.43)]
-SHELL_X = [-2.4 + 1.2 * i for i in range(5)]
-SHELL_Y = [-3.4 - 0.5 * abs(i - 2) for i in range(5)]
+BW_ROT = [(15.0, math.pi), (19.5, math.pi), (20.3, 4.33), (30.8, 4.33), (31.4, 5.50), (38.3, 5.42), (38.7, 4.43)]
+SHELL_X = [-1.6 + 0.8 * i for i in range(5)]           # V formation: never in a line along the lens
+SHELL_Y = [-3.4 - 0.9 * abs(i - 2) for i in range(5)]
 T_SHELLS_IN, T_SHELLS_STOP, T_KNEEL = 26.0, 28.8, 29.6
 PLATE = [(15.0, 0.0), (24.0, 0.0), (24.8, 1.75), (33.5, 1.75), (34.2, 0.0)]
 SWORD_DRAWN = (16.9, 36.0)
 T_YANK, T_BELL, T_CRUMBLE = 47.5, 47.9, 48.8
+T_WIPE = 14.62                         # B1 -> chamber: the knight's torso fills the lens
 
 # pose keys: (t, blend seconds before t, {joint: (rx, ry, rz)}); joints not named go back to 0
 KN_POSE = [
@@ -296,7 +355,7 @@ BW_POSE = [
     (16.2, 0.3, {'shoulder_L': (1.6, 0, 0), 'shoulder_R': (1.6, 0, 0), 'elbow_L': (0.4, 0, 0), 'elbow_R': (0.4, 0, 0),
                  'torso': (-0.35, 0, 0), 'thigh_L': (0.45, 0, 0), 'knee_L': (-0.3, 0, 0), 'thigh_R': (-0.3, 0, 0),
                  'head': (0, 0, 0.6)}),
-    (20.6, 0.6, {'head': (0, 0, 0)}),
+    (19.9, 0.6, {'head': (0, 0, 0)}),
     (22.4, 0.3, {'shoulder_R': (1.5, -0.1, 0), 'elbow_R': (0.1, 0, 0)}),
     (24.0, 0.5, {'head': (-0.1, 0, 0)}),
     (31.4, 0.4, {'shoulder_R': (1.3, -0.3, 0), 'elbow_R': (0.2, 0, 0)}),
@@ -332,7 +391,7 @@ class Mover:
     """position track + walk phase (distance travelled) for one character, sampled once."""
     def __init__(self, pos, rot, stride):
         self.pos, self.rot, self.stride = pos, rot, stride
-        self.tg = np.arange(15.0, 52.0 + 1e-9, 1 / 96)
+        self.tg = np.arange(14.5, 52.0 + 1e-9, 1 / 96)
         xy = np.array([key_at(pos, t) for t in self.tg])
         d = np.concatenate([[0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))])
         self.dist = d
@@ -500,7 +559,7 @@ def build_audio():
     # ---- middle animatic sfx (coarse)
     m = tl(0.6)
     place(dry, nrm(ff(rng.standard_normal(len(m)), 200, 3000)) * np.hanning(len(m)), 14.5, 0.15, 0.5)   # knight passes the lens
-    place(dry, thud(60, 0.5), 15.0, 0.2, 0.0)              # burst into the chamber
+    place(dry, thud(60, 0.5), T_WIPE, 0.2, 0.0)              # burst into the chamber
     place(dry, clank(760, 0.6), 17.55, 0.22, -0.2)         # sword knocks the hook away
     place(wet, clank(760, 0.6), 17.55, 0.25, -0.2)
     place(dry, clank(240, 0.6) + thud(60, 0.6), 18.2, 0.15, 0.3)    # hook hits the floor
@@ -532,8 +591,54 @@ def build_audio():
     surge = nrm(ff(rng.standard_normal(len(m)), 200, 7000)) * np.minimum(m / 0.4, 1) * (0.4 + 0.6 * m / m[-1])
     place(dry, surge, T_BELL + 0.1, 0.12, 0.0)
 
-    # ---- voices (placeholders): goblin dry, knight metallic resonance, bellwright short stone reverb
+    # ---- score (v2): a low string-like pad + clock pulse, so the film never sits in dead air. Ducked under the voices.
+    #      3.4 (counter hits 0) -> 47.9 (the bell takes over); a lonely high pad 52.4 -> 56.9 (gone before the arrow whistle,
+    #      so the loop boundary stays music-free and seamless).
     durs = line_durs()
+    mus = np.zeros(n)
+    hz = lambda m: 440.0 * 2 ** ((m - 69) / 12)
+    CH_ = [(3.4, [50, 57, 62, 65]), (9.0, [50, 57, 62, 65]), (16.0, [46, 53, 58, 62]), (23.5, [43, 50, 55, 58]),
+           (30.0, [45, 52, 57, 61]), (37.0, [50, 57, 62, 65, 69]), (41.5, [46, 53, 58, 62, 65]), (45.4, [45, 52, 57, 61, 64]),
+           (47.9, [45, 52, 57, 61, 64])]
+
+    def pad(notes, d, bright=1.0):
+        m = tl(d)
+        s = np.zeros(len(m))
+        for nn in notes:
+            f = hz(nn)
+            for det in (-0.12, 0.0, 0.11):                 # three detuned voices per note (ensemble)
+                ph = rng.uniform(0, 6.28)
+                for h, a in ((1, 1.0), (2, 0.35 * bright), (3, 0.18 * bright), (4, 0.08 * bright)):
+                    s += a * np.sin(2 * np.pi * f * (1 + det / 100) * h * m + ph * h)
+        return s * (1 + 0.15 * np.sin(2 * np.pi * 0.23 * m))
+    for (ta, notes), (tb, _) in zip(CH_[:-1], CH_[1:]):
+        d = tb - ta + 1.2                                  # overlap = crossfade
+        s = pad(notes, d, 0.6 + 0.8 * ss(30, 47, ta))
+        env = np.minimum(np.minimum(tl(d) / 1.0, 1), np.clip((d - tl(d)) / 1.2, 0, 1))
+        i = int(ta * SR)
+        mus[i:i + len(s)] += (s * env)[:n - i]
+    swell = np.array([0.55 + 0.45 * ss(3.4, 6.0, x) + 0.5 * ss(36.0, 47.5, x) for x in np.arange(0, T_END, 0.01)])
+    mus *= np.interp(t, np.arange(0, T_END, 0.01), swell)
+    m = tl(4.6)                                            # alone in the alley: one high, thin chord
+    s = pad([74, 77, 81], 4.6, 0.3) * np.minimum(m / 1.2, 1) * np.clip((4.6 - m) / 1.8, 0, 1) * 0.6
+    mus[int(52.4 * SR):int(52.4 * SR) + len(s)] += s
+    mus = nrm(ff(mus, 60, 2400))
+    # pulse: a soft low heartbeat that speeds up towards the yank (37 -> 47.5)
+    tb_ = 9.0
+    while tb_ < 47.5:
+        place(dry, thud(52, 0.4) * (0.5 + 0.5 * ss(30, 47, tb_)), tb_, 0.07 + 0.06 * ss(36, 47, tb_), 0.0)
+        tb_ += lerp(1.0, 0.45, ss(36.0, 47.0, tb_))
+    duck = np.ones(n)
+    for k, t0 in LINES.items():
+        a_, b_ = int((t0 - 0.15) * SR), int((t0 + durs.get(k, 1.0) + 0.2) * SR)
+        duck[max(a_, 0):min(b_, n)] = 0.5
+    duck = np.convolve(duck, np.ones(int(0.12 * SR)) / int(0.12 * SR), 'same')
+    mus *= duck
+    for ch in range(2):
+        dry[ch] += mus * 0.11
+        wet[ch] += mus * 0.035
+
+    # ---- voices (placeholders): goblin dry, knight metallic resonance, bellwright short stone reverb
     for k, t0 in LINES.items():
         f = os.path.join(TTS, 'lrs', k + '.wav')
         if not os.path.exists(f):
@@ -1029,7 +1134,7 @@ if MODE != 'audio':
         bronze_d = M_noise_mix('bronze_dark', (0.17, 0.11, 0.06), (0.1, 0.18, 0.16), 0.65, 0.85, metal=0.75, scale=3, thr=(0.52, 0.68))
         shell_b = M_noise_mix('shell', (0.17, 0.14, 0.11), (0.12, 0.17, 0.16), 0.55, 0.85, metal=0.7, scale=5, thr=(0.4, 0.55))
         shell_d = M_noise_mix('shell_d', (0.11, 0.1, 0.09), (0.09, 0.12, 0.11), 0.6, 0.9, metal=0.6, scale=5)
-        cloth = M('cape', (0.2, 0.2, 0.21), 0.95)
+        cloth = M('cape', (0.07, 0.065, 0.07), 0.95)
         void = M_emit('void', (0, 0, 0), 0.0)
         cyan = M_emit('soul', (0.08, 0.8, 1.0), 6.0)
         cyan_dim = M_emit('soul_dim', (0.08, 0.8, 1.0), 2.0)
@@ -1177,10 +1282,10 @@ if MODE != 'audio':
         obj('ch_yoke', box(4.0, 0.6, 0.6), wood, loc=tuple(cx + Vector((0, 1.5, 11.2))))
         R['ch_g1'] = obj('ch_gear1', gear(2.6, 16, 0.4), bronze_d, loc=tuple(cx + Vector((-4.5, 5.6, 5.0))), rot=(math.radians(90), 0, 0.5))
         R['ch_g2'] = obj('ch_gear2', gear(1.6, 12, 0.4), bronze_d, loc=tuple(cx + Vector((3.8, 5.8, 3.2))), rot=(math.radians(90), 0, -0.4))
-        R['ch_core'] = obj('ch_core', gear(1.1, 12, 0.35), bronze, loc=tuple(cx + Vector((0, 3.0, 1.6))), rot=(math.radians(90), 0, 0))
-        obj('ch_core_emblem', cyl(0.18, 0.05, 4), cyan_dim, loc=tuple(cx + Vector((0, 2.78, 1.6))),
+        R['ch_core'] = obj('ch_core', gear(1.1, 12, 0.35), bronze, loc=tuple(cx + Vector((0, 3.0, 3.3))), rot=(math.radians(90), 0, 0))
+        obj('ch_core_emblem', cyl(0.3, 0.06, 4), cyan_dim, loc=tuple(cx + Vector((0, 2.78, 3.3))),
             rot=(math.radians(90), 0, 0), scl=(0.8, 1.3, 1))
-        R['ch_panel'] = obj('ch_panel', box(1.6, 0.1, 1.4), iron, loc=tuple(cx + Vector((0, 2.6, 1.6))))
+        R['ch_panel'] = obj('ch_panel', box(1.9, 0.1, 1.85), iron, loc=tuple(cx + Vector((0, 2.6, 1.6))))
         R['ch_ring'] = ring = empty('ch_ring', None, tuple(cx + Vector((0, 2.9, 1.6))))
         ring.rotation_euler = (math.radians(90), 0, 0)
         for k in range(12):
@@ -1305,12 +1410,12 @@ if MODE != 'audio':
         R['wash'].hide_render = True
         R['sub'] = text('sub', 0.0165, (0, -0.128, -D), [white, m_cy, m_am], f_sub)
         R['sub_sh'] = text('sub_sh', 0.0165, (0.0008, -0.1288, -D - 0.001), [shade], f_sub)
-        R['hud'] = text('hud', 0.0125, (-0.098, 0.172, -D), [m_am], f_hud, 'LEFT')
-        R['hud_sh'] = text('hud_sh', 0.0125, (-0.0975, 0.1715, -D - 0.001), [shade], f_hud, 'LEFT')
-        R['hud_n'] = text('hud_n', 0.026, (-0.012, 0.172, -D), [m_am, m_red], f_hud, 'LEFT')
-        R['hud_n_sh'] = text('hud_n_sh', 0.026, (-0.0112, 0.1712, -D - 0.001), [shade], f_hud, 'LEFT')
-        R['hud_r'] = text('hud_r', 0.0135, (0, 0.172, -D), [m_cy], f_hud)
-        R['hud_r_sh'] = text('hud_r_sh', 0.0135, (0.0006, 0.1714, -D - 0.001), [shade], f_hud)
+        R['hud'] = text('hud', 0.0125, (-0.098, 0.218, -D), [m_am], f_hud, 'LEFT')
+        R['hud_sh'] = text('hud_sh', 0.0125, (-0.0975, 0.2175, -D - 0.001), [shade], f_hud, 'LEFT')
+        R['hud_n'] = text('hud_n', 0.026, (-0.012, 0.218, -D), [m_am, m_red], f_hud, 'LEFT')
+        R['hud_n_sh'] = text('hud_n_sh', 0.026, (-0.0112, 0.2172, -D - 0.001), [shade], f_hud, 'LEFT')
+        R['hud_r'] = text('hud_r', 0.0135, (0, 0.218, -D), [m_cy], f_hud)
+        R['hud_r_sh'] = text('hud_r_sh', 0.0135, (0.0006, 0.2174, -D - 0.001), [shade], f_hud)
         R['durs'] = line_durs()
 
         # ---------- render ----------
@@ -1358,19 +1463,21 @@ if MODE != 'audio':
             phi = 110 + 150 * o
             h = 1.25 + 0.65 * o + 2.2 * math.sin(math.pi * o)       # crane up and over their heads
             tgt = Vector((0, 0, 0.95)) + ss(5.2, 6.6, u) * Vector((0.35, 6.0, 1.1))
-        pos = ref + Vector((R_ * math.cos(math.radians(phi)), R_ * math.sin(math.radians(phi)), h)) + handheld(u)
+        # behind them: the CAMERA shifts right so the knight is not cut by the edge (the lights stay: x 3.2 is behind the wall)
+        sh = Vector((0.5 * ss(4.8, 6.4, u), 0, 0)) if u >= 0 else Vector((0, 0, 0))
+        pos = ref + sh + Vector((R_ * math.cos(math.radians(phi)), R_ * math.sin(math.radians(phi)), h)) + handheld(u)
         pos.x = max(-2.3, min(2.3, pos.x))            # never inside the alley walls (x = +-3)
-        return pos, ref + tgt, ref
+        return pos, ref + sh + tgt, ref
 
     def hide_all(P, v):
         P.show(v)
 
-    def place_lights(ref, chamber=False):
-        if chamber:
-            ref = Vector(CH) + Vector((0, 0, 0))
-        look(R['key'], ref + Vector((2.7, 4.5, 4.6)), ref + Vector((0, 0, 1.0)))
-        look(R['rim'], ref + Vector((-1.8, -3.2, 3.4)), ref + Vector((0, 0, 1.2)))
-        look(R['fill'], ref + Vector((-2.5, 3.5, 1.5)), ref + Vector((0, 0, 1.0)))
+    def place_lights(ref, flip=0.0):
+        """flip 0: camera on +Y (in front of the runners), 1: camera on -Y. The key stays on the camera side."""
+        sy = 1 - 2 * flip
+        look(R['key'], ref + Vector((2.7, 4.5 * sy, 4.6)), ref + Vector((0, 0, 1.0)))
+        look(R['rim'], ref + Vector((-1.8, -3.2 * sy, 3.4)), ref + Vector((0, 0, 1.2)))
+        look(R['fill'], ref + Vector((-2.5, 3.5 * sy, 1.5)), ref + Vector((0, 0, 1.0)))
 
     def knight_alley(u, K):
         if u < 0:
@@ -1457,7 +1564,7 @@ if MODE != 'audio':
             else:
                 G.show(True)
                 ky = Yk(u)
-                hold_p = Vector((KX - 0.05, ky + 0.5, 0.42))
+                hold_p = Vector((KX - 0.05, ky + 0.72, 0.48))
                 if u < T_CATCH:
                     e = (u - T_RESPAWN) / (T_CATCH - T_RESPAWN)
                     p = hold_p + Vector((0, 0, 2.2 * (1 - e * e)))
@@ -1545,9 +1652,7 @@ if MODE != 'audio':
         # talking mouth
         durs = R['durs']
         t = u if u >= 0 else u + T_END
-        for k in ('l01', 'l03', 'l13'):
-            if LINES[k] <= t < LINES[k] + durs.get(k, 0.6):
-                talk = 0.5 + 0.5 * abs(math.sin(2 * math.pi * 5.5 * (t - LINES[k])))
+        talk = talking('G', t, durs)
         set_face(G, face, talk, face2, fw)
         for ob in A.children:
             ob.hide_render = not show_arrow
@@ -1608,7 +1713,7 @@ if MODE != 'audio':
         rg = add(rg, {'shoulder_R': (1.2, -0.3, 0)}, a)
         rg = blend(rg, {'shoulder_R': (2.3, -0.15, 0), 'elbow_R': (0.1, 0, 0), 'head': (0.3, 0, 0)}, 1 - ss(8.2, 8.8, t))
         G.pose((lerp(0.0, -0.35, e), yc + 0.25 + 0.2 * e, 0), turn, rg)
-        talk = 0.5 + 0.5 * abs(math.sin(2 * math.pi * 5.5 * (t - LINES['l04']))) if LINES['l04'] <= t < LINES['l04'] + 0.7 else 0.0
+        talk = talking('G', t, R['durs'])
         set_face(G, 'terror', talk)
         for i, P in enumerate(S):
             ti = 8.0 + 0.3 * i
@@ -1626,7 +1731,7 @@ if MODE != 'audio':
         knee = Vector((0.3, yc, 1.55))
         tb = tb.lerp(knee, ss(13.7, 14.6, t))
         look(R['cam'], p0.lerp(pb, e), t0.lerp(tb, e))
-        place_lights(Vector((0, yc, 0)))
+        place_lights(Vector((0, yc, 0)), 1.0)
 
     def chamber(t):
         K, G, B, S = R['K'], R['G'], R['B'], R['S']
@@ -1663,18 +1768,15 @@ if MODE != 'audio':
         gdz = -0.15 * bump(17.3, 17.45, 18.2, 18.6, t)
         G.pose(tuple(c + Vector((x, y, 0))), rz, r, gdz)
         f0, f1, w = face_at(t)
-        talk = 0.0
-        for k in ('l08', 'l11'):
-            if LINES[k] <= t < LINES[k] + R['durs'].get(k, 0.8):
-                talk = 0.5 + 0.5 * abs(math.sin(2 * math.pi * 5.5 * (t - LINES[k])))
+        talk = talking('G', t, R['durs'])
         set_face(G, f0, talk, f1, w)
         # --- bellwright
         x, y, rz, ph, sp = MV_B.at(t)
         r = pose_keys_at(BW_POSE, t)
         r = walk_add(r, ph, min(1.0, sp / 2.0))
-        if t < 20.6:                                     # shoving the slipping gear
+        if t < 19.6:                                     # shoving the slipping gear
             r = add(r, {'torso': (0.05 * math.sin(t * 5.0), 0, 0)})
-        for k in ('l05', 'l07', 'l09', 'l10'):
+        for k in lines_of('B'):
             if LINES[k] <= t < LINES[k] + R['durs'].get(k, 1.5):
                 r = add(r, {'head': (0.06 * math.sin(2 * math.pi * 2.5 * (t - LINES[k])), 0, 0)})
         B.pose(tuple(c + Vector((x, y, 0))), rz, r)
@@ -1682,14 +1784,15 @@ if MODE != 'audio':
         for i, P in enumerate(S):
             P.show(t >= T_SHELLS_IN - 0.5)
             e = ss(T_SHELLS_IN, T_SHELLS_STOP, t)
-            p = (SHELL_X[i], lerp(-10.0, SHELL_Y[i], e), 0)
+            e2 = ss(T_SHELLS_IN + 1.0, T_SHELLS_STOP, t)           # a file through the gap, then the V
+            p = (lerp(0.35 * (i - 2), SHELL_X[i], e2), lerp(-9.5 - 0.6 * abs(i - 2), SHELL_Y[i], e), 0)
             k = ss(T_KNEEL - 0.2, T_KNEEL + 0.15, t)
             walk = run_pose((t - T_SHELLS_IN) * 1.6 * 2 * math.pi, 0.5 * (1 - ss(T_SHELLS_STOP - 0.4, T_SHELLS_STOP, t)), 0.3, 0.05)
             kneel = {'thigh_R': (1.5, 0, 0), 'knee_R': (-1.5, 0, 0), 'thigh_L': (-0.2, 0, 0), 'knee_L': (-2.3, 0, 0),
                      'torso': (-0.35, 0, 0), 'head': (-0.4, 0, 0), 'shoulder_R': (0.4, 0, 0)}
             P.pose(tuple(c + Vector(p)), 0.0, blend(walk, kneel, k), -0.5 * k)
         # --- the chamber machinery
-        slip = 0.25 * math.sin(t * 6.0) * (1 - ss(20.4, 21.0, t)) + 0.5 * ss(16.55, 16.7, t) + 0.6 * ss(19.75, 19.9, t)
+        slip = 0.25 * math.sin(t * 6.0) * (1 - ss(19.4, 20.0, t)) + 0.5 * ss(16.55, 16.7, t) + 0.6 * ss(19.75, 19.9, t)
         R['ch_slip'].rotation_euler = (math.radians(90), slip, 0)
         R['lash'].rotation_euler = (0.75 * math.sin(2.4 * t) * math.exp(-max(0.0, t - 15.0) / 6.0), 0.2 * math.sin(1.7 * t), 0)
         hk = R['hook']
@@ -1702,7 +1805,9 @@ if MODE != 'audio':
             e = ss(17.55, 18.2, t)
             hk.location = c + Vector((lerp(-0.7, 1.3, e), lerp(-2.6, -3.4, e), lerp(2.3, 0.12, e) + 0.6 * math.sin(math.pi * e)))
             hk.rotation_euler = (3.0 * e, 1.0 * e, 0)
-        R['ch_panel'].location = c + Vector((-1.8 * ss(37.6, 38.4, t), 2.6, 1.6))
+        R['ch_panel'].location = c + Vector((-2.1 * ss(37.6, 38.4, t), 2.6, 1.6))
+        for ob in R['ch_ring'].children:                 # the ring exists only once the panel opens
+            ob.hide_render = t < 37.65
         yank = -0.35 * bump(T_YANK - 0.05, T_YANK + 0.1, T_YANK + 0.3, T_YANK + 0.8, t)
         R['ch_chain'].location = c + Vector((1.6, 1.8, 6.4 + yank))
         R['ch_handle'].location = c + Vector((1.6, 1.8, 1.85 + yank))
@@ -1746,7 +1851,7 @@ if MODE != 'audio':
     def mid(t):
         hide_fx()
         R['K'].spark.hide_render = False
-        if t < 15.0:
+        if t < T_WIPE:
             for ob in R['soul']:
                 ob.hide_render = True
             R['beam'].hide_render = True
@@ -1760,7 +1865,7 @@ if MODE != 'audio':
         cur = None
         for k, t0 in LINES.items():
             end = t0 + durs.get(k, 0.8) + 0.3
-            if k == 'l13':
+            if k == LAST:
                 end = min(end, T_END - 0.15)
             if t0 - 0.05 <= t < end:
                 cur = k
@@ -1793,8 +1898,8 @@ if MODE != 'audio':
             pop = 1 + 0.6 * bump(T_SNAP, T_SNAP + 0.04, T_SNAP + 0.1, T_SNAP + 0.3, u)
             jit = 0.0025 * math.sin(u * 90) * bump(T_SNAP, T_SNAP + 0.02, T_SNAP + 0.25, T_SNAP + 0.4, u)
             n.scale = ns.scale = (pop, pop, pop)
-            n.location = (-0.012 + jit, 0.172 - 0.006 * (pop - 1), -0.5)
-            ns.location = (-0.0112 + jit, 0.1712 - 0.006 * (pop - 1), -0.501)
+            n.location = (-0.012 + jit, 0.218 - 0.006 * (pop - 1), -0.5)
+            ns.location = (-0.0112 + jit, 0.2172 - 0.006 * (pop - 1), -0.501)
             for i in range(len(n.data.body_format)):
                 n.data.body_format[i].material_index = 1 if zero else 0
         ron = u is not None and -5.4 <= u < -3.4
@@ -1839,11 +1944,11 @@ if MODE != 'audio':
             goblin_alley(u, G)
             pos, tgt, ref = cam_alley(u)
             look(R['cam'], pos, tgt)
-            place_lights(ref)
+            place_lights(ref, ss(4.5, 6.0, u) if u >= 0 else 0.0)
         else:
             mid(t)
         # the light washes over the goblin at the end of the chamber and is still there when he is restored in the alley
-        wf = ss(51.0, 52.0, t) if t < 52.0 else 1 - ss(52.0, 52.3, t)
+        wf = ss(51.5, 52.0, t) if t < 52.0 else 1 - ss(52.0, 52.3, t)
         R['wash'].hide_render = wf < 0.01
         R['wash_fac'].default_value = wf
         subtitles(t)
@@ -1923,5 +2028,5 @@ if MODE != 'audio':
                 sc.render.filepath = os.path.join(d, 'f_%04d.png' % f)
                 bpy.ops.render.render(write_still=True)
         print('RENDER done', d)
-else:
+elif __name__ == '__main__':
     build_audio()
