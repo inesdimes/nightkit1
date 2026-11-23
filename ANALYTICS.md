@@ -224,7 +224,49 @@ Reading (only ~59 viewers, i.e. 3 people stayed; very early):
   first second, and must never show a skip / exit / "loading" style prompt.
 - Re-check at 48 h before concluding; YouTube sometimes tests a new Short on a small random group first.
 
-## 17. Four Phases and Stolen Car, 48 h+ (YouTube Studio desktop, Enes's screenshots, 23 Nov 2026 07:47, "since publish"; folder `analysis 48 hours/`)
+## 17. YouTube vs Instagram, same video (Enes, 22 Nov 2026)
+| Video (22:00 slot) | YouTube views | Instagram views | Instagram likes |
+|---|---|---|---|
+| Why Do Final Bosses Give a Speech Before the Fight? (posted 21 Nov ~22:00) | ~100 | **~2,000** | **~50** (~2.5 % of views) |
+| the earlier 22:00 post (Enes: "74 views") | 74 | - | - |
+
+Reading:
+- The same video gets ~20x more views on Instagram: the content itself is not the problem. On YouTube this video had 95 % swiped in the
+  first minutes (section 16); YouTube's Shorts feed distributes on "stayed to watch", so it stopped showing it.
+- No evidence that YouTube is "telling us to post less": YouTube says it does not penalise posting often, and the drop matches this
+  video's own first-second numbers. Small channel + 2 posts a night may still split the small test audience (sections 14, 16) - a hypothesis.
+- Needed from Instagram for a real comparison: average watch time and the skip rate (Reels insights), plus shares and saves.
+Instagram insights for the speech video (Enes, 22 Nov 16:36, ~18 h after posting):
+| Views | Viewers | Avg watch | Follows | Skip rate | Curve |
+|---|---|---|---|---|---|
+| 1,816 | 1,273 | 18 s of ~41 s (~44 %) | +1 | **26.8 %** ("lower than usual") | ~1.8 K within the first hours, then flat; ~2.6x a typical Reel of this account at 1 day |
+- Instagram's skip rate (swiped in the first seconds) was 26.8 %; YouTube's first sample swiped 95 % (only 59 viewers, section 16).
+  Same frame 0, very different reaction: the frame-0 hypothesis is weaker than it looked; the YouTube sample was tiny. Wait for its 48 h numbers.
+- Instagram is currently the better platform for these videos. KPI per Reel from now on: skip rate (target < 30 %) and avg watch %.
+
+## 18. YouTube channel audience, last 28 days (Enes's screenshots, 22 Nov 2026)
+- **Location (views):** US 24.3 %, Türkiye 15.4 %, Indonesia 4.5 %.
+- **Age:** 13-17 17.3 %, 18-24 16.3 %, **25-34 37.8 %**, 35-44 21.1 %, 45-54 6.7 %, 55-64 0.8 %. **Gender:** male 80.8 %, female 19.2 %.
+- **Device (watch time):** phone 75.9 %, computer 9.1 %, tablet 7.7 %, TV 7.2 %.
+- **Subtitle language:** none 91.5 %, English 1.7 % (our subtitles are burned in, so this only means the YouTube CC track is unused).
+- **When viewers are on YouTube (TR time):** strongest **18:00-01:00**, brightest on **Saturday and Sunday evenings (18:00-24:00)**;
+  weakest ~05:00-12:00.
+Reading:
+- Correction to an earlier assumption: the audience is mostly **25-34**, not 13-17, so "US teens are in school at 22:00 TR" is a weak argument.
+- 22:00 TR sits inside the active window; 23:00-23:30 adds the US East afternoon (15:00-15:30) while Europe is still in its evening.
+  02:00 TR is at the edge of the active band; ~01:00 is safer. Best videos -> Saturday/Sunday evenings.
+- Türkiye is 15 % of views: the channel is already mostly foreign; keep everything English (titles, captions, hashtags).
+
+## 19. TikTok viewers, last 7 days (Enes's screenshots, 22 Nov 2026)
+- **Locations:** **Türkiye 81.9 %**, Malaysia 3.4 %, Philippines 1.1 %, Azerbaijan 0.9 %, Serbia 0.9 %.
+- **Most active:** Monday 18:00-19:00; daily curve low 02:00-07:00, plateau 12:00-23:00, highest 18:00-21:00 (device time, TR).
+- **Creators your viewers also watched:** Typical Gamer, PUBG Mobile, GothamChess, Mobile Legends -> a gaming audience (fits the niche).
+Reading:
+- TikTok distributes mostly inside the uploader's country: 82 % Türkiye even with English videos. Posting time alone will not move it
+  to Europe/US. YouTube is the platform that already reaches abroad (US 24 %, TR 15 %, section 18).
+- Instagram shows no country split for these Reels (Instagram usually needs enough followers/reach before it shows audience demographics).
+
+## 20. Four Phases and Stolen Car, 48 h+ (YouTube Studio desktop, Enes's screenshots, 23 Nov 2026 07:47, "since publish"; folder `analysis 48 hours/`)
 | Video | Posted (TR) | Views | Last-48 h views | Watch time | Stayed / swiped | Likes | Subs | Source | YouTube's verdict |
 |---|---|---|---|---|---|---|---|---|---|
 | Why Do Final Bosses Always Have Three Phases? (31 s) | 21 Nov 02:00 | **1.1 K** | 798 | 3.0 h | **34.0 %** / 66.0 % | 13 | 0 | Shorts feed (almost all) | inside the "normal performance" band |

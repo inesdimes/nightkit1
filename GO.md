@@ -1,14 +1,41 @@
-# GO - the current tasks for the PC session (read this when Enes says "GO.md")
-Updated 23 Nov 2026 by Claude (PC). DAY 3 of the 14-day test. Day-2 fixes from 21 Nov are done (see CONTINUE.md "Day 2").
+# GO - read this when Enes says "GO.md"
 
-Start: `git pull`, read `briefs/SERIES_14_DAYS.md` (**Format 3.0** + Tone 2.0), `othercreators/RAPOR.md` section 4 Aşama A, `ANALYTICS.md` sections 16-17.
+## What changed in the cloud session (21-22 Nov 2026) - read these before any new video
+1. **Posting rules** (`briefs/SERIES_14_DAYS.md`, "Posting rules"): target Europe + America, YouTube is the main platform;
+   1st video 22:30-23:30 TR, 2nd ~01:00 TR, best videos on weekend evenings, all scheduled. Data: `ANALYTICS.md` sections 16-19.
+2. **Frame 0 rule** (series plan, Tone 2.0): readable at a glance, moving in the first second, never a skip/exit/loading prompt
+   (the speech video had "PRESS X TO SKIP" in frame 0 and 95 % swiped on YouTube's first sample).
+3. **Voice**: same pace as four_phases (speed 1.22, short pauses); depth comes from story and picture, not a slow voice.
+4. **Sound**: never a per-sample random gate `rng.random(n) < p` (that was the day-1 crackle). Use `nightkit.audio.soft_fire()` for fire.
+5. **ONE TAKE** (`briefs/STYLE_one_take.md`, `examples/onetake/`): an optional extra system (one continuous take, the camera breathes
+   with the story). It does not replace the main look. Tool: `tools/qa/look_metrics.py`.
+6. **Research kit** (`research/README.md`): `tools/llm/gemini.py --youtube <link>` + `research/hook_template.txt` to analyse reference Shorts with Gemini.
+7. `vocal/` is in `.gitignore`: Enes's raw recordings are never committed.
 
-1. **22:00 slot, ~42 s:** `briefs/tutorial_guy.md` - Why does the tutorial guy never come with you?
-2. **02:00 slot, ~32 s:** `briefs/pots.md` - Why do heroes smash every pot?
-FORMAT 3.0 (Enes, 23 Nov): constant camera, subject always in the middle third, group framing when helpers enter (build `follow_group()` first), a character card per character, several voices (narrator = Enes timbre via VC; characters = other Kokoro voices, raw), FINISHED video sped up 1.2x afterwards (Format 3.0 item 5), look = 270x480 + depth outline default (item 7, port `outline()` from one_gold_potion.py into the engine), two voice versions: AI now + Enes's own recordings later (`briefs/ENES_VOICE_SCRIPTS.md`, `build own`). Test every character voice on 2 lines before the full build.
-Narrator voice: same chain as four_phases (`tools/tts/fp.py` S=1.22, pauses 0-0.15 s, ~0.3 s between lines, Kokoro bm_george -> ChatterboxVC). Copy `tools/tts/nw.py` / `vc.py <name>` as the template.
-Frame 0: subject >= 50 % of frame height, moving in the first second, no skip/exit prompt. One accent colour, one HUD counter, last frame = frame 0 composition.
-No-stop rule: never wait for Enes. All QA (script_lint, scene_qa, critique >= 8, check.py). Render to renders\tutorial_guy\ and renders\pots\. Captions in captions/<name>.md.
-Update CONTINUE.md, commit and push at the end.
+## Current task - THE LAST RESPAWN (Blender, phases 1-3, then STOP)
+1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/last_respawn.md` FIRST (it overrides parts of `briefs/last_respawn_gpt.md`), then the GPT brief.
+2. Use **Opus** for this task (new world, new rigs). Blender 5.3 per CLAUDE.md; characters are rigid-part puppets keyframed from Python.
+3. Run phase 1 (blockout + frame-0 still), phase 2 (hook test 00:00-00:08, preview quality, placeholder voices) and phase 3
+   (loop test 00:52-00:58 + 00:00-00:03 joined). Then STOP and give Enes the two preview MP4s + the frame-0 still + an honest note
+   on how long the full film would take in Blender.
+4. Commit scripts (not renders) and push. Enes's raw voice takes live in `vocal/last_respawn/` (gitignored); do not wait for them in phases 1-3.
 
-Note: the queue item "Legendary Sword Only 50 Gold" was moved out of day 3 - it repeats the one_gold_potion story (shopkeeper, 50 gold, "last hero"). Rework it before use.
+## Day 3 (PC session, 23 Nov 2026) - rejected
+tutorial_guy + pots were built in Format 3.0 and rejected by Enes (stories had no emotion + bugs); renders deleted, stories to be rewritten (CONTINUE.md).
+Format 3.0 (constant camera, follow_group, multi-voice, 1.2x, 270x480 + outline) stays the default: `briefs/SERIES_14_DAYS.md`. Four Phases / Stolen Car 48 h numbers: `ANALYTICS.md` section 20.
+
+## Earlier task (One Take mimic final render) - still open, lower priority
+Updated by the cloud session, 22 Nov 2026. ONE TAKE: final render of the mimic story (Enes liked the system and the camera moves).
+
+ONE TAKE is an optional extra system, separate from the main Insert Disc 2 look: one continuous take whose camera pulls back and
+pushes in with the story, a big bright hero object, counters/tags, the end loops into the start. Rules: `briefs/STYLE_one_take.md`.
+
+1. `git pull origin ccr-91720a78-gihjic`.
+2. Voice: replace the placeholder lines in `$TTS_DIR/mmx/` (keys 1-7, text in `tools/onetake/voice_mimic.py`) with Enes's voice
+   (his own recording via `tools/tts/own_prep.py`, or the Kokoro -> ChatterboxVC chain, four_phases pace). Re-time `M.LINES` in
+   `examples/onetake/mimic_v2.py` to the new durations (keep the camera keys in step with the lines).
+3. Fix the known visual bugs: the knight's armour blows out to white in the close-ups (lower the key light on him / the bloom);
+   the coin must read clearly (bigger, glint, a beat longer); the time-lapse heroes a little bigger in frame; the chest interior
+   not over-lit; aim for `python tools/qa/look_metrics.py` motion >= 3 (more teeth / gold / particle motion), keep brightness >= 50, contrast >= 35.
+4. Render with `PART=a:b` in parallel + `PART=audio`, mux, `python tools/qa/check.py` must pass. Output: renders\one_take_mimic\.
+5. No-stop rule: never wait for Enes. End: MP4 path + look_metrics numbers; update CONTINUE.md; commit and **push**.

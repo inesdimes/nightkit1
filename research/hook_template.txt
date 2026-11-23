@@ -1,0 +1,12 @@
+You are analysing a YouTube Short for a small channel that makes PS1-style "Why do <game trope>?" story shorts.
+Answer in English, short bullet points, exactly these headings:
+1. Channel + title + length (s).
+2. Frame 0: what is on screen in the very first frame (subject, size in frame, brightness, motion yes/no, any text).
+3. Hook: the exact first sentence (spoken or on-screen) and when the first visual change happens (s).
+4. First 3 seconds: what makes a viewer stay? (question, paradox, motion, sound, number...)
+5. Structure: list the beats with timestamps (setup / escalation / twist / payoff / loop?).
+6. Pace: cuts per 10 s, how often something new appears, voice words per second, silences.
+7. Picture: style, camera (cuts or one continuous move), colour/brightness, on-screen text style, counters or labels.
+8. Sound: voice type, music, sound effects.
+9. Ending: does it loop into the start? last line?
+10. Three things our channel should copy, and one thing to avoid.

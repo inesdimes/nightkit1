@@ -93,7 +93,7 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - Brief `briefs/stolen_car.md`, captions `captions/stolen_car.md` (game name only as one hashtag in the description: Enes's decision). PC task in `GO.md`.
 
 ## 14-day single-format test (from 21 Nov 2026)
-- Plan, posting rules and the topic queue: `briefs/SERIES_14_DAYS.md`. Two "Why do <game trope>?" videos a day: 22:00 TR (~60 s story) and 02:00 TR (~30 s). Day 1 = `briefs/skip_speech.md` + `briefs/enemies_queue.md` (GO.md).
+- Plan, posting rules and the topic queue: `briefs/SERIES_14_DAYS.md`. Two "Why do <game trope>?" videos a day, scheduled: 22:30-23:30 TR (~60 s story) and ~01:00 TR (~30 s); best videos on weekend evenings; YouTube is the main platform (posting rules in the series plan). Day 1 = `briefs/skip_speech.md` + `briefs/enemies_queue.md` (GO.md).
 - **Day 1 built on the PC, 21 Nov (no-stop run)** - both MP4s in the video table. Voice option 1 for both (Kokoro bm_george -> ChatterboxVC -> Enes timbre); new generic `tools/tts/vc.py <name...>` replaces the per-video `*_vc.py` copies; `ss.py` has reusable `src()` / `build()` (`eq.py` imports them; the mixed-sample-rate fix from sc.py is built in). All lines pass `sc_check.py` (pitch +3..+14 % of the reference, no clipping). **Enes must listen.**
 - skip_speech: 40.5 s, not the brief's ~32 s (97 words + skip montage + an 11-minute time-lapse; the slot allows 40-60 s). Weak spots: the locked boss has no mouth, so "speaking" is gestures + a filtered murmur; the over-the-shoulder gate shots show the boss's back + cape on the right third; the heroes are the same knight recoloured (orange / green / purple / blue).
 - enemies_queue: 29.2 s. Set = the loot_restocker hallway (the brief allowed hall or arena; the last10 hall needs `tts/l10`, not on this PC). Frame 0 shows #47's face + the ticket "47"; the fight at the front is revealed by a camera swing at 0.9-1.9 s (not in frame 0 as the brief said). Font has no '&': the menu says SAVE AND QUIT. Two silent gaps found by `check.py` (15.5 s after the quit, 26.5 s after the last hit) were filled with a low pause hum + torch crackle and a short "defeated" jingle.
@@ -107,6 +107,9 @@ Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions
 - Voice for both (re-done 21 Nov per GO.md, four_phases pace): Kokoro bm_george speed 1.22, pauses 0-0.15 s inside a line, ~0.3 s between lines (was 1.0 / 0.45 s) -> ChatterboxVC -> Enes timbre; `sc_check.py` all lines ok (pitch +5..+11 %). **Enes must listen.**
 - Sound: new `nightkit.audio.soft_fire()` (day-1 crackle fix) is used in mimic only; npc_well has no fire. Jumps > 6x local level: mimic 379, npc_well 478 (planned SFX; no per-sample gate anywhere).
 - Weak spots: see `reviews/npc_well.md` and `reviews/mimic.md` (limbs + contacts scored 7 in both: the ring hand-over and the montage hands in mimic (kneel pose and opening brightness fixed in round 3); the old man glides instead of walking; mimic's quiet stretch is gone (longest voice gap 1.2 s, npc_well 0.8 s). Mimic picture fixes done: big pointed teeth + dark red mouth + tongue, frame 0 lid open a crack with breathing and a tooth glint, the tongue rises when calm so the coin sits visibly on it with a steady glint).
+
+## ONE TAKE (optional extra system, 22 Nov 2026)
+- Named by Enes. One continuous take, the camera breathes with the story, bright hero object, counters, loops. Rules `briefs/STYLE_one_take.md`, test `examples/onetake/mimic_v2.py` (26 s), tool `tools/qa/look_metrics.py`. PC final render: GO.md.
 
 ## Next steps
 Cancelled by Enes (20 Nov 2026): the old list (48 h stats, Loot Restocker caption, Guard Forgets B decision) is dropped.
