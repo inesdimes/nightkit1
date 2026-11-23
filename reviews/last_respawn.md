@@ -103,7 +103,7 @@ takes arrive: replace `tts/lrs/*.wav`, re-time `SCRIPT`, `python blender/last_re
 - **Mastered sound** `renders/last_respawn/audio/final.wav`: BS.1770 loudness in numpy + 4x-oversampled look-ahead limiter
   (`master()` in the script, gain curves on a circularly padded signal): -14.2 LUFS (ffmpeg ebur128 agrees), -1.6 dBTP,
   loop boundary jump 0.0000.
-- **Blender final** `renders/last_respawn/last_respawn_final_1080x1920.mp4`: 1080x1920, EEVEE 64 samples, two processes (~3 s/frame).
+- **Blender final** `renders/last_respawn/last_respawn_final_1080x1920.mp4`: 1080x1920, EEVEE 64 samples, two processes (~3 s/frame), ~50 min; muxed with ffmpeg (now on PATH via winget). `tools/qa/check.py`: 10/11 PASS (1392 frames, -14.2 LUFS, -1.6 dBTP, no silence / black / frozen), WARN frame pops = the planned cuts + respawn flash. Loop picture diff 1392 -> 1 = 12.0 (the accepted knight pop).
 - **nightkit version** `renders/last_respawn/last_respawn_nightkit_1080x1920.mp4` (`examples/last_respawn_nk.py`): Blender exports
   per frame the camera, every part's world matrix and the lights (`MODE=export`); nightkit draws it with zraster (flat shading,
   two-tone faces instead of noise textures, depth outline, PS1 dither, 270x480 x4), block-font speaker-coloured subtitles and
