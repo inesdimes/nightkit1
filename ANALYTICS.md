@@ -223,3 +223,25 @@ Reading (only ~59 viewers, i.e. 3 people stayed; very early):
 - Lesson for every next video: frame 0 must read at a glance (clear silhouette, bright enough, a face or an action), must move in the
   first second, and must never show a skip / exit / "loading" style prompt.
 - Re-check at 48 h before concluding; YouTube sometimes tests a new Short on a small random group first.
+
+## 17. Four Phases and Stolen Car, 48 h+ (YouTube Studio desktop, Enes's screenshots, 23 Nov 2026 07:47, "since publish"; folder `analysis 48 hours/`)
+| Video | Posted (TR) | Views | Last-48 h views | Watch time | Stayed / swiped | Likes | Subs | Source | YouTube's verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| Why Do Final Bosses Always Have Three Phases? (31 s) | 21 Nov 02:00 | **1.1 K** | 798 | 3.0 h | **34.0 %** / 66.0 % | 13 | 0 | Shorts feed (almost all) | inside the "normal performance" band |
+| What Happens to the Guy Whose Car You Steal? (33 s, #GTA6 in the description) | 20 Nov 23:00 | **74** | **1** | 0.0 h | **6.4 %** / 93.6 % | 0 | 0 | YouTube search 1 (last 48 h) | "1.0 K below normal" |
+
+Retention (four_phases): starts ~140 % (rewatch of the first seconds), falls to ~50 % by ~0:10, ~35-40 % at 0:30. The views graph is flat at ~330 for about a day, then a second push to 1.1 K (the same pattern as Final Boss A / B).
+The car video never got a second push: the graph is flat from the first hours.
+(The right-hand column of the four_phases screenshot is cropped: country / traffic detail not visible.)
+
+Reading (observations, not rules):
+- Four Phases passes the pool (1.1 K, second push) but only 34 % stay; Final Boss A (dark story, the hero becomes the next prisoner) kept 64 % and got 3.0 K. A comedy-trope video lands at about the channel's normal; a story with a human twist lands far above it. This supports Tone 2.0 (briefs/SERIES_14_DAYS.md).
+- Stolen Car is the weakest video of the channel by stayed % (6.4 %) and views. Three possible causes, not separable with one video: (1) not a "Why do <trope>" title; (2) #GTA6 attracts viewers who expect that game and swipe; (3) the 1 s cold open of the ending. The test queue already drops the trend hashtag and keeps the "Why Do ..." title.
+- Both videos were posted in the 23:00 / 02:00 pair 3 h apart; the 20 Nov 23:00 slot was the weaker one (as on 16 Nov, the later post recovered, the earlier one did not).
+
+At most 3 changes for the next videos (all already in the day-3 briefs):
+1. Keep Tone 2.0 stories with one human truth and a quiet last line; no pure gags.
+2. Frame 0: subject >= 50 % of frame height, moving in the first second (RAPOR Aşama A), one accent colour, one HUD counter, last frame = frame 0.
+3. "Why Do <trope>?" titles only, no trend hashtag.
+
+Still missing: 48 h screenshots of day 1 (skip_speech posted 21 Nov 22:00 -> due 23 Nov 22:00; enemies_queue 22 Nov 02:00 -> due 24 Nov 02:00) and day 2 (npc_well, mimic).

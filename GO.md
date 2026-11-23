@@ -1,14 +1,13 @@
 # GO - the current tasks for the PC session (read this when Enes says "GO.md")
-Updated by the cloud session, 21 Nov 2026. Day 2 FIXES (Enes: the mimic story is too slow and he did not like its voice).
+Updated 23 Nov 2026 by Claude (PC). DAY 3 of the 14-day test. Day-2 fixes from 21 Nov are done (see CONTINUE.md "Day 2").
 
-Cause: the day-2 voices (`tools/tts/mm.py`, `tools/tts/nw.py`) use speed 1.0 and 0.45 s pauses ("Tone 2.0: calm, slow").
-The voice Enes liked is four_phases (`tools/tts/fp.py`): speed 1.22, pauses 0-0.15 s. Tone 2.0 is now corrected in briefs/SERIES_14_DAYS.md.
+Start: `git pull`, read `briefs/SERIES_14_DAYS.md` (Tone 2.0 + frame 0 lesson), `othercreators/RAPOR.md` section 4 Aşama A, `ANALYTICS.md` sections 16-17.
 
-1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/SERIES_14_DAYS.md` (Tone 2.0, voice bullet) and `reviews/mimic_review.md`.
-2. Voice for BOTH day-2 videos (mimic and npc_well): same settings as fp.py (S=1.22, pauses inside a line 0-0.15 s, the same pitch trim),
-   ~0.3 s between lines, same Kokoro bm_george -> ChatterboxVC chain. Re-time every picture cue to the new sentence timings.
-   The videos get shorter; that is wanted (mimic ~22-25 s, npc_well ~40-45 s). No quiet stretch over ~1 s (mimic 14.5-16.7 s goes).
-3. Mimic picture fixes (reviews/mimic_review.md): the coin clearly visible inside the chest with a glint, held on "He left a coin";
-   teeth bigger and pointed with a dark mouth inside the lid (+ tongue) so the bite reads; frame 0: lid open a crack, teeth glint, a slow breath.
-4. No-stop rule: never wait for Enes. All QA (scene_qa, critique >= 8, check.py, no jumps > 6x local level from noise).
-5. Overwrite renders\mimic\ and renders\npc_well\; update CONTINUE.md; commit and **push**.
+1. **22:00 slot, ~42 s:** `briefs/tutorial_guy.md` - Why does the tutorial guy never come with you?
+2. **02:00 slot, ~32 s:** `briefs/pots.md` - Why do heroes smash every pot?
+Voice for both: same chain as four_phases (`tools/tts/fp.py` S=1.22, pauses 0-0.15 s, ~0.3 s between lines, Kokoro bm_george -> ChatterboxVC). Copy `tools/tts/nw.py` / `vc.py <name>` as the template.
+Frame 0: subject >= 50 % of frame height, moving in the first second, no skip/exit prompt. One accent colour, one HUD counter, last frame = frame 0 composition.
+No-stop rule: never wait for Enes. All QA (script_lint, scene_qa, critique >= 8, check.py). Render to renders\tutorial_guy\ and renders\pots\. Captions in captions/<name>.md.
+Update CONTINUE.md, commit and push at the end.
+
+Note: the queue item "Legendary Sword Only 50 Gold" was moved out of day 3 - it repeats the one_gold_potion story (shopkeeper, 50 gold, "last hero"). Rework it before use.
