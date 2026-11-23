@@ -38,7 +38,7 @@ T_END_RESPAWN = -5.8                   # goblin restored in the alley (u)
 
 # placeholder line starts (film time t). Durations come from tts/lrs/script.json.
 LINES = {'l01': 1.85, 'l02': 3.75, 'l03': 5.9, 'l04': 9.0, 'l05': 16.0, 'l06': 18.6, 'l07': 23.0, 'l08': 26.0,
-         'l09': 31.0, 'l10': 38.5, 'l11': 41.5, 'l12': 46.0, 'l13': T_END - 1.05}
+         'l09': 31.0, 'l10': 38.5, 'l11': 41.5, 'l12': 45.4, 'l13': T_END - 1.05}
 SPK = {'l01': 'G', 'l02': 'K', 'l03': 'G', 'l04': 'G', 'l05': 'B', 'l06': 'K', 'l07': 'B', 'l08': 'G', 'l09': 'B',
        'l10': 'B', 'l11': 'G', 'l12': 'K', 'l13': 'G'}
 TEXT = {'l01': 'Not again!', 'l02': 'Who keeps doing that?', 'l03': 'The bell stopped!', 'l04': "And they're coming!",
@@ -144,6 +144,211 @@ def b1_center(t):
     xs = np.linspace(8.0, t, 200) if t > 8 else np.array([8.0, 8.0])
     d = float(np.trapezoid([sp(x) for x in xs], xs)) if hasattr(np, 'trapezoid') else float(np.trapz([sp(x) for x in xs], xs))
     return Yk(8.0) - d, sp(t)
+
+
+# ======================================================================================
+#  THE MIDDLE (15-52 s, bell chamber) - pure data, shared with the future nightkit version
+#  Chamber-local coordinates (metres): entrance gap at y = -8, bell above (0, 1.5), mechanism at (0, 2.6..3.0),
+#  crank (0.9, 2.55), chain handle (1.6, 1.8, 1.9), slipping gear (-2.4, -0.2, 1.6), axis along y.
+#  Every track is a list of keys; values between keys are smoothstep-eased, held before the first / after the last key.
+# ======================================================================================
+def key_at(keys, t):
+    """keys = [(t, v0, v1, ...)]: eased piecewise interpolation, returns a tuple."""
+    if t <= keys[0][0]:
+        return tuple(keys[0][1:])
+    for a, b in zip(keys[:-1], keys[1:]):
+        if t < b[0]:
+            w = ss(a[0], b[0], t)
+            return tuple(x + (y - x) * w for x, y in zip(a[1:], b[1:]))
+    return tuple(keys[-1][1:])
+
+
+def cr_at(keys, t):
+    """Catmull-Rom through camera keys (t, x, y, z, tx, ty, tz): the camera never stops inside the chamber.
+    'CUT' entries split the list into separate shots."""
+    segs, cur = [], []
+    for k in keys:
+        if k == 'CUT':
+            segs.append(cur)
+            cur = []
+        else:
+            cur.append(k)
+    segs.append(cur)
+    if len(segs) > 1:
+        seg = segs[0]
+        for sg in segs[1:]:
+            if t >= sg[0][0]:
+                seg = sg
+        keys = seg
+    if t <= keys[0][0]:
+        return tuple(keys[0][1:])
+    if t >= keys[-1][0]:
+        return tuple(keys[-1][1:])
+    i = max(j for j in range(len(keys) - 1) if keys[j][0] <= t)
+    p0, p1, p2 = keys[max(i - 1, 0)], keys[i], keys[i + 1]
+    p3 = keys[min(i + 2, len(keys) - 1)]
+    s = (t - p1[0]) / (p2[0] - p1[0])
+    s = 0.15 * s + 0.85 * s * s * (3 - 2 * s)          # mostly eased, never fully stopped
+    out = []
+    for k in range(1, 7):
+        a, b, c, d = p0[k], p1[k], p2[k], p3[k]
+        out.append(0.5 * (2 * b + (-a + c) * s + (2 * a - 5 * b + 4 * c - d) * s * s + (-a + 3 * b - 3 * c + d) * s ** 3))
+    return tuple(out)
+
+
+CAM_CH = [   # t, camera xyz, target xyz (chamber-local)
+    (15.0, 0.1, -8.7, 1.75, 0.0, -4.0, 1.55),       # knight's back fills the lens, he runs away from us (occlusion reveal)
+    (16.3, -0.9, -5.2, 1.8, -2.4, 0.6, 1.5),        # the Bellwright bracing the slipping gear across the room
+    (16.9, -2.3, -2.7, 1.75, -0.4, -2.4, 1.6),
+    (17.5, -0.9, 0.4, 1.7, -0.45, -2.5, 1.7),       # front: the sword knocks the falling hook away from the goblin
+    (19.6, -3.7, 2.5, 2.25, 0.6, -0.6, 1.5),        # over the Bellwright's shoulder: "Take mine!"
+    (21.5, -3.6, 2.4, 2.2, 0.6, -0.6, 1.5),
+    (23.5, -3.4, 2.2, 2.15, 0.6, -0.6, 1.5),        # his arm points at the emblem
+    'CUT',                                          # cut on the knight's turn
+    (23.5, -1.3, -2.7, 1.6, 0.6, -0.6, 1.4),
+    (24.8, -0.55, -1.95, 1.55, 0.55, -0.6, 1.35),   # push in: the open breastplate
+    (26.2, -1.6, -2.7, 1.5, 0.0, -0.9, 1.25),
+    (28.2, 2.9, -1.5, 1.7, -0.2, -3.6, 1.3),        # the shells arrive at the entrance
+    (29.2, 3.2, -1.2, 1.9, 0.0, -3.4, 0.9),         # they kneel in unison
+    (30.4, 3.0, -2.6, 1.4, -0.4, -3.2, 1.0),
+    (31.0, 3.7, -5.2, 1.3, 0.6, -1.0, 1.5),         # around the end of the line, not through it
+    (31.9, 0.6, -6.1, 1.3, 0.6, -0.6, 1.8),         # low, behind the kneeling shells, up at their commander
+    (33.2, 2.4, -2.9, 2.3, 0.0, 2.8, 1.7),          # the same emblem on the central gear
+    (35.2, 1.6, -2.3, 1.75, 0.6, -0.6, 1.9),
+    (37.0, -1.4, -1.2, 1.75, 0.0, 2.0, 1.6),
+    (39.5, -1.2, -0.4, 1.7, 0.6, 1.9, 1.5),
+    (41.0, 1.25, 3.45, 1.6, 1.1, 1.8, 1.4),         # in front of them, beside the crank: his hand, the goblin's hands on his wrist
+    (43.5, 1.2, 3.35, 1.5, 1.2, 1.8, 1.35),
+    (45.0, 2.8, 0.75, 1.9, 0.9, 1.55, 1.85),        # over the goblin's head onto the visor
+    (47.6, 2.6, 0.2, 1.8, 1.1, 1.7, 1.7),
+    (48.9, 2.9, -0.6, 1.5, 0.5, 1.6, 4.5),          # the bell swings, the soul runs up into it
+    (49.9, 1.2, 2.3, 1.25, 1.75, 1.2, 1.05),        # from where the knight stood: the goblin's face as the light washes over him
+    (52.0, 1.35, 2.0, 1.1, 1.75, 1.2, 1.05),
+]
+
+KN_POS = [(15.0, 0.05, -7.6), (16.2, -0.3, -2.2), (18.6, -0.3, -2.2), (19.2, 0.6, -0.6), (38.0, 0.6, -0.6), (39.3, 0.9, 1.55)]
+KN_ROT = [(15.0, 0.0), (18.6, 0.0), (19.0, 1.19), (23.3, 1.19), (24.0, 2.42), (27.6, 2.42), (28.4, math.pi),
+          (35.5, math.pi), (36.6, 0.15), (44.2, 0.15), (45.0, -1.96), (46.8, -1.96), (47.2, -1.22)]
+GB_POS = [(15.0, 0.7, -8.3), (16.4, -0.6, -2.95), (22.0, -0.6, -2.95), (23.0, -0.6, -0.95), (25.3, -0.6, -0.95),
+          (25.8, -1.0, -1.35), (40.4, -1.0, -1.35), (40.8, 1.9, 0.9), (41.2, 1.65, 2.0), (44.3, 1.65, 2.0), (45.0, 1.75, 1.2)]
+GB_ROT = [(15.0, 0.0), (22.0, 0.0), (23.0, -1.33), (27.6, -1.33), (28.2, -3.14), (36.0, -3.14), (36.6, 0.0),
+          (40.3, 0.0), (40.5, -0.75), (41.0, -0.75), (41.3, 1.07), (44.4, 1.07), (45.0, 1.1)]
+BW_POS = [(15.0, -2.4, 0.75), (36.0, -2.4, 0.75), (37.4, -0.7, 2.0)]
+BW_ROT = [(15.0, math.pi), (20.5, math.pi), (21.5, 4.33), (30.8, 4.33), (31.4, 5.50), (38.3, 5.42), (38.7, 4.43)]
+SHELL_X = [-2.4 + 1.2 * i for i in range(5)]
+SHELL_Y = [-3.4 - 0.5 * abs(i - 2) for i in range(5)]
+T_SHELLS_IN, T_SHELLS_STOP, T_KNEEL = 26.0, 28.8, 29.6
+PLATE = [(15.0, 0.0), (24.0, 0.0), (24.8, 1.75), (33.5, 1.75), (34.2, 0.0)]
+SWORD_DRAWN = (16.9, 36.0)
+T_YANK, T_BELL, T_CRUMBLE = 47.5, 47.9, 48.8
+
+# pose keys: (t, blend seconds before t, {joint: (rx, ry, rz)}); joints not named go back to 0
+KN_POSE = [
+    (15.0, 0.1, {'cape': (-0.5, 0, 0)}),
+    (16.9, 0.3, {'shoulder_R': (2.2, -0.3, 0), 'elbow_R': (0.4, 0, 0), 'shoulder_L': (0.4, 0.5, 0)}),
+    (17.6, 0.15, {'shoulder_R': (1.2, -0.9, 0.6), 'elbow_R': (0.2, 0, 0), 'shoulder_L': (0.6, 0.7, 0)}),
+    (18.3, 0.3, {'shoulder_R': (0.8, -0.2, 0), 'elbow_R': (0.8, 0, 0), 'shoulder_L': (0.3, 0.4, 0)}),
+    (18.9, 0.3, {'shoulder_L': (1.0, -0.6, 0), 'elbow_L': (1.6, 0, 0), 'shoulder_R': (0.4, -0.1, 0), 'elbow_R': (0.6, 0, 0),
+                 'torso': (-0.1, 0, 0), 'head': (0.1, 0, 0)}),
+    (20.6, 0.5, {'shoulder_R': (0.25, 0, 0), 'elbow_R': (0.5, 0, 0), 'head': (0.05, 0, 0)}),
+    (23.7, 0.3, {'head': (-0.45, 0, 0), 'shoulder_R': (0.25, 0, 0), 'elbow_R': (0.5, 0, 0)}),
+    (24.0, 0.25, {'head': (-0.45, 0, 0), 'shoulder_L': (1.2, -0.5, 0), 'elbow_L': (1.2, 0, 0), 'elbow_R': (0.5, 0, 0)}),
+    (25.0, 0.4, {'head': (-0.2, 0, 0), 'shoulder_L': (0.2, 0.2, 0), 'elbow_L': (0.3, 0, 0), 'elbow_R': (0.5, 0, 0)}),
+    (27.8, 0.4, {'head': (0.0, 0, 0), 'elbow_R': (0.5, 0, 0)}),
+    (29.8, 0.5, {'head': (-0.18, 0, 0), 'elbow_R': (0.5, 0, 0)}),
+    (33.4, 0.3, {'head': (-0.3, 0, 0), 'shoulder_L': (1.1, -0.5, 0), 'elbow_L': (1.2, 0, 0)}),
+    (34.4, 0.4, {'head': (0.0, 0, 0)}),
+    (39.4, 0.4, {'shoulder_R': (1.25, 0.1, 0), 'elbow_R': (0.5, 0, 0), 'head': (-0.2, 0, 0)}),
+    (43.0, 0.5, {'shoulder_R': (1.25, 0.1, 0), 'elbow_R': (0.5, 0, 0), 'head': (-0.1, 0, -0.6)}),
+    (44.6, 0.4, {'shoulder_R': (1.25, 0.1, 0), 'elbow_R': (0.5, 0, 0), 'head': (-0.1, 0, -0.6),
+                 'shoulder_L': (1.1, -0.7, 0), 'elbow_L': (0.4, 0, 0)}),
+    (45.3, 0.4, {'shoulder_R': (0.4, 0, 0), 'elbow_R': (0.5, 0, 0), 'head': (-0.05, 0, -0.5)}),
+    (47.1, 0.35, {'shoulder_R': (2.75, -0.35, 0), 'elbow_R': (0.2, 0, 0), 'head': (0.3, 0, 0)}),
+    (47.65, 0.15, {'shoulder_R': (1.3, -0.2, 0), 'elbow_R': (1.2, 0, 0), 'torso': (-0.25, 0, 0), 'head': (0.15, 0, 0)}),
+    (48.3, 0.4, {'shoulder_R': (0.6, -0.1, 0), 'elbow_R': (0.6, 0, 0), 'torso': (-0.1, 0, 0), 'head': (0.35, 0, 0)}),
+]
+GB_POSE = [
+    (15.0, 0.1, {'scarf': (-0.9, 0, 0)}),
+    (16.6, 0.3, {'torso': (-0.2, 0, 0), 'thigh_L': (0.3, 0, 0), 'knee_L': (-0.5, 0, 0), 'thigh_R': (0.3, 0, 0),
+                 'knee_R': (-0.5, 0, 0), 'shoulder_L': (0.9, 0.3, 0), 'shoulder_R': (0.9, -0.3, 0), 'elbow_L': (1.0, 0, 0),
+                 'elbow_R': (1.0, 0, 0)}),
+    (17.45, 0.15, {'torso': (-0.45, 0, 0), 'thigh_L': (1.0, 0, 0), 'knee_L': (-1.6, 0, 0), 'thigh_R': (1.0, 0, 0),
+                   'knee_R': (-1.6, 0, 0), 'shoulder_L': (2.7, 0.3, 0), 'shoulder_R': (2.7, -0.3, 0), 'elbow_L': (2.0, 0, 0),
+                   'elbow_R': (2.0, 0, 0)}),
+    (18.6, 0.4, {'torso': (-0.1, 0, 0), 'shoulder_L': (0.4, 0.2, 0), 'shoulder_R': (0.4, -0.2, 0), 'head': (0.25, 0, 0)}),
+    (23.2, 0.4, {'head': (0.3, 0, 0), 'shoulder_R': (0.2, 0, 0)}),
+    (25.5, 0.2, {'torso': (0.35, 0, 0), 'shoulder_L': (1.4, 0.4, 0), 'shoulder_R': (1.4, -0.4, 0), 'elbow_L': (1.0, 0, 0),
+                 'elbow_R': (1.0, 0, 0), 'head': (0.2, 0, 0)}),
+    (27.0, 0.5, {'torso': (0.1, 0, 0), 'shoulder_L': (0.4, 0.2, 0), 'shoulder_R': (0.4, -0.2, 0), 'head': (0.25, 0, 0)}),
+    (29.8, 0.3, {'torso': (0.15, 0, 0), 'head': (0.1, 0, 0), 'shoulder_L': (0.3, 0.3, 0), 'shoulder_R': (0.3, -0.3, 0)}),
+    (31.5, 0.5, {'head': (0.2, 0, 0)}),
+    (41.2, 0.25, {'shoulder_L': (1.45, 0.25, 0), 'shoulder_R': (1.45, -0.25, 0), 'elbow_L': (0.3, 0, 0), 'elbow_R': (0.3, 0, 0),
+                  'torso': (-0.15, 0, 0), 'head': (0.35, 0, 0)}),
+    (44.8, 0.4, {'shoulder_L': (0.3, 0.1, 0), 'shoulder_R': (0.3, -0.1, 0), 'head': (0.35, 0, 0)}),
+    (48.2, 0.3, {'torso': (0.3, 0, 0), 'shoulder_L': (2.5, 0.4, 0), 'shoulder_R': (2.5, -0.4, 0), 'elbow_L': (1.6, 0, 0),
+                 'elbow_R': (1.6, 0, 0), 'head': (0.15, 0, 0)}),
+    (49.6, 0.6, {'torso': (0.1, 0, 0), 'shoulder_R': (1.4, 0, 0), 'elbow_R': (0.2, 0, 0), 'shoulder_L': (0.7, 0.3, 0),
+                 'head': (0.1, 0, 0)}),
+]
+BW_POSE = [
+    (15.0, 0.1, {'shoulder_L': (1.6, 0, 0), 'shoulder_R': (1.6, 0, 0), 'elbow_L': (0.4, 0, 0), 'elbow_R': (0.4, 0, 0),
+                 'torso': (-0.35, 0, 0), 'thigh_L': (0.45, 0, 0), 'knee_L': (-0.3, 0, 0), 'thigh_R': (-0.3, 0, 0)}),
+    (16.2, 0.3, {'shoulder_L': (1.6, 0, 0), 'shoulder_R': (1.6, 0, 0), 'elbow_L': (0.4, 0, 0), 'elbow_R': (0.4, 0, 0),
+                 'torso': (-0.35, 0, 0), 'thigh_L': (0.45, 0, 0), 'knee_L': (-0.3, 0, 0), 'thigh_R': (-0.3, 0, 0),
+                 'head': (0, 0, 0.6)}),
+    (20.6, 0.6, {'head': (0, 0, 0)}),
+    (22.4, 0.3, {'shoulder_R': (1.5, -0.1, 0), 'elbow_R': (0.1, 0, 0)}),
+    (24.0, 0.5, {'head': (-0.1, 0, 0)}),
+    (31.4, 0.4, {'shoulder_R': (1.3, -0.3, 0), 'elbow_R': (0.2, 0, 0)}),
+    (33.2, 0.5, {}),
+    (37.8, 0.4, {'shoulder_L': (2.3, 0.2, 0), 'shoulder_R': (2.3, -0.2, 0), 'elbow_L': (0.5, 0, 0), 'elbow_R': (0.5, 0, 0)}),
+    (38.5, 0.4, {'head': (0.05, 0, 0)}),
+    (48.1, 0.3, {'shoulder_R': (2.6, -0.3, 0), 'elbow_R': (1.8, 0, 0), 'torso': (0.15, 0, 0), 'head': (-0.2, 0, 0)}),
+]
+GB_FACE = [(15.0, 'terror'), (16.0, 'shock'), (22.5, 'neutral'), (24.5, 'shock'), (27.0, 'shock'), (28.0, 'terror'),
+           (29.8, 'shock'), (31.5, 'sad'), (38.6, 'shock'), (41.0, 'plead'), (44.5, 'sad'), (47.9, 'terror')]
+
+
+def face_at(t):
+    """(previous face, current face, blend) at time t."""
+    i = max([j for j, (tk, _) in enumerate(GB_FACE) if tk <= t] or [0])
+    cur = GB_FACE[i][1]
+    prev = GB_FACE[i - 1][1] if i else cur
+    return prev, cur, ss(GB_FACE[i][0], GB_FACE[i][0] + 0.25, t)
+
+
+def pose_keys_at(keys, t):
+    r = dict(keys[0][2])
+    for tk, d, p in keys[1:]:
+        w = ss(tk - d, tk, t)
+        if w <= 0:
+            break
+        names = set(r) | set(p)
+        r = {n: tuple(a + (b - a) * w for a, b in zip(r.get(n, (0, 0, 0)), p.get(n, (0, 0, 0)))) for n in names}
+    return r
+
+
+class Mover:
+    """position track + walk phase (distance travelled) for one character, sampled once."""
+    def __init__(self, pos, rot, stride):
+        self.pos, self.rot, self.stride = pos, rot, stride
+        self.tg = np.arange(15.0, 52.0 + 1e-9, 1 / 96)
+        xy = np.array([key_at(pos, t) for t in self.tg])
+        d = np.concatenate([[0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))])
+        self.dist = d
+        self.speed = np.gradient(d, self.tg)
+
+    def at(self, t):
+        x, y = key_at(self.pos, t)
+        rz = key_at(self.rot, t)[0]
+        ph = float(np.interp(t, self.tg, self.dist)) / self.stride * 2 * math.pi
+        sp = float(np.interp(t, self.tg, self.speed))
+        return x, y, rz, ph, sp
+
+
+MV_K = Mover(KN_POS, KN_ROT, 1.7)
+MV_G = Mover(GB_POS, GB_ROT, 1.15)
+MV_B = Mover(BW_POS, BW_ROT, 1.2)
 
 
 # ======================================================================================
@@ -293,8 +498,20 @@ def build_audio():
     place(dry, chime(), T_END - 5.4, 0.08, 0.0)            # RESPAWNS RESTORED
 
     # ---- middle animatic sfx (coarse)
+    m = tl(0.6)
+    place(dry, nrm(ff(rng.standard_normal(len(m)), 200, 3000)) * np.hanning(len(m)), 14.5, 0.15, 0.5)   # knight passes the lens
     place(dry, thud(60, 0.5), 15.0, 0.2, 0.0)              # burst into the chamber
-    for tt in (16.5, 17.3, 19.8):
+    place(dry, clank(760, 0.6), 17.55, 0.22, -0.2)         # sword knocks the hook away
+    place(wet, clank(760, 0.6), 17.55, 0.25, -0.2)
+    place(dry, clank(240, 0.6) + thud(60, 0.6), 18.2, 0.15, 0.3)    # hook hits the floor
+    for tt in np.arange(T_SHELLS_IN, T_SHELLS_STOP, 0.62):        # the shells march in, in step
+        place(dry, clank(300, 0.3), tt, 0.07, 0.0)
+        place(wet, clank(300, 0.3), tt, 0.09, 0.0)
+    for tt in np.arange(40.4, 41.2, 0.13):
+        place(dry, pat(), tt, 0.08, 0.2)                    # the goblin runs to him
+    for k in range(7):
+        place(dry, clank(rng.uniform(300, 520), 0.5) + thud(70, 0.5), 49.0 + 0.3 * k + rng.uniform(0, 0.15), 0.09, rng.uniform(-0.4, 0.4))
+    for tt in (16.6, 19.8):
         place(dry, clank(260, 0.5), tt, 0.08, 0.3)         # chains / gears
         place(wet, clank(260, 0.5), tt, 0.12, 0.3)
     place(dry, clank(600, 0.5), 24.0, 0.1, 0.0)            # breastplate opens
@@ -306,13 +523,14 @@ def build_audio():
     rum = rum * np.minimum(m / 6, 1)
     place(dry, rum, 32.0, 0.08, 0.0)                       # rising gear rumble
     place(dry, clank(500, 0.6), 37.6, 0.1, 0.2)            # mechanism opens
-    place(dry, thud(90, 0.4), 46.3, 0.2, 0.0)              # chain snaps tight
-    bl = bell(7.0)
-    place(dry, bl, 46.8, 0.5, 0.0)
-    place(wet, bl, 46.8, 0.5, 0.0)
-    m = tl(4.0)
-    surge = nrm(ff(rng.standard_normal(len(m)), 200, 7000)) * np.minimum(m / 0.4, 1) * np.exp(-m / 2.0)
-    place(dry, surge, 46.9, 0.12, 0.0)
+    place(dry, thud(90, 0.4) + clank(350, 0.4), T_YANK, 0.2, 0.2)   # chain snaps tight
+    bl = bell(7.0)[:int((52.0 - T_BELL) * SR)]           # the tail is CUT by the cycle reset at 52.0
+    bl[-int(0.01 * SR):] *= np.linspace(1, 0, int(0.01 * SR))
+    place(dry, bl, T_BELL, 0.5, 0.0)
+    place(wet, bl, T_BELL, 0.5, 0.0)
+    m = tl(52.0 - T_BELL - 0.1)
+    surge = nrm(ff(rng.standard_normal(len(m)), 200, 7000)) * np.minimum(m / 0.4, 1) * (0.4 + 0.6 * m / m[-1])
+    place(dry, surge, T_BELL + 0.1, 0.12, 0.0)
 
     # ---- voices (placeholders): goblin dry, knight metallic resonance, bellwright short stone reverb
     durs = line_durs()
@@ -342,11 +560,21 @@ def build_audio():
     irn = int(1.4 * SR)
     ti = np.arange(irn) / SR
     out = dry.copy()
+    i52 = int(52.0 * SR)
     for ch in range(2):
         ir = ff(rng.standard_normal(irn), 150, 5000) * np.exp(-ti / 0.32)
         ir /= np.sqrt(np.sum(ir ** 2))
         L = n + irn
-        out[ch] += np.fft.irfft(np.fft.rfft(wet[ch], L) * np.fft.rfft(ir, L), L)[:n] * 0.6
+        for part in (0, 1):                                # chamber reverb tail stops dead at the reset
+            w = wet[ch].copy()
+            if part == 0:
+                w[i52:] = 0
+            else:
+                w[:i52] = 0
+            r = np.fft.irfft(np.fft.rfft(w, L) * np.fft.rfft(ir, L), L)[:n] * 0.6
+            if part == 0:
+                r[i52:] = 0
+            out[ch] += r
     # the bell tail is CUT by the reset at 52.0 (hard cycle reset) - nothing to do, the alley starts clean
     # seamless loop: bend the last 20 ms onto the first sample (removes the click of the non-periodic ambience)
     k = int(0.02 * SR)
@@ -587,6 +815,11 @@ if MODE != 'audio':
 
         def part(self, name, geo, mat, joint, loc=(0, 0, 0), rot=(0, 0, 0), scl=(1, 1, 1), smooth=False):
             ob = obj(self.name + '_' + name, geo, mat, self.j[joint] if isinstance(joint, str) else joint, loc, rot, scl, smooth)
+            if geo[0].startswith('box') and not smooth:
+                bv = ob.modifiers.new('bevel', 'BEVEL')
+                bv.width = 0.012
+                bv.segments = 1
+                setp(bv, 'limit_method', 'ANGLE')
             self.parts.append(ob)
             return ob
 
@@ -798,8 +1031,9 @@ if MODE != 'audio':
         shell_d = M_noise_mix('shell_d', (0.11, 0.1, 0.09), (0.09, 0.12, 0.11), 0.6, 0.9, metal=0.6, scale=5)
         cloth = M('cape', (0.2, 0.2, 0.21), 0.95)
         void = M_emit('void', (0, 0, 0), 0.0)
-        cyan = M_emit('soul', (0.35, 0.95, 1.0), 14.0)
-        cyan_dim = M_emit('soul_dim', (0.35, 0.95, 1.0), 2.5)
+        cyan = M_emit('soul', (0.08, 0.8, 1.0), 6.0)
+        cyan_dim = M_emit('soul_dim', (0.08, 0.8, 1.0), 2.0)
+        soul_k = M_emit('soul_k', (0.08, 0.8, 1.0), 2.0)
         steel = M('steel', (0.55, 0.57, 0.6), 0.3, 0.9)
         skin = M('goblin', (0.16, 0.40, 0.09), 0.55)
         leather = M('leather', (0.2, 0.11, 0.05), 0.8)
@@ -820,7 +1054,7 @@ if MODE != 'audio':
         fletch = M('fletch', (0.95, 0.9, 0.8), 0.6, emit=(1, 0.95, 0.85), estr=1.5)
         trail = M_emit('trail', (1.0, 0.95, 0.85), 3.0)
         archer_m = M('archer', (0.01, 0.012, 0.015), 0.9)
-        R['mats'] = dict(cyan=cyan, cyan_dim=cyan_dim)
+        R['mats'] = dict(cyan=cyan, cyan_dim=cyan_dim, soul_k=soul_k)
 
         # ---------- world ----------
         w = bpy.data.worlds.new('cavern')
@@ -953,7 +1187,17 @@ if MODE != 'audio':
             a = 2 * math.pi * k / 12
             obj('ch_sparkslot', sph(0.06, 6, 4), cyan if k else void, parent=ring, loc=(0.75 * math.cos(a), 0.75 * math.sin(a), 0))
         R['ch_crank'] = obj('ch_crank', box(0.08, 0.08, 1.0), iron, loc=tuple(cx + Vector((0.9, 2.55, 1.4))), rot=(0.3, 0, 0))
-        obj('ch_chain', cyl(0.05, 8.0, 4), iron, loc=tuple(cx + Vector((1.6, 1.8, 7.0))))
+        R['ch_chain'] = obj('ch_chain', cyl(0.05, 9.0, 4), iron, loc=tuple(cx + Vector((1.6, 1.8, 6.4))))
+        R['ch_handle'] = obj('ch_handle', box(0.3, 0.06, 0.12), iron, loc=tuple(cx + Vector((1.6, 1.8, 1.85))))
+        R['ch_slip'] = obj('ch_slip', gear(1.0, 12, 0.3), bronze_d, loc=tuple(cx + Vector((-2.4, -0.2, 1.6))))
+        obj('ch_slip_axle', cyl(0.12, 1.2, 8), iron, loc=tuple(cx + Vector((-2.4, -0.7, 1.6))), rot=(math.radians(90), 0, 0))
+        R['lash'] = lp = empty('lash', None, tuple(cx + Vector((-2.2, -0.8, 9.5))))
+        obj('lash_chain', cyl(0.04, 3.6, 4), iron, parent=lp, loc=(0, 0, -1.8))
+        obj('lash_end', box(0.14, 0.14, 0.2), iron, parent=lp, loc=(0, 0, -3.65))
+        R['hook'] = hk = empty('hook', None, tuple(cx + Vector((-0.7, -2.6, 7.5))))
+        obj('hook_bar', box(0.08, 0.08, 0.6), iron, parent=hk, loc=(0, 0, 0.1))
+        obj('hook_curve', box(0.3, 0.08, 0.08), iron, parent=hk, loc=(0.11, 0, -0.2))
+        R['soul'] = [obj('soulbit%d' % k, sph(0.05, 8, 5), cyan) for k in range(14)]
         hd = bpy.data.lights.new('furnace', 'POINT')
         hd.color = (1.0, 0.45, 0.15)
         hd.energy = 2500
@@ -962,7 +1206,7 @@ if MODE != 'audio':
         cd_.color = (0.45, 0.7, 1.0)
         cd_.energy = 1200
         link(bpy.data.objects.new('ch_cold', cd_)).location = tuple(cx + Vector((-4.0, -3.0, 6.0)))
-        R['beam'] = obj('beam', cyl(0.06, 1.0, 8), cyan)
+        R['beam'] = obj('beam', cyl(0.025, 1.0, 8), cyan)
         R['beam'].hide_render = True
         R['soul_light'] = sl = bpy.data.lights.new('soul_light', 'POINT')
         sl.color = (0.4, 0.9, 1.0)
@@ -972,7 +1216,7 @@ if MODE != 'audio':
         setp(ob, 'display_type', 'BOUNDS')
 
         # ---------- characters ----------
-        R['K'] = build_knight('knight', (bronze, bronze_d, cloth, void, cyan, cyan_dim, steel))
+        R['K'] = build_knight('knight', (bronze, bronze_d, cloth, void, cyan, soul_k, steel))
         R['G'] = build_goblin((skin, leather, red, eyew, black, mouthm))
         R['B'] = build_bellwright((coat, brass, leather, lamp, void))
         R['S'] = [build_knight('shell%d' % i, (shell_b, shell_d, cloth, void, cyan, void, steel), shell=True) for i in range(5)]
@@ -1043,6 +1287,22 @@ if MODE != 'audio':
             ob.parent = cam
             ob.location = loc
             return ob
+        wm, wnt = new_mat('wash')
+        for nd in list(wnt.nodes):
+            if nd.type == 'BSDF_PRINCIPLED':
+                wnt.nodes.remove(nd)
+        tr = wnt.nodes.new('ShaderNodeBsdfTransparent')
+        em = wnt.nodes.new('ShaderNodeEmission')
+        em.inputs['Color'].default_value = (0.55, 0.95, 1.0, 1)
+        em.inputs['Strength'].default_value = 2.5
+        mx = wnt.nodes.new('ShaderNodeMixShader')
+        wnt.links.new(tr.outputs[0], mx.inputs[1])
+        wnt.links.new(em.outputs[0], mx.inputs[2])
+        wnt.links.new(mx.outputs[0], wnt.nodes['Material Output'].inputs['Surface'])
+        setp(wm, 'surface_render_method', 'BLENDED')
+        R['wash_fac'] = mx.inputs[0]
+        R['wash'] = obj('wash', box(0.4, 0.4, 0.001), wm, parent=cam, loc=(0, 0, -0.1))
+        R['wash'].hide_render = True
         R['sub'] = text('sub', 0.0165, (0, -0.128, -D), [white, m_cy, m_am], f_sub)
         R['sub_sh'] = text('sub_sh', 0.0165, (0.0008, -0.1288, -D - 0.001), [shade], f_sub)
         R['hud'] = text('hud', 0.0125, (-0.098, 0.172, -D), [m_am], f_hud, 'LEFT')
@@ -1299,10 +1559,15 @@ if MODE != 'audio':
             AS.location = (0.1, -0.05, 0.27)
             AS.rotation_euler = d.to_track_quat('Z', 'Y').to_euler()
 
-    # ---------------- the middle animatic (coarse staging beats) ----------------
-    def mid(t):
-        K, G, B, S = R['K'], R['G'], R['B'], R['S']
-        c = Vector(CH)
+    # ---------------- the middle (8-52 s) ----------------
+    def b1_cam_y(t):
+        y0 = b1_center(min(t, 13.4))[0] - 3.2
+        if t <= 13.4:
+            return y0
+        xs = np.linspace(13.4, t, 60)
+        return y0 - 2.8 * float(np.trapezoid([1 - ss(13.4, 14.0, x) for x in xs], xs))
+
+    def hide_fx():
         for ob in R['arrow'].children:
             ob.hide_render = True
         R['arrow_trail'].hide_render = True
@@ -1311,129 +1576,184 @@ if MODE != 'audio':
         R['flash'].hide_render = True
         R['column'].hide_render = True
         R['flash_l'].energy = 0
-        K.show(True), G.show(True)
-        set_face(G, 'shock')
-        bell_swing = 0.0
-        R['beam'].hide_render = True
-        R['soul_light'].energy = 0
-        plate = 0.0
-        if t < 15.0:                                  # B1: turn and run back, shells pour out of the side arch
-            yc, sp = b1_center(t)
-            a = sp / 2.8
-            turn = math.pi * ss(8.1, 8.7, t)
-            ph = (Yk(8.0) - yc) / 1.7 * 2 * math.pi
-            rk = run_pose(ph, a)
-            rk['cape'] = (-0.5 * a, 0, 0)
-            rk = add(rk, {'shoulder_L': (-0.6, 0.5, 0), 'elbow_L': (-0.8, 0, 0)}, a)
-            K.pose((KX - 0.3, yc, 0), turn, rk)
-            rg = run_pose((Yk(8.0) - yc) / 1.15 * 2 * math.pi + 1.3, a, 1.4, 0.3)
-            rg['scarf'] = (-0.9 * a, 0, 0)
-            rg = add(rg, {'shoulder_R': (1.2, -0.3, 0)}, a)
-            G.pose((GX + 0.4, yc - 0.5, 0), turn, rg)
-            set_face(G, 'terror', 0.6 if LINES['l04'] <= t < LINES['l04'] + 0.7 else 0.0)
-            B.show(False)
-            for i, P in enumerate(S):
-                P.show(True)
-                sy = 12.0 + (i % 3) * 1.4 - 1.5 * max(0.0, t - 8.3)
-                sx = -2.6 + 1.2 * i - 1.0 * (1 - ss(8.0, 10.5, t))
-                ph = (t - 8.3) * 1.6 * 2 * math.pi
-                P.pose((sx, sy, 0), math.pi, run_pose(ph, 0.55, 0.3, 0.05))
-            ref = Vector((0, yc, 0))
-            pos = ref + Vector((0.6, -3.2, 1.35)) + handheld(t)
-            tgt = ref + Vector((0.0, 4.0, 1.4))
-            look(R['cam'], pos, tgt)
-            place_lights(ref)
-            K.sword.hide_render = K.sword_x.hide_render = True
-            return
-        B.show(True)
-        K.sword.hide_render = K.sword_x.hide_render = False
-        K.sheath.hide_render = False
-        K.hilt.hide_render = True
-        bw = {'shoulder_L': (1.0, 0, 0), 'shoulder_R': (1.0, 0, 0), 'elbow_L': (0.4, 0, 0), 'elbow_R': (0.4, 0, 0)}
-        shells = []
-        if t < 22.0:                                  # B2: chamber, gear slipping, knight shields the goblin
-            K.pose(tuple(c + Vector((-0.5, -1.4, 0))), 0.3, {'shoulder_R': (2.4, -0.3, 0), 'elbow_R': (0.3, 0, 0),
-                   'shoulder_L': (0.6, 0.6, 0), 'cape': (-0.15, 0, 0)})
-            G.pose(tuple(c + Vector((-1.0, -2.2, 0))), 0.4, {'torso': (-0.3, 0, 0), 'shoulder_R': (2.5, 0, 0), 'elbow_R': (1.5, 0, 0),
-                   'thigh_L': (0.6, 0, 0), 'knee_L': (-1.2, 0, 0), 'thigh_R': (0.6, 0, 0), 'knee_R': (-1.2, 0, 0)}, -0.12)
-            B.pose(tuple(c + Vector((-3.3, 4.3, 0))), 2.5, {'shoulder_L': (2.0, 0, 0), 'shoulder_R': (2.0, 0, 0),
-                   'elbow_L': (0.5, 0, 0), 'elbow_R': (0.5, 0, 0), 'torso': (-0.3, 0, 0)})
-            pos = c + Vector((1.6, -6.4, 1.7)) + (t - 15) * Vector((-0.05, 0.12, 0.01))
-            tgt = c + Vector((-1.2, 1.0, 2.6))
-        elif t < 29.0:                                # B3: the breastplate opens - hollow, one spark
-            plate = 1.75 * ss(23.6, 24.6, t)
-            K.pose(tuple(c + Vector((0, -0.5, 0))), math.pi, {'shoulder_L': (0.9, 0.3, 0), 'elbow_L': (0.9, 0, 0),
-                   'head': (-0.25, 0, 0)})
-            G.pose(tuple(c + Vector((1.1, -1.4, 0))), math.pi - 0.9, {'torso': (0.35 * ss(25.5, 26.0, t), 0, 0),
-                   'shoulder_L': (1.6, 0, 0), 'shoulder_R': (1.6, 0, 0)})
-            set_face(G, 'shock', 0.5 if LINES['l08'] <= t < LINES['l08'] + 0.6 else 0.0)
-            B.pose(tuple(c + Vector((-1.4, -1.0, 0))), -math.pi / 2 - 0.4, {'shoulder_R': (1.6, 0, 0), 'elbow_R': (0.1, 0, 0)})
-            shells = [(tuple(c + Vector((-2 + i, -7.0 + 0.5 * (i % 2), 0))), 0.0, 'walk') for i in range(5)]
-            pos = c + Vector((0.4, -3.4, 1.65)) + (t - 22) * Vector((0, 0.06, 0))
-            tgt = c + Vector((0.0, -0.5, 1.45))
-        elif t < 37.0:                                # B4: the shells kneel in unison
-            plate = 1.75
-            K.pose(tuple(c + Vector((0, -0.5, 0))), math.pi, {'head': (-0.15, 0, 0)})
-            G.pose(tuple(c + Vector((1.2, 0.2, 0))), math.pi - 0.5, {})
-            B.pose(tuple(c + Vector((-1.6, 0.4, 0))), -2.4, {'shoulder_R': (1.2, -0.6, 0)})
-            kneel = ss(29.4, 29.75, t)
-            shells = [(tuple(c + Vector((-2.4 + 1.2 * i, -3.2 - 0.6 * abs(i - 2), 0))), 0.0, kneel) for i in range(5)]
-            ang = math.radians(-50 + (t - 29) * 2.5)
-            pos = c + Vector((4.6 * math.sin(ang), -0.5 - 4.6 * math.cos(ang), 1.5))
-            tgt = c + Vector((0, -0.5, 1.6))
-        elif t < 45.0:                                # B5: the mechanism, the crank, the goblin's hand on his wrist
-            plate = 1.75 * (1 - ss(37.0, 37.6, t))
-            R['ch_panel'].location = tuple(c + Vector((0, 2.6, 1.6 + 1.6 * ss(37.4, 38.4, t))))
-            K.pose(tuple(c + Vector((0.6, 1.4, 0))), 0.15, {'shoulder_R': (1.3, 0, 0), 'elbow_R': (0.4, 0, 0)})
-            G.pose(tuple(c + Vector((1.35, 1.5, 0))), 1.2, {'shoulder_R': (1.4, -0.3, 0), 'shoulder_L': (1.5, 0.2, 0), 'head': (0.4, 0, 0)})
-            set_face(G, 'plead', 0.5 if LINES['l11'] <= t < LINES['l11'] + 1.1 else 0.0)
-            B.pose(tuple(c + Vector((-0.9, 2.0, 0))), -0.4, {'shoulder_R': (1.4, 0, 0)})
-            shells = [(tuple(c + Vector((-2.4 + 1.2 * i, -3.2 - 0.6 * abs(i - 2), 0))), 0.0, 1.0) for i in range(5)]
-            pos = c + Vector((-1.5, -1.2, 1.7)) + (t - 37) * Vector((0.04, 0.05, 0))
-            tgt = c + Vector((0.6, 2.4, 1.4))
-        else:                                         # B6: the chain, the bell, the soul leaves, the armour falls
-            fall = ss(48.0, 50.5, t)
-            K.pose(tuple(c + Vector((0.6, 1.4, 0))), 0.15, {'shoulder_R': (2.4 - 1.4 * ss(46.2, 46.5, t), 0, 0),
-                   'head': (-0.6 * fall, 0.3 * fall, 0), 'torso': (-0.5 * fall, 0, 0.2 * fall)}, -0.6 * fall)
-            G.pose(tuple(c + Vector((1.6, 0.2, 0))), 2.6, {'shoulder_L': (2.0, 0.4, 0), 'shoulder_R': (2.0, -0.4, 0),
-                   'torso': (0.2, 0, 0)})
-            set_face(G, 'terror')
-            B.pose(tuple(c + Vector((-0.9, 2.0, 0))), -0.4, {'shoulder_L': (2.4, 0, 0), 'elbow_L': (1.5, 0, 0)})
-            shells = [(tuple(c + Vector((-2.4 + 1.2 * i, -3.2 - 0.6 * abs(i - 2), 0))), 0.0, 1.0 - 0.0) for i in range(5)]
-            if t > 46.6:
-                bell_swing = 0.35 * math.sin(2 * math.pi * (t - 46.6) / 2.2) * math.exp(-(t - 46.6) / 6)
-            if 46.4 < t < 51.5:
-                a_ = c + Vector((0.6, 1.6, 1.45))
-                b_ = c + Vector((0, 1.5, 9.0))
-                d = b_ - a_
-                bm = R['beam']
-                bm.hide_render = False
-                bm.location = (a_ + b_) / 2
-                bm.rotation_euler = d.to_track_quat('Z', 'Y').to_euler()
-                pul = 1 + 0.4 * math.sin(t * 30)
-                bm.scale = (pul * (1 - 0.6 * fall), pul * (1 - 0.6 * fall), d.length)
-                R['soul_light'].energy = 2500 * (1 - 0.5 * fall)
-                R['soul_light_o'].location = c + Vector((1.4, 0.8, 1.4))
-            e = ss(46.0, 51.5, t)
-            pos = c + Vector((3.2, -1.8, 1.3)).lerp(Vector((2.2, -0.9, 1.05)), e)
-            tgt = c + Vector((1.6, 0.2, 1.0)).lerp(Vector((1.6, 0.2, 0.75)), e) + Vector((0, 0, 0))
-        R['ch_bell_pivot'].rotation_euler = (bell_swing, 0, 0)
-        K.j['plate'].rotation_euler = (0, 0, plate)
+
+    def walk_add(r, ph, a, arms=0.5):
+        if a < 0.02:
+            return r
+        w = run_pose(ph, a)
+        w = {k: v for k, v in w.items() if not k.startswith('elbow')}
+        for k in ('shoulder_L', 'shoulder_R'):
+            w[k] = tuple(x * arms for x in w[k])
+        return add(r, w)
+
+    def b1(t):
+        K, G, B, S = R['K'], R['G'], R['B'], R['S']
+        B.show(False)
+        K.show(True)
+        G.show(True)
+        yc, sp = b1_center(t)
+        a = sp / 2.8
+        e = ss(8.0, 9.4, t)
+        turn = math.pi * ss(8.6, 9.0, t)
+        ph = (Yk(8.0) - yc) / 1.7 * 2 * math.pi
+        rk = run_pose(ph, a)
+        rk['cape'] = (-0.5 * a, 0, 0)
+        rk = add(rk, {'shoulder_L': (-0.6, 0.5, 0), 'elbow_L': (-0.8, 0, 0)}, a)       # pulls the goblin by the hand
+        rk = add(rk, {'head': (0.18, 0, 0)}, 1 - ss(8.4, 8.9, t))
+        K.pose((lerp(KX, 0.3, e), yc, 0), turn, rk)
+        K.sword.hide_render = K.sword_x.hide_render = True
+        K.sheath.hide_render = K.hilt.hide_render = False
+        rg = run_pose((Yk(8.0) - yc) / 1.15 * 2 * math.pi + 1.3, a, 1.4, 0.3)
+        rg['scarf'] = (-0.9 * a, 0, 0)
+        rg = add(rg, {'shoulder_R': (1.2, -0.3, 0)}, a)
+        rg = blend(rg, {'shoulder_R': (2.3, -0.15, 0), 'elbow_R': (0.1, 0, 0), 'head': (0.3, 0, 0)}, 1 - ss(8.2, 8.8, t))
+        G.pose((lerp(0.0, -0.35, e), yc + 0.25 + 0.2 * e, 0), turn, rg)
+        talk = 0.5 + 0.5 * abs(math.sin(2 * math.pi * 5.5 * (t - LINES['l04']))) if LINES['l04'] <= t < LINES['l04'] + 0.7 else 0.0
+        set_face(G, 'terror', talk)
         for i, P in enumerate(S):
-            if i < len(shells):
-                P.show(True)
-                loc, rz, st = shells[i]
-                if st == 'walk':
-                    P.pose(loc, rz, run_pose((t - 22) * 1.6 * 2 * math.pi, 0.5, 0.3, 0.05))
-                else:
-                    k = st
-                    P.pose(loc, rz, {'thigh_R': (1.5 * k, 0, 0), 'knee_R': (-1.5 * k, 0, 0), 'thigh_L': (-0.2 * k, 0, 0),
-                                     'knee_L': (-2.3 * k, 0, 0), 'torso': (-0.35 * k, 0, 0), 'head': (-0.4 * k, 0, 0),
-                                     'shoulder_R': (0.4 * k, 0, 0)}, -0.5 * k)
-            else:
-                P.show(False)
-        look(R['cam'], pos + handheld(t), tgt)
-        place_lights(None, chamber=True)
+            ti = 8.0 + 0.3 * i
+            P.show(t >= ti - 0.3)
+            xl = -1.8 + 0.9 * i
+            x = lerp(-3.7, xl, ss(ti, ti + 1.2, t))
+            y = 12.0 + 0.5 * (i % 2) - 1.6 * max(0.0, t - ti - 0.6)
+            rz = lerp(-math.pi / 2, -math.pi, ss(ti + 0.2, ti + 1.0, t))
+            P.pose((x, y, 0), rz, run_pose((t - 8.0) * 1.6 * 2 * math.pi, 0.55, 0.3, 0.05))   # one shared step: in unison
+        # camera: from the end of the opening (behind them, tower) into a backwards run in front of them, then they pass us
+        p0, t0, _ = cam_alley(8.0)
+        ky = b1_cam_y(t)
+        pb = Vector((lerp(0.5, -0.2, ss(12.0, 13.6, t)) + 0.12 * math.sin(t * 0.9), ky, 1.35)) + handheld(t)
+        tb = Vector((0.0, yc + 4.0, 1.4))
+        knee = Vector((0.3, yc, 1.55))
+        tb = tb.lerp(knee, ss(13.7, 14.6, t))
+        look(R['cam'], p0.lerp(pb, e), t0.lerp(tb, e))
+        place_lights(Vector((0, yc, 0)))
+
+    def chamber(t):
+        K, G, B, S = R['K'], R['G'], R['B'], R['S']
+        c = Vector(CH)
+        K.show(True), G.show(True), B.show(True)
+        # --- knight
+        x, y, rz, ph, sp = MV_K.at(t)
+        r = pose_keys_at(KN_POSE, t)
+        r = walk_add(r, ph, min(1.0, sp / 2.6))
+        dz = 0.0
+        hd = Vector((0, 0, 0))
+        cr = ss(T_CRUMBLE, 51.0, t)
+        if cr > 0:                                       # the hollow armour gives way: inert parts
+            r = add(r, {'thigh_L': (1.5, 0, 0.2), 'thigh_R': (1.3, 0, -0.2), 'knee_L': (-2.4, 0, 0), 'knee_R': (-2.2, 0, 0),
+                        'torso': (0.6, 0, 0.25), 'shoulder_L': (-0.3, 0.3, 0), 'shoulder_R': (-0.4, -0.3, 0),
+                        'head': (-1.2, 0.4, 0), 'cape': (0.4, 0, 0)}, cr)
+            dz = -0.72 * cr
+            hd = Vector((-0.2, -0.45, -0.55)) * ss(49.3, 50.4, t)      # falls backwards, away from the goblin
+        K.pose(tuple(c + Vector((x, y, 0))), rz, r, dz)
+        K.j['head'].location = K.rest['head'] + hd
+        K.j['plate'].rotation_euler = (0, 0, key_at(PLATE, t)[0])
+        drawn = SWORD_DRAWN[0] <= t < SWORD_DRAWN[1]
+        K.sword.hide_render = K.sword_x.hide_render = not drawn
+        K.hilt.hide_render = drawn
+        K.sheath.hide_render = False
+        K.spark.hide_render = t >= T_BELL + 0.1
+        R['mats']['soul_k'].node_tree.nodes['Emission'].inputs['Strength'].default_value = \
+            (1.6 + 0.8 * math.sin(t * 4.0)) * (1 - ss(T_BELL, T_BELL + 1.5, t))
+        # --- goblin
+        x, y, rz, ph, sp = MV_G.at(t)
+        r = pose_keys_at(GB_POSE, t)
+        r['scarf'] = (-0.9 * min(1.0, sp / 2.6) - 0.1, 0, 0)
+        r = walk_add(r, ph + 1.3, min(1.0, sp / 2.0), 1.0)
+        gdz = -0.15 * bump(17.3, 17.45, 18.2, 18.6, t)
+        G.pose(tuple(c + Vector((x, y, 0))), rz, r, gdz)
+        f0, f1, w = face_at(t)
+        talk = 0.0
+        for k in ('l08', 'l11'):
+            if LINES[k] <= t < LINES[k] + R['durs'].get(k, 0.8):
+                talk = 0.5 + 0.5 * abs(math.sin(2 * math.pi * 5.5 * (t - LINES[k])))
+        set_face(G, f0, talk, f1, w)
+        # --- bellwright
+        x, y, rz, ph, sp = MV_B.at(t)
+        r = pose_keys_at(BW_POSE, t)
+        r = walk_add(r, ph, min(1.0, sp / 2.0))
+        if t < 20.6:                                     # shoving the slipping gear
+            r = add(r, {'torso': (0.05 * math.sin(t * 5.0), 0, 0)})
+        for k in ('l05', 'l07', 'l09', 'l10'):
+            if LINES[k] <= t < LINES[k] + R['durs'].get(k, 1.5):
+                r = add(r, {'head': (0.06 * math.sin(2 * math.pi * 2.5 * (t - LINES[k])), 0, 0)})
+        B.pose(tuple(c + Vector((x, y, 0))), rz, r)
+        # --- shells: march in, stop, kneel in unison
+        for i, P in enumerate(S):
+            P.show(t >= T_SHELLS_IN - 0.5)
+            e = ss(T_SHELLS_IN, T_SHELLS_STOP, t)
+            p = (SHELL_X[i], lerp(-10.0, SHELL_Y[i], e), 0)
+            k = ss(T_KNEEL - 0.2, T_KNEEL + 0.15, t)
+            walk = run_pose((t - T_SHELLS_IN) * 1.6 * 2 * math.pi, 0.5 * (1 - ss(T_SHELLS_STOP - 0.4, T_SHELLS_STOP, t)), 0.3, 0.05)
+            kneel = {'thigh_R': (1.5, 0, 0), 'knee_R': (-1.5, 0, 0), 'thigh_L': (-0.2, 0, 0), 'knee_L': (-2.3, 0, 0),
+                     'torso': (-0.35, 0, 0), 'head': (-0.4, 0, 0), 'shoulder_R': (0.4, 0, 0)}
+            P.pose(tuple(c + Vector(p)), 0.0, blend(walk, kneel, k), -0.5 * k)
+        # --- the chamber machinery
+        slip = 0.25 * math.sin(t * 6.0) * (1 - ss(20.4, 21.0, t)) + 0.5 * ss(16.55, 16.7, t) + 0.6 * ss(19.75, 19.9, t)
+        R['ch_slip'].rotation_euler = (math.radians(90), slip, 0)
+        R['lash'].rotation_euler = (0.75 * math.sin(2.4 * t) * math.exp(-max(0.0, t - 15.0) / 6.0), 0.2 * math.sin(1.7 * t), 0)
+        hk = R['hook']
+        if t < 17.0:
+            hk.location = c + Vector((-0.7, -2.6, 7.5))
+        elif t < 17.55:
+            e = (t - 17.0) / 0.55
+            hk.location = c + Vector((-0.7, -2.6, 7.5 - 5.2 * e * e))
+        else:
+            e = ss(17.55, 18.2, t)
+            hk.location = c + Vector((lerp(-0.7, 1.3, e), lerp(-2.6, -3.4, e), lerp(2.3, 0.12, e) + 0.6 * math.sin(math.pi * e)))
+            hk.rotation_euler = (3.0 * e, 1.0 * e, 0)
+        R['ch_panel'].location = c + Vector((-1.8 * ss(37.6, 38.4, t), 2.6, 1.6))
+        yank = -0.35 * bump(T_YANK - 0.05, T_YANK + 0.1, T_YANK + 0.3, T_YANK + 0.8, t)
+        R['ch_chain'].location = c + Vector((1.6, 1.8, 6.4 + yank))
+        R['ch_handle'].location = c + Vector((1.6, 1.8, 1.85 + yank))
+        bell = 0.0
+        if t > T_BELL:
+            bell = 0.33 * math.sin(2 * math.pi * (t - T_BELL) / 2.2) * math.exp(-(t - T_BELL) / 6)
+        R['ch_bell_pivot'].rotation_euler = (bell, 0, 0)
+        # --- the price: the soul leaves his chest and runs into the bell
+        kx, ky = MV_K.at(t)[:2]
+        chest = c + Vector((kx, ky + 0.15, 1.45))
+        bellp = c + Vector((0, 1.5, 6.4))
+        on = T_BELL <= t < 50.8
+        fade = 1 - ss(49.8, 50.8, t)
+        for i, ob in enumerate(R['soul']):
+            ob.hide_render = not on
+            if on:
+                s_ = ((t - T_BELL) * 0.9 + i / len(R['soul'])) % 1.0
+                p = chest.lerp(bellp, s_) + Vector((0.5 * math.sin(math.pi * s_) * math.sin(i * 2.3), 0.3 * math.sin(math.pi * s_), 0))
+                ob.location = p
+                k = (0.6 + 0.6 * math.sin(math.pi * s_)) * fade
+                ob.scale = (k, k, k)
+        bm = R['beam']
+        bm.hide_render = not on
+        if on:
+            d = bellp - chest
+            bm.location = (chest + bellp) / 2
+            bm.rotation_euler = d.to_track_quat('Z', 'Y').to_euler()
+            pul = (1 + 0.3 * math.sin(t * 30)) * fade
+            bm.scale = (pul, pul, d.length)
+        R['soul_light'].energy = 600 * fade if on else 0.0
+        R['soul_light_o'].location = c + Vector((1.35, 0.6, 1.3))
+        cx_, cy_, cz_, tx, ty, tz = cr_at(CAM_CH, t)
+        cp, tp = c + Vector((cx_, cy_, cz_)) + handheld(t), c + Vector((tx, ty, tz))
+        look(R['cam'], cp, tp)
+        fw = (tp - cp).normalized()
+        rt = fw.cross(Vector((0, 0, 1))).normalized()
+        look(R['key'], cp + rt * 1.8 + Vector((0, 0, 1.4)) - fw * 0.5, tp)          # key from the camera side: faces always read
+        look(R['rim'], tp + fw * 3.0 - rt * 1.0 + Vector((0, 0, 2.2)), tp)
+        look(R['fill'], cp - rt * 2.0 + Vector((0, 0, 0.3)), tp)
+
+    def mid(t):
+        hide_fx()
+        R['K'].spark.hide_render = False
+        if t < 15.0:
+            for ob in R['soul']:
+                ob.hide_render = True
+            R['beam'].hide_render = True
+            R['soul_light'].energy = 0
+            b1(t)
+        else:
+            chamber(t)
 
     def subtitles(t):
         durs = R['durs']
@@ -1493,7 +1813,7 @@ if MODE != 'audio':
         R['tgear2'].rotation_euler = (math.radians(90), 0, -0.4 * math.floor(t * 2) - 0.08 * ss(0, 0.1, (t * 2) % 1))
         R['cweight'].location.z = 7.0 + 0.04 * math.sin(t * 1.3)
         for ld, ph in R['lamps']:
-            ld.energy = 90 * (0.85 + 0.1 * math.sin(t * 7.3 + ph) + 0.05 * math.sin(t * 23.0 + 2 * ph))
+            ld.energy = 140 * (0.85 + 0.1 * math.sin(t * 7.3 + ph) + 0.05 * math.sin(t * 23.0 + 2 * ph))
         R['ch_g1'].rotation_euler = (math.radians(90), 0, 0.5 + 0.2 * t)
         R['ch_g2'].rotation_euler = (math.radians(90), 0, -0.4 - 0.32 * t)
         R['ch_ring'].rotation_euler = (math.radians(90), 0, 0.6 * t)
@@ -1508,6 +1828,13 @@ if MODE != 'audio':
             for P in S:
                 P.show(False)
             K.j['plate'].rotation_euler = (0, 0, 0)
+            K.j['head'].location = K.rest['head']
+            K.spark.hide_render = False
+            R['mats']['soul_k'].node_tree.nodes['Emission'].inputs['Strength'].default_value = 1.6 + 0.8 * math.sin(t * 4.0)
+            for ob in R['soul']:
+                ob.hide_render = True
+            R['beam'].hide_render = True
+            R['soul_light'].energy = 0
             knight_alley(u, K)
             goblin_alley(u, G)
             pos, tgt, ref = cam_alley(u)
@@ -1515,6 +1842,10 @@ if MODE != 'audio':
             place_lights(ref)
         else:
             mid(t)
+        # the light washes over the goblin at the end of the chamber and is still there when he is restored in the alley
+        wf = ss(51.0, 52.0, t) if t < 52.0 else 1 - ss(52.0, 52.3, t)
+        R['wash'].hide_render = wf < 0.01
+        R['wash_fac'].default_value = wf
         subtitles(t)
         hud(t, u)
 
@@ -1522,6 +1853,8 @@ if MODE != 'audio':
         frames_dir = os.path.join(OUT, 'preview')
         if cut == 'hook':
             fr = list(range(1, 193))
+        elif cut == 'full':
+            fr = list(range(1, NF + 1))
         else:
             fr = list(range(1249, NF + 1)) + list(range(1, 73))
         files = ['f_%04d.png' % f for f in fr]

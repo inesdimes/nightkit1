@@ -53,3 +53,25 @@ animating B1-B6 properly (kneel in unison, breastplate, mechanism, chain pull, b
 with Enes's 13 takes (the timing is driven by the line start table `LINES`), final render (~1 h) and QA. Realistic: 2-3 more PC
 sessions with a review from Enes between them. Moving it to nightkit (2D/numpy) would be faster to animate but would lose the 3D
 camera moves (crane, orbit) and the depth of the alley.
+
+## 23 Nov 2026 (later) - Enes: "blender devam. kalsın" -> phase 4 part 1 (no voice takes yet)
+- **Full 58 s preview:** `renders/last_respawn/last_respawn_full_0001-1392.mp4` (540x960, 16 samples, placeholder voices; 1392 frames in ~3 min).
+- The middle (8-52 s) is now animated, not boards: B1 the shells pour out of the side arch and march in step, the two run back
+  towards the lens (camera runs backwards), the knight passes the lens and his body wipes to the chamber (occlusion cut at 15.0);
+  B2 the Bellwright braces a slipping gear, the knight's sword knocks a falling hook off the goblin, "Take mine!" over the
+  Bellwright's shoulder; B3 he points, CUT on the knight's turn (23.5), push in on the open breastplate (hollow + spark), the goblin
+  recoils, the shells walk in; B4 they kneel in unison, low shot over their shoulders, then the same emblem on the central gear;
+  B5 the panel slides, the ring of sparks with one empty slot, hand on the crank, the goblin grabs his wrist (shot from behind the
+  crank), he moves the hand aside; B6 he turns to the goblin "Then make this one count.", yanks the chain, the bell swings, the soul
+  runs up a cyan line into the bell, the armour falls backwards into parts, push in on the goblin's face from where the knight stood,
+  cyan light wash that carries across the cut into the restored alley.
+- Two cuts inside the film (15.0 occlusion, 23.5 action cut) + the 52.0 reset.
+- Sound: hook clang, the shells' steps in unison, goblin run, armour clatter, chain snap at 47.5, bell at 47.9; the bell and the
+  chamber reverb tail stop dead at 52.0 (the reset). Loop boundary sample jump still 0.0000.
+- Look changes: bevelled puppet parts, warmer lanterns (no lamp shadows: shadow buffer was full), saturated cyan soul colour,
+  camera-side key light in the chamber (faces read in every shot).
+- All chamber camera keys / character tracks / pose keys / face keys are pure-python data (`CAM_CH`, `KN_*`, `GB_*`, `BW_*`, `MV_*`)
+  so the nightkit version (Enes, 23 Nov: same camera, same everything, only our graphics) can import them.
+- Still open: the look is the blocky puppet look (Enes to OK or ask for changes before the final 1080p render); the shells look
+  like copies of the knight in warm light; no visor reflections; the ending framing keeps the goblin small (empty space where
+  the knight ran - intended); Enes's 13 voice takes; final 1080x1920 render (~1 h); then the nightkit version.

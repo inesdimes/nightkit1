@@ -169,4 +169,8 @@ New briefs as Enes sends them (follow PIPELINE.md; QA with `python tools/qa/scen
   `last_respawn_loop_0001-0216.mp4`, `sheet_mid.png`. Details, measurements, problems and the time estimate: `reviews/last_respawn.md`.
 - **Waiting for Enes:** continue in Blender or move the episode to nightkit; knight pop at the loop boundary OK or not; his 13 voice takes
   (`briefs/last_respawn_voice_sheet.md` -> `vocal/last_respawn/`).
+- **Later (Enes: continue in Blender, keep the knight pop):** the whole film is animated; full preview
+  `renders/last_respawn/last_respawn_full_0001-1392.mp4`. Waiting for: Enes's look OK, his voice takes, then the final render.
+  **After the Blender film: make the same film in nightkit** (identical camera / timing / staging, only our graphics) - import the
+  track data from `blender/last_respawn.py`.
 
