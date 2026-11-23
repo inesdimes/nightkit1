@@ -12,8 +12,20 @@
 6. **Research kit** (`research/README.md`): `tools/llm/gemini.py --youtube <link>` + `research/hook_template.txt` to analyse reference Shorts with Gemini.
 7. `vocal/` is in `.gitignore`: Enes's raw recordings are never committed.
 
-## Current task - THE LAST RESPAWN (Blender, phases 1-3, then STOP)
-**SHELVED 23 Nov 2026 (late): Enes did not like the story or the render - back to nightkit shorts.** Earlier status: finalized with placeholder voices - Blender final + nightkit version (same camera / staging / timing) in `renders/last_respawn/`, details in `reviews/last_respawn.md`. Open: Enes's 23 voice takes (`briefs/last_respawn_voice_sheet.md`), then re-render both (one audio rebuild, both read the same tracks).
+## Current task - WHAT IF EVERY HEALING POTION MADE SOMEONE FORGET YOU? (Blender, ~45 s, 22:30 slot)
+1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/forget_potion.md` (it overrides `briefs/forget_potion_gpt.txt`: note the logic fix).
+2. Use **Opus** for the new characters and places; reuse the rigid-puppet rig, lighting and render setup from `blender/last_respawn/`.
+3. Voices: narrator = Enes's takes in `vocal/forget_potion/` if present; every missing line gets a Kokoro placeholder (listed in the brief).
+   Time the picture to the real line durations; no time-stretching of speech.
+4. No-stop: build, preview, fix, final render at 1080x1920. QA: `python tools/qa/check.py <mp4>` must pass (-14 LUFS, 1080x1920),
+   `python tools/qa/look_metrics.py <mp4>` contrast >= 35, frame 0 readable and moving, subtitles in the channel's big boxed style,
+   no object closer than ~1 m to the lens unless it is the subject.
+5. Output `renders\forget_potion\`; captions are in the brief. Update CONTINUE.md, commit scripts (not renders), **push**.
+
+## THE LAST RESPAWN - SHELVED 23 Nov 2026 (late)
+Enes did not like the story or the render - back to nightkit shorts. Its cloud fix list (subtitles, haze, close-ups, loudness, loop) is dropped.
+Last status: finalized with placeholder voices - Blender final + nightkit version in `renders/last_respawn/`, details in `reviews/last_respawn.md`.
+Original phase steps, for reference:
 1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/last_respawn.md` FIRST (it overrides parts of `briefs/last_respawn_gpt.md`), then the GPT brief.
 2. Use **Opus** for this task (new world, new rigs). Blender 5.3 per CLAUDE.md; characters are rigid-part puppets keyframed from Python.
 3. Run phase 1 (blockout + frame-0 still), phase 2 (hook test 00:00-00:08, preview quality, placeholder voices) and phase 3
