@@ -252,7 +252,7 @@ Next: Enes's rewritten stories (tutorial_guy / pots) or a new brief; build the c
 - DT 06 subtitle split set by hand to the 1.25 s pause (auto split was 0.26 s).
 - **Enes chose the Betül versions of both to post** (23 Nov); not posted yet.
 
-## 24 Nov 2026 - thumbnails + captions for Dragon Taxes + Forget Potion (Betül versions)
+## 23 Nov 2026 (late) - thumbnails + captions for Dragon Taxes + Forget Potion (Betül versions)
 - `python tools/thumb.py hd dt|dt_b|fpo` (new `make_hd`: frame_low + upscale, no subtitles, Betül timing via TTS_DIR).
   -> `renders/dragon_taxes/thumbnail.png` (0.7 s: knight vs dragon in profile, "THEY SENT HIM / TO SLAY IT / WRONG VILLAIN"),
   alt `thumbnail_b.png` (31.1 s: knight stands in front of the dragon; dragon head front-on reads as a blob);

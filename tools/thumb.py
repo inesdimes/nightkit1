@@ -38,7 +38,7 @@ def make_hd(name,t,lines,out,tts_dir=None):
     for s,y,col,sc in lines: big(d,s,y,col,sc)
     os.makedirs(os.path.dirname(out),exist_ok=True); im.save(out); print(out)
 if __name__=='__main__' and len(sys.argv)>1 and sys.argv[1]=='hd':
-    # 24 Nov 2026: the Betül versions Enes chose to post (times are 1x, Betül timing)
+    # 23 Nov 2026: the Betül versions Enes chose to post (times are 1x, Betül timing)
     YEL=(255,214,40); WHT=(255,255,255); RED=(255,70,60); R=os.path.join(ROOT,'..','renders')
     which=sys.argv[2]
     DTL=[('THEY SENT HIM',110,WHT,15),('TO SLAY IT',235,YEL,17),('WRONG VILLAIN',1620,RED,15)]
