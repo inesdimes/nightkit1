@@ -51,6 +51,7 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 | Why do heroes smash every pot? (32.5 s final = 39 s x 1.2, day 3, **02:00 slot**, Format 3.0) | examples/pots.py (voices `tools/tts/pt.py`; new old woman (bun, apron, shawl, gold brooch), cottage + door shelf + shelf wall + table, pots with lids, shards, boy flashback, tea) | scene_qa: two 3-vertex knight/woman overlaps (28.6-29.0 s), `check.py` 11/13 as above, critique r2 in `reviews/pots.md` -> `renders/pots/why_do_heroes_smash_every_pot_32s.mp4`; not posted; captions `captions/pots.md` |
 | The Last Respawn (58 s loop, Blender, 23 Nov) | blender/last_respawn.py (puppets + frame handler, numpy sound, mastered final.wav; voices `tools/tts/lrs.py` PLACEHOLDER) | final rendered -> `renders/last_respawn/last_respawn_final_1080x1920.mp4`; **SHELVED** (Enes did not like the story or the render), not posted |
 | The Last Respawn - nightkit version (58 s, same camera / staging / timing) | examples/last_respawn_nk.py (reads the Blender export `MODE=export`; zraster + Format 3.0 look) | final rendered -> `renders/last_respawn/last_respawn_nightkit_1080x1920.mp4`, `check.py` 10/11 (WARN = planned pops); **SHELVED** with the Blender version, not posted |
+| What if every healing potion made someone forget you? (36.3 s final = 43.5 s x 1.2, 24 Nov, **nightkit HD figures**) | examples/forget_potion.py (voices `tools/tts/fpo.py` + `vc.py fpo`; new `nightkit/hd.py` many-face humans; camp / battle flashback / inn / stone bridge night + dawn) | FINAL 24 Nov (no-stop, Enes approved): `check.py` 9/11 (WARN = planned cut to black + scene cuts / subtitle pops), look_metrics motion 4.1, brightness 52.8, contrast 35.3 -> `renders/forget_potion/what_if_every_healing_potion_made_someone_forget_you_36s.mp4` (1x in `scratch_old/`); not posted; captions `captions/forget_potion.md` |
 Captions ready: `captions/final_boss.md`, `captions/guard_forgets.md`, `captions/one_apple.md` (`captions/cat_dodge.md` exists but that video was dropped), `captions/cat_pov.md`, `captions/safe_zone.md`, `captions/smallest_umbrella.md`, `captions/camera_under_bed.md`.
 
 ## Newest work (18 Nov 2026)
@@ -188,3 +189,16 @@ we get more detailed visuals with nightkit." Decision: no more Blender episodes 
 detailed models. Measured on the nightkit port (zraster, 270x480, one process): 2,500-4,900 faces per frame in 0.2-0.4 s per
 frame, z-buffered (no painter's-sort errors with interpenetrating parts). The Last Respawn code stays in the repo, unused.
 Next: Enes's rewritten stories (tutorial_guy / pots) or a new brief; build the characters/sets with far more faces than before.
+
+## 24 Nov 2026 - Forget Potion in nightkit with HD figures (PC, no-stop to final)
+- Enes: "nightkite dön" -> the Forget Potion brief (written for Blender) built in nightkit. New shared module `nightkit/hd.py`:
+  many-face humans (~1,300 faces: lofted torso, round limbs, 2-bone IK arms/legs with hand/foot targets, fingers with grip,
+  shaped head with eyes/brows/nose/mouth decals and face states incl. 'blank', hair styles short/messy/long/pony/bun/bald,
+  beard, helmet, apron, cloak) + props (potion with glowing liquid, wooden horse, sword). Asset sheet: `ASSET=lineup|faces|props`.
+- Story changes approved by Enes: the wooden horse is planted in the ring portrait (young Mira holds it); line 13 kept.
+- Voices: narrator Kokoro -> ChatterboxVC (line 01 re-made at -1.4 st, was +27 % pitch), characters raw Kokoro per the brief.
+  **Placeholders - Enes must listen**; own takes go to `tts/fpo_own/<key>_<i>.wav` then `python tools/tts/fpo.py build own`.
+- Rebuild: `python tools/render_parts.py examples/forget_potion.py --prefix fpo --audio forget_potion.wav --out ../renders/forget_potion/scratch_old/forget_potion_1x.mp4 --parts 8`
+  then `sh tools/speedup.sh <1x> <final>` (~4 min total on this PC, ~0.5 s/frame per process).
+- Known weak spots (only seen on stills, not watched in motion): kneeling legs / sitting skirt clip into the ground, the battle shot
+  is small and dark, the inn interior is a flat glowing wall, hand contacts (grab, horse hand-over) are approximate; sound judged by measurement only.

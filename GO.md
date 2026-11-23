@@ -12,7 +12,8 @@
 6. **Research kit** (`research/README.md`): `tools/llm/gemini.py --youtube <link>` + `research/hook_template.txt` to analyse reference Shorts with Gemini.
 7. `vocal/` is in `.gitignore`: Enes's raw recordings are never committed.
 
-## Current task - WHAT IF EVERY HEALING POTION MADE SOMEONE FORGET YOU? (Blender, ~45 s, 22:30 slot)
+## Current task - WHAT IF EVERY HEALING POTION MADE SOMEONE FORGET YOU? (~45 s, 22:30 slot)
+**DONE 24 Nov in nightkit (not Blender, Enes's choice): see CONTINUE.md.**
 1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/forget_potion.md` (it overrides `briefs/forget_potion_gpt.txt`: note the logic fix).
 2. Use **Opus** for the new characters and places; reuse the rigid-puppet rig, lighting and render setup from `blender/last_respawn/`.
 3. Voices: narrator = Enes's takes in `vocal/forget_potion/` if present; every missing line gets a Kokoro placeholder (listed in the brief).
