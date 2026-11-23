@@ -22,6 +22,10 @@
    no object closer than ~1 m to the lens unless it is the subject.
 5. Output `renders\forget_potion\`; captions are in the brief. Update CONTINUE.md, commit scripts (not renders), **push**.
 
+## Next task (after forget_potion) - WHAT IF THE DRAGON WAS STEALING THE KING'S TAXES BACK? (Blender, ~45 s)
+Read `briefs/dragon_taxes.md` (overrides `briefs/dragon_taxes_gpt.txt`). Opus for the dragon rig. Voices from `vocal/dragon_taxes/`
+or Kokoro placeholders (listed in the brief). Same QA and no-stop rule as forget_potion. Output `renders\dragon_taxes\`. Push.
+
 ## Still open - THE LAST RESPAWN fixes (below) - do these first if they are not done yet
 ## THE LAST RESPAWN, fixes after the first full preview (cloud review 23 Nov 2026)
 The Blender look works (depth, fog, lamps; motion 6.7, the hook moves from frame 0). Fix before the final:
