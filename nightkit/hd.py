@@ -1,4 +1,4 @@
-"""HD figures for nightkit (24 Nov 2026, Enes: "more detailed visuals with nightkit"): many-face humans and props for zraster.
+﻿"""HD figures for nightkit (24 Nov 2026, Enes: "more detailed visuals with nightkit"): many-face humans and props for zraster.
 
 The old box humans (examples/npc_well.py NW.human) are ~150 faces. These are ~1,500-2,500: lofted torso and limbs with
 round cross-sections, joint spheres, a shaped head with eyes / brows / nose / mouth decals and face states, hair shells,
@@ -270,7 +270,7 @@ def human(S, P):
             Q += limb(el, wr, 0.04, 0.03, S['skin'], n=nl, m=2, ref=Wd(np.array([0, 0, 1.0])), bulge=0.05, cap0=False)
         palm = g(key + 'palm')
         palm = Wd(Rch @ np.array([-sd * 1.0, 0, 0.2])) if palm is None else (Wd(np.asarray(palm, float)) if g(key + 'palm_local', True) else np.asarray(palm, float))
-        Q += hand(wr, wr - el, palm, g(key + 'grip', 0.25), S['gloves'] or S['skin'], k, ring=(S.get('ring') if key == S.get('ring_hand', 'l') else None))
+        Q += hand(wr, wr - el, palm, g(key + 'grip', 0.25), S['gloves'] or S['skin'], k, ring=(S.get('ring') if key == S.get('ring_hand', 'l') else None), side=sd)
         P['_' + key + 'wrist'] = wr; P['_' + key + 'dir'] = nz(wr - el); P['_' + key + 'palm'] = nz(palm)
     # ---- legs
     for sd, key in ((1, 'r'), (-1, 'l')):
@@ -442,10 +442,10 @@ def hair(hc, RH, S, P, k, rad, deform):
         Q += bx(mc, RH, (0.026 * k, 0.006 * k, 0.008 * k), bc_)
     return Q
 
-def hand(wr, d, palm_n, grip, col, k, ring=None):
+def hand(wr, d, palm_n, grip, col, k, ring=None, side=-1):
     """hand at the wrist, pointing along d, palm facing palm_n. grip 0 = open flat, 1 = fist. ~70 faces."""
     d = nz(d); pn = np.asarray(palm_n, float); pn = nz(pn - d * float(pn @ d)) if np.linalg.norm(pn - d * float(pn @ d)) > 1e-6 else frame_for(d, (0, 0, 1))[0]
-    sdv = np.cross(d, pn)                                     # across the palm (thumb side = +sdv)
+    sdv = np.cross(d, pn) * (1.0 if side < 0 else -1.0)       # across the palm (thumb side = +sdv); mirrored for the right hand (23 Nov fix: right thumbs pointed the wrong way)
     Q = []; dk = shade(col, 0.88)
     pl = 0.085 * k; pw = 0.042 * k; pt = 0.017 * k
     c = wr + d * pl * 0.5

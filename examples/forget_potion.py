@@ -1,6 +1,7 @@
-"""WHAT IF EVERY HEALING POTION MADE SOMEONE FORGET YOU? (Insert Disc 2, 24 Nov 2026) ~45 s build (x1.2 after), PS1 dark fantasy, 9:16.
-Brief: briefs/forget_potion.md (Blender there; Enes 24 Nov: "nightkite dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¶n" -> built in nightkit with the new HD figures, nightkit/hd.py).
-Story decisions (Enes 24 Nov): the wooden horse is planted in the ring portrait (young Mira holds it); line 13 stays (no wordless beat).
+﻿"""WHAT IF EVERY HEALING POTION MADE SOMEONE FORGET YOU? (Insert Disc 2, 24 Nov 2026) ~45 s build (x1.2 after), PS1 dark fantasy, 9:16.
+Brief: briefs/forget_potion.md (Blender there; Enes 24 Nov: "nightkite dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€Â¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¶n" -> built in nightkit with the new HD figures, nightkit/hd.py).
+Story decisions (Enes 24 Nov): line 13 stays (no wordless beat). 23 Nov revision (Enes): Mira is the woman he loves (line 08 says it, the ring
+portrait shows her), the wooden horse is gone entirely, and the end loops: after the black he lifts the next potion -> frame 0.
 Format 3.0: constant camera, subject in the middle third, speaker-coloured subtitles, 270x480 + depth outline.
 
 Asset lock: ASSET=lineup|faces|props python examples/forget_potion.py -> test_fp_<asset>.png"""
@@ -106,7 +107,8 @@ LINES = _lines(); T0 = dict(LINES)
 def tend(k): return T0[k] + SCR['dur'][k]
 def ws(k, i): return T0[k] + SCR['sent'][k][i][0]
 T_BLACK = tend('16') - 0.12                     # hard cut to black on the last word
-DUR = round(T_BLACK + 0.55, 2); N = int(round(DUR * FPS))
+T_LOOPF = T_BLACK + 0.5                         # LOOP (23 Nov): after the black, the camp again: he lifts the next potion -> frame 0
+DUR = round(T_LOOPF + 1.0, 2); N = int(round(DUR * FPS))
 # scene cuts
 T_BAT = T0['04'] - 0.2; T_INN = T0['05'] - 0.3; T_LAB = T0['07'] - 0.25; T_BR = T0['08'] - 0.15; T_DAWN = T0['15'] - 0.4
 def scene(t):
@@ -374,7 +376,8 @@ def adv_camp(t):
         P['lgrip'] = 0.15; P['lpalm'] = (0, 1.0, 0.3); P['brow'] = -0.7; P['mouth'] = 'o' if u > 0.5 else 'neutral'
     if t >= T0['03'] - 0.6:                                                     # looks down at the ring in his palm
         u = sm(seg01(t, T0['03'] - 0.6, T0['03'] + 0.1))
-        P['lh_w'] = tuple(lerp3(V(A_CAMP) + V((-0.55, 1.05, 0.25)), V(A_CAMP) + V((-0.12, 0.98, -0.32)), u)); P['lpalm'] = (0, 1.0, 0); P['lgrip'] = 0.2
+        L1 = V(hd.Ry(YAW_A).T @ V((-0.55, 1.05, 0.25))); L2 = V((-0.1, 0.98, 0.34)); Lc = V((-0.42, 1.04, 0.5))      # 23 Nov: the path stays in front of the chest
+        P.pop('lh_w', None); P['lh'] = tuple((1 - u) ** 2 * L1 + 2 * u * (1 - u) * Lc + u * u * L2); P['lpalm'] = (0, 1.0, 0); P['lgrip'] = 0.2
         P['head'] = (lerp(0.55, -0.1, u), 0.0, 0.05); P['nod'] = 0.45 * u; P['twist'] = lerp(0.2, 0.0, u); P['eyes'] = 'sad' if u > 0.5 else 'open'; P['mouth'] = 'neutral'
     return P
 def adv_camp_full(t):
@@ -383,7 +386,8 @@ def adv_camp_full(t):
     if t < T_GULP[1] + 0.45:
         H_ = head_pose(ADV, P); m = mouth_pt(H_); fw = H_['_RH'] @ V((0, 0, 1.0)); upv = H_['_RH'] @ V((0, 1.0, 0))
         u = 1 - sm(seg01(t, T_GULP[1], T_GULP[1] + 0.45))
-        tgt = m + fw * 0.13 + upv * 0.07; low = V(A_CAMP) + V((0.18, 0.85, -0.3))
+        sdh = H_['_RH'] @ V((1.0, 0, 0))                                         # 23 Nov: hand beside the chin (it poked through the face)
+        tgt = m + fw * 0.17 + upv * 0.0 + sdh * 0.07; low = V(A_CAMP) + V((0.18, 0.85, -0.3))
         P['rh_w'] = tuple(lerp3(low, tgt, u)); P['rgrip'] = 0.85; P['rpalm'] = tuple(-(H_['_RW'] @ V((1.0, 0, 0))))
         bottle = dict(fill=max(0.0, 0.55 - 0.55 * seg01(t, 0.05, T_GULP[1])), tilt_to=m, u=u)
     return P, bottle
@@ -514,11 +518,11 @@ def adv_bridge(t):
     mt = talking(t, '12')
     if mt: P['mouth'] = mt; P['brow'] = 0.35
     if T0['12'] <= t < T0['13']: P['eyes'] = 'open'
-    if t >= T_HORSE[0]:                                                         # takes the toy, turns it over, a kind smile
-        h = sm(seg01(t, T_HORSE[1] - 0.2, T_TURN[0] + 0.4))
-        P['lh_w'] = tuple(lerp3(V(MEET), V(A_KNEEL) + V((-0.2, 0.98, -0.3)), h)); P['lpalm'] = (0, 1.0, -0.2); P['lgrip'] = 0.25
-        P['head'] = (lerp(0.0, -0.2, h), 0.0, 0.0); P['nod'] = 0.3 * h
-        if t >= T_TURN[0] + 0.6: P['mouth'] = 'smile'; P['brow'] = 0.0; P['nod'] = lerp(0.3, 0.05, sm(seg01(t, tend('14') - 0.8, tend('14'))))
+    if t >= T_HORSE[0]:                                                         # (23 Nov: the horse is gone) she lets go of his hand; a polite, kind smile
+        h = sm(seg01(t, T_HORSE[0], T_HORSE[0] + 0.6))
+        P['lh_w'] = tuple(lerp3(V(MEET), V(A_KNEEL) + V((-0.22, 0.6, -0.12)), h)); P['lpalm'] = (0, 1.0, 0); P['lgrip'] = 0.3
+        P['brow'] = 0.3 if t < T_HORSE[1] + 0.4 else 0.0
+        if t >= T_TURN[0] + 0.6: P['mouth'] = 'smile'; P['brow'] = 0.0; P['nod'] = lerp(0.1, 0.05, sm(seg01(t, tend('14') - 0.8, tend('14'))))
     return P
 _MH = {}
 def mira_pose(t):
@@ -540,11 +544,12 @@ def mira_pose(t):
         f = sm(seg01(t, T0['12'] + 1.1, T0['12'] + 1.6)); P['mouth'] = 'o' if f < 0.99 else 'neutral'; P['eyes'] = 'wide'; P['brow'] = -0.4 * f
     if t >= T0['13']:
         P['brow'] = -0.8; P['eyes'] = 'sad'; P['mouth'] = 'neutral'
-    if t >= T_HORSE[0]:                                                         # takes the horse from her belt, presses it into his palm
-        u1 = sm(seg01(t, T_HORSE[0], T_HORSE[0] + 0.35)); u2 = sm(seg01(t, T_HORSE[0] + 0.35, T_HORSE[1])); u3 = sm(seg01(t, T_HORSE[1] + 0.1, T_HORSE[1] + 0.6))
-        p_belt = (-0.18, 0.92, 0.12); p_give = loc(M_, P['yaw'], V(MEET) + V((0.03, 0.07, -0.02)))
-        P['lh'] = lerp3(lerp3((0.05, 0.55, 0.2), p_belt, u1), p_give, u2); P['lh'] = lerp3(P['lh'], (0.05, 0.55, 0.2), u3); P['lgrip'] = 0.55; P['lpalm'] = (0, -1.0, 0.0)
-        P['rh_w'] = tuple(lerp3(V(MEET) + V((-0.05, -0.02, 0.02)), wpt(P, (0.28, 0.3, 0.1)), u2)); P['rgrip'] = 0.4
+    if t >= T_HORSE[0]:                                                         # "she wanted to tell him everything": her hand rises to his face ... and stops
+        up = sm(seg01(t, T_HORSE[0], T_HORSE[0] + 0.65)); dn = sm(seg01(t, T_HORSE[1] + 0.35, T_HORSE[1] + 0.95))
+        face = V((-2.47, 1.12, -1.97)); stop = face + hd.nz(V(M_) + V((0, 0.9, 0)) - face) * 0.16
+        P['lh'] = lerp3((0.05, 0.55, 0.2), loc(M_, P['yaw'], stop), up * (1 - dn)); P['lpalm'] = (0.3, 0.2, 1.0); P['lgrip'] = 0.25
+        P['rh_w'] = tuple(lerp3(V(MEET) + V((-0.05, -0.02, 0.02)), wpt(P, (0.28, 0.3, 0.1)), up)); P['rgrip'] = 0.4
+        if dn > 0.3: P['nod'] = 0.25 * dn
     if t >= T0['14']: P['mouth'] = 'soft'; P['brow'] = -0.6; P['eyes'] = 'sad' if t < T0['14'] + 1.2 else 'half'
     return P
 def loc(base, yaw, p): return tuple(hd.Ry(yaw).T @ (V(p, float) - V(base, float)))
@@ -564,7 +569,6 @@ def adv_dawn(t):
     P = dict(base=(x, deck_y(x), 0.15), yaw=PI / 2 + 0.03, eyes='open', mouth='neutral', lean=0.05, cape_sway=0.4 * (1 - seg01(t, ts, ts + 1.2)))
     if t < ts + 0.4: P['walk'] = (x - x0) * 4.9; P['stride'] = 0.3
     else: P['head'] = (-0.22 * win(t, ts + 0.5, ts + 1.9, 0.4), 0.0, 0.0)        # a small turn of the head - not a turn back
-    P['lh'] = (-0.12, 0.98, 0.3); P['lpalm'] = (0, 1.0, 0); P['lgrip'] = 0.4                                  # holds the toy
     return P
 def mira_dawn(t):
     x = -6.0 + 0.45 * sm(seg01(t, T0['15'] - 0.1, T0['15'] + 0.5))
@@ -694,7 +698,6 @@ def world(t, cam_pos, cam):
         if sc == 'dawn':
             layers.append(sky_disc((22, 3.2, 1.6), 1.5, (255, 236, 190)))
             A = adv_dawn(t); layers.append(hd.human(ADV, A)); Mi = mira_dawn(t); layers.append(hd.human(MIRA, Mi))
-            layers.append(hd.wooden_horse(grip_pt(A, 'l', 0.06, 0.03), hd.Ry(PI / 2), scale=1.2))
         else:
             layers.append(sky_disc((-12, 15, 30), 1.2, (210, 220, 240)) if dawn < 0.5 else [])
             A = adv_bridge(t); layers.append(hd.human(ADV, A))
@@ -710,12 +713,6 @@ def world(t, cam_pos, cam):
                 b = dict(u=pr, tilt_to=mira_mouth(t), fill=0.7 * (1 - seg01(t, T_POUR[1], T_POUR[2])))
                 Qb, gp = potion_in_hand(A, 'r', b if pr > 0.05 else None, glow=1.0, fill=0.7); layers.append(Qb)
                 L.append((tuple(gp + V((0, 0.1, -0.15))), (255, 60, 60), 0.5))
-            if t >= T_HORSE[0] + 0.35:
-                hand_ = 'l'
-                if t < T_HORSE[1]: hp = grip_pt(Mi, 'l', 0.06, -0.03); Rh = hd.Ry(1.2)
-                else:
-                    hp = grip_pt(A, 'l', 0.05, 0.04); sp = sm(seg01(t, *T_TURN)); Rh = hd.Ry(1.2 + 2.4 * sp) @ hd.Rz(0.5 * math.sin(PI * sp))
-                layers.append(hd.wooden_horse(hp, Rh, scale=1.2))
             layers.append(rain_faces(cam, t, rain))
         fs, fe = (9, 42) if sc == 'bridge' else (14, 70)
     return layers, L, fog, amb, fs, fe
@@ -739,24 +736,21 @@ def frame_low(t):
 # ======================= 2D overlays: ring portrait, label, HUD =======================
 def _px(d, x, y, w, h, c): d.rectangle([x, y, x + w - 1, y + h - 1], fill=c)
 def portrait_img():
-    """young Mira holding the wooden horse, painted in the ring: 64x80 pixel art, drawn once"""
+    """Mira, the woman he loves, painted in his ring: 64x80 pixel art, drawn once (23 Nov: grown-up Mira, no horse)"""
     im = Image.new('RGBA', (64, 80), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
     d.ellipse([0, 0, 63, 79], fill=(238, 214, 168, 255))
     d.ellipse([3, 3, 60, 76], fill=(214, 186, 142, 255))
-    d.rectangle([14, 52, 50, 79], fill=(84, 110, 150, 255))                          # dress
-    d.ellipse([18, 12, 46, 46], fill=(156, 74, 40, 255))                             # hair back
-    d.ellipse([21, 17, 43, 45], fill=(236, 196, 164, 255))                           # face
-    d.rectangle([19, 13, 45, 22], fill=(170, 82, 44, 255))                           # fringe
-    d.rectangle([17, 22, 21, 52], fill=(156, 74, 40, 255)); d.rectangle([43, 22, 47, 52], fill=(156, 74, 40, 255))
-    _px(d, 26, 29, 3, 3, (40, 30, 26, 255)); _px(d, 36, 29, 3, 3, (40, 30, 26, 255))
-    d.arc([27, 33, 38, 41], 20, 160, fill=(150, 60, 60, 255), width=2)
-    _px(d, 24, 35, 3, 2, (232, 150, 140, 255)); _px(d, 38, 35, 3, 2, (232, 150, 140, 255))
-    hc = (184, 128, 74, 255); hk = (130, 88, 52, 255)                                # the wooden horse in her arms
-    d.rectangle([24, 56, 40, 63], fill=hc); d.rectangle([38, 49, 43, 58], fill=hc); d.rectangle([40, 46, 48, 51], fill=hc)
-    _px(d, 39, 47, 2, 6, hk); _px(d, 45, 47, 1, 1, (30, 20, 14, 255))
-    for x in (25, 29, 35, 38): _px(d, x, 63, 2, 6, hc)
-    _px(d, 21, 56, 3, 5, hk)
-    d.rectangle([18, 58, 26, 62], fill=(236, 196, 164, 255)); d.rectangle([40, 59, 47, 63], fill=(236, 196, 164, 255))   # hands
+    d.ellipse([10, 54, 54, 96], fill=(196, 184, 156, 255))                           # shoulders, her cream dress
+    d.rectangle([26, 50, 38, 58], fill=(232, 190, 160, 255))                         # neck
+    d.ellipse([14, 8, 50, 50], fill=(150, 72, 40, 255))                              # hair back
+    d.rectangle([14, 26, 22, 64], fill=(150, 72, 40, 255)); d.rectangle([42, 26, 50, 64], fill=(150, 72, 40, 255))   # long hair
+    d.ellipse([20, 14, 44, 48], fill=(232, 190, 160, 255))                           # face
+    d.pieslice([18, 9, 46, 34], 180, 360, fill=(164, 80, 44, 255))                   # parted hair on top
+    _px(d, 26, 28, 3, 3, (60, 90, 50, 255)); _px(d, 36, 28, 3, 3, (60, 90, 50, 255))   # green eyes
+    _px(d, 25, 25, 5, 1, (110, 56, 34, 255)); _px(d, 35, 25, 5, 1, (110, 56, 34, 255))
+    d.arc([27, 34, 37, 42], 20, 160, fill=(170, 70, 70, 255), width=2)               # smile
+    _px(d, 23, 35, 3, 2, (236, 160, 146, 255)); _px(d, 39, 35, 3, 2, (236, 160, 146, 255))
+    _px(d, 30, 60, 4, 3, (226, 178, 64, 255))                                        # a small pendant
     return im
 PORTRAIT = portrait_img()
 def ring_overlay(im, t):
@@ -800,9 +794,10 @@ def hud_overlay(im, t):
         if flick: look.draw_cells(d, look.text_cells(s2, int(540 - text_w(s2, sc2) / 2), 270, sc2, (255, 90, 80)), 4)
 COL = {'N': (242, 238, 226), 'K': (255, 190, 90), 'M': (255, 190, 90), 'I': (190, 190, 196), 'A': (120, 230, 255)}
 SUBS = look.Subtitles(SCR, LINES, W, H, S, COL, title_key='-none-', n=17,
-                      hil={'FORGET', 'TRICK', 'SOLDIER', 'NAME.', 'FACE.', 'LABEL', 'MIRA,', 'DYING.', 'SAVE', 'WHO.', 'EVERYTHING.', 'BELIEVE', 'NEW', 'BOTH'})
+                      hil={'FORGET', 'TRICK', 'SOLDIER', 'NAME.', 'FACE.', 'LABEL', 'MIRA.', 'LOVED.', 'DYING.', 'SAVE', 'WHO.', 'EVERYTHING.', 'BELIEVE', 'NEW', 'BOTH'})
 def frame_final(t):
-    if t >= T_BLACK: return np.zeros((H * S, W * S, 3), np.float32)
+    if t >= T_LOOPF: t = t - DUR                                                  # the loop tail IS the start (negative time = just before frame 0)
+    elif t >= T_BLACK: return np.zeros((H * S, W * S, 3), np.float32)
     img, vi = frame_low(t); arr = post.upscale(img, S)
     im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)); ring_overlay(im, t); label_overlay(im, t); hud_overlay(im, t)
     arr = np.asarray(im).astype(np.float32)
@@ -939,6 +934,11 @@ def build_audio(path):
     pn = np.zeros(n); tt = s.T(2.0); f = 220.0
     x = (np.sin(2 * np.pi * f * tt) + 0.45 * np.sin(4 * np.pi * f * tt) + 0.2 * np.sin(6 * np.pi * f * tt)) * np.exp(-tt * 1.3) * np.minimum(1, tt / 0.005)
     put(pn, x, T_BLACK, 0.08)
+    lpm = mask(T_LOOPF, DUR + 1, 0.15); tail = soft_fire(s, level=0.02, mask=lpm, seed=7)                       # the loop tail: the camp again
+    for k in range(int((DUR - T_LOOPF) / 0.45) + 1):
+        tb = T_LOOPF + 0.1 + k * 0.45
+        for j in range(3): tt = s.T(0.03); put(tail, np.sin(2 * np.pi * 4300 * tt) * np.sin(np.pi * tt / 0.03), tb + j * 0.06, 0.004)
+    bed = bed + tail
     L = bed + fx_end + pn; R_ = np.roll(bed, 700) + np.roll(fx_end, 200) + pn
     pk = max(np.abs(L).max(), np.abs(R_).max()); gv = pk * 1.6 / np.abs(NB).max()
     s.L = L + NB * gv; s.R = R_ + NB * gv; s.reverb(0.12, length=1.4, decay=3.0)

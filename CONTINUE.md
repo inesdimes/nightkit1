@@ -216,3 +216,17 @@ Next: Enes's rewritten stories (tutorial_guy / pots) or a new brief; build the c
   (~8 min on this PC) then sh tools/speedup.sh <1x> <final>. Asset sheets: ASSET=dragon|cast|horse|props; frames: TEST=t1,t2.
 - Weak spots (seen on stills only): hand contacts on sacks / coin approximate, the knight's face pales in torchlight, wing tips cropped in the
   wingbeat, 23 cuts, motion metric LOW; sound judged by measurement only.
+
+## 23 Nov 2026 (later) - Enes's review of Dragon Taxes + Forget Potion -> v2 of both
+- Shared fix in `nightkit/hd.py`: right-hand thumbs were mirrored (Mira's wave showed the thumb down); `hand(..., side)` now mirrors the right hand.
+  Affects every hd figure (only forget_potion + dragon_taxes use hd).
+- **Dragon Taxes v2** -> `renders/dragon_taxes/what_if_the_dragon_was_stealing_the_kings_taxes_back_40s.mp4` (39.9 s, check 10/11, contrast 37.8,
+  brightness 57.4, motion 2.6 LOW; v1 in `scratch_old/v1_...`): dragon head rebuilt (closed, rounded snout + jaw; the open half-tube read as a pipe),
+  smaller eyes; the woman's hands stay outside the sack; open-faced knight helmet above the brows (eyes visible) with a blue plume; dawn sky dome
+  (gradient, clouds, sun halo, birds); flight pose (`fly=True`: tail streams back, legs tucked, slower bigger flaps). **LOOP**: after the last line the
+  king's poster "QUEST: SLAY THE DRAGON - REWARD 500 GOLD", then 0.75 s of the cave just before frame 0 (last frame -> frame 0 is one step).
+- **Forget Potion v2** -> `renders/forget_potion/what_if_every_healing_potion_made_someone_forget_you_39s.mp4` (38.6 s, check 9/11 = planned black + pops,
+  motion 4.0, contrast 35.1; the approved v1 is `scratch_old/v1_approved_..._36s.mp4`): line 08 is now "...he found Mira. The woman he loved. Dying."
+  (only 08 re-voiced; old VC files backed up in `tts/fpo_vc_backup_23nov`), the ring portrait shows grown-up Mira, the wooden horse is removed
+  everywhere (line 13: her hand rises to his face and stops), the gulp hand sits beside the chin, the ring hand stays in front of the chest.
+  **LOOP**: after the black, 1 s of the camp just before frame 0 (he lifts the next potion).

@@ -1,4 +1,4 @@
-# WHAT IF EVERY HEALING POTION MADE SOMEONE FORGET YOU? - production brief (23 Nov 2026)
+﻿# WHAT IF EVERY HEALING POTION MADE SOMEONE FORGET YOU? - production brief (23 Nov 2026)
 Source story: `briefs/forget_potion_gpt.txt` (GPT). This file adapts it for production; where they disagree, this file wins.
 ~45 s, 9:16, 1080x1920, 24 fps. 22:30 TR slot. Engine: **Blender** (reuse the rigid-puppet rig and lighting approach from
 `blender/last_respawn/`), PS1-flavoured low-poly, warm/cold story lighting.
@@ -20,7 +20,7 @@ In the source, the young woman at 0:00 already forgets him, and at 0:27 the same
 | 0:09-0:12 | flashback, desaturated: battle, he drinks; the old soldier he saved looks at him blankly | NARRATOR: Then the soldier he'd saved forgot his name. |
 | 0:12-0:15 | the Hearthmoor inn: the innkeeper blocks the door | INNKEEPER: Rooms are for paying guests. NARRATOR: The innkeeper forgot his face. |
 | 0:15-0:18 | close insert (2D overlay): the bottle label, faded: A LIFE RESTORED. A BOND FORGOTTEN. | NARRATOR: The label had been there all along. |
-| 0:18-0:21 | night, the old stone bridge on Thornwood Road, rain; Mira lies wounded below it | NARRATOR: Then, beneath the old bridge, he found Mira, dying. |
+| 0:18-0:21 | night, the old stone bridge on Thornwood Road, rain; Mira lies wounded below it | NARRATOR: Then, beneath the old bridge, he found Mira. The woman he loved. Dying. (23 Nov, Enes: Mira is his love) |
 | 0:21-0:24 | he looks from his last potion to her; hand hesitates; heartbeat | NARRATOR: One potion could save her. |
 | 0:24-0:27 | he gives her the potion; her wound glows closed; HIS eyes lose their light for a moment | NARRATOR: But someone would forget her. And he knew who. |
 | 0:27-0:30 | Mira opens her eyes, smiles, grabs his hand | MIRA: You came back for me! |
@@ -56,8 +56,8 @@ Bottle clink and gulp, a heartbeat that rises at the choice, sword drawn, ring c
 rain and thunder at the bridge, potion pouring, a soft swell when Mira wakes that cuts out on "have we met?", dawn birds, one piano note at the end.
 
 ## Captions
-YouTube title: What If Every Healing Potion Made Someone Forget You? 💿
-Description: He kept drinking to survive. One by one, they forgot him. Then he found her under the old bridge. 🧪
-A tiny story from a retro game that never existed. Would you have given her the potion? 👇
+YouTube title: What If Every Healing Potion Made Someone Forget You? ğŸ’¿
+Description: He kept drinking to survive. One by one, they forgot him. Then he found her under the old bridge. ğŸ§ª
+A tiny story from a retro game that never existed. Would you have given her the potion? ğŸ‘‡
 #ps1 #retrogaming #rpg #shortfilm #gamestory #darkfantasy #pleaseinsertdisc2
-Pinned comment: Would you give her the potion, knowing you'd forget her? 🧪👇
+Pinned comment: Would you give her the potion, knowing you'd forget her? ğŸ§ªğŸ‘‡

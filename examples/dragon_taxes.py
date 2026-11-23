@@ -25,7 +25,7 @@ def bez(p0, p1, p2, p3, u):
     a = 1 - u; return a ** 3 * p0 + 3 * a * a * u * p1 + 3 * a * u * u * p2 + u ** 3 * p3
 
 # ======================= cast (asset lock) =======================
-KNIGHT = hd.spec(h=1.84, build=1.08, skin=(214, 170, 136), hair=(60, 44, 34), eye=(70, 110, 150), helmet=(170, 178, 192),
+KNIGHT = hd.spec(h=1.84, build=1.08, skin=(214, 170, 136), hair=(60, 44, 34), hair_style='short', eye=(70, 110, 150), helmet=None,
                  tunic=(150, 158, 172), tunic2=(122, 130, 146), skirt=0.26, pants=(112, 118, 130), boots=(74, 78, 90),
                  belt=(70, 50, 36), buckle=(210, 180, 90), gloves=(150, 156, 168), cloak=(36, 78, 176), cloak_len=1.05, collar=(186, 194, 206))
 WOMAN = hd.spec(h=1.6, build=0.94, fem=1.0, skin=(224, 184, 156), hair=(206, 204, 200), hair_style='bun', eye=(90, 76, 60), brow=(170, 166, 160),
@@ -53,6 +53,27 @@ def knight(P):
         Q += hd.ellip(c, RW @ hd.Rz(-sd * 0.35), (0.1, 0.07, 0.1), 10, 5, st, v1=PI * 0.6, colfn=lambda i, j, cl: dk if i == 2 else st)
         kn = P['_' + ('r' if sd > 0 else 'l') + 'knee']; Q += hd.ellip(kn, RW, (0.06, 0.06, 0.065), 8, 4, st)
     Q += hd.ellip(ch + RW @ V((0, -0.02, 0.035)), RW, (0.17, 0.17, 0.1), 12, 6, st, keep=lambda c: c[2] > 0.0, colfn=lambda i, j, cl: dk if (j % 6 == 0) else st)
+    Q += knight_helmet(P)
+    return Q
+def knight_helmet(P):
+    """open-faced helmet that sits ABOVE the brows (23 Nov: the old brim covered the eyes and looked comic): dome, rim, cheek guards,
+    neck guard, a gold ridge and the series' blue plume"""
+    k = KNIGHT['h'] / 1.78; hc = P['_head']; RH = P['_RH']; rx, ry, rz = 0.09 * k, 0.116 * k, 0.103 * k
+    st = (182, 190, 204); dk = (130, 138, 154); gold = (214, 184, 92); blue = (44, 88, 190)
+    def L(x, y, z): return hc + RH @ V((x, y, z))
+    Q = hd.ellip(L(0, 0.016 * k, -0.006 * k), RH, (rx * 1.15, ry * 1.0, rz * 1.13), 16, 6, st, v1=PI * 0.41, closed=False,
+                 colfn=lambda i, j, cl: hd.shade(st, 1.08) if j % 4 == 0 else st)
+    Q += hd.limb(L(0, 0.046 * k, -0.006 * k), L(0, 0.06 * k, -0.006 * k), rz * 1.17, rz * 1.15, dk, n=16, m=1, ref=RH @ V((0, 0, 1.0)), flat=0.9)
+    for sd in (1, -1):
+        Q += hd.bx(L(sd * rx * 1.1, -0.004 * k, -0.004 * k), RH @ hd.Rz(-sd * 0.1) @ hd.Ry(sd * 0.12), (0.008, 0.054 * k, 0.05 * k), st)
+        Q += hd.bx(L(sd * rx * 1.12, 0.03 * k, 0.03 * k), RH, (0.006, 0.006, 0.006), gold)
+    Q += hd.bx(L(0, -0.035 * k, -rz * 1.08), RH @ hd.Rx(0.35), (rx * 0.95, 0.045 * k, 0.008), dk)
+    Q += hd.bx(L(0, ry * 1.0 + 0.016 * k, -0.01 * k), RH, (0.007, 0.012 * k, rz * 0.95), gold)
+    sw = P.get('cape_sway', 0.0) * 0.4
+    for i in range(5):                                                         # the plume: blue strands from the top towards the back
+        a = L(0, ry + 0.02 * k, -0.02 * k - 0.012 * i); b = L(0.012 * (i - 2) + sw * 0.05, ry + 0.06 * k - 0.006 * i, -0.13 * k - 0.02 * i)
+        c_ = L(0.02 * (i - 2) + sw * 0.08, ry - 0.02 * k - 0.01 * i, -0.2 * k - 0.025 * i)
+        Q += hd.limb(a, b, 0.012, 0.016, blue if i % 2 else hd.shade(blue, 0.85), n=5, m=1) + hd.limb(b, c_, 0.016, 0.004, blue, n=5, m=1)
     return Q
 
 # ======================= the dragon =======================
@@ -89,7 +110,9 @@ def dragon(P):
     Q += hd.ellip(bc, Rb @ hd.Rx(0.08), (1.25, 1.05, 2.1), 18, 11, C['scale'],
                   colfn=lambda i, j, cl: (C['belly'] if i % 2 else C['belly2']) if cl[1] < -0.55 else (C['scale'] if (i + j) % 3 else C['scale2']))
     # ---- tail: a curve back and round to the right, sways
-    sw = g('tail', 0.0); tp = [V((0, by - 0.1, -3.0)), V((0.2 + sw * 0.4, 0.6, -5.0)), V((2.4 + sw, 0.35, -5.8)), V((3.6 + sw * 1.4, 0.25, -4.4))]
+    sw = g('tail', 0.0); fly = g('fly', False)
+    tp = [V((0, by - 0.1, -3.0)), V((0.2 + sw * 0.4, 0.6, -5.0)), V((2.4 + sw, 0.35, -5.8)), V((3.6 + sw * 1.4, 0.25, -4.4))]
+    if fly: tp = [V((0, by - 0.05, -3.0)), V((0.35 + sw * 0.3, by + 0.05, -4.4)), V((-0.35 + sw * 0.8, by + 0.4, -5.8)), V((sw * 1.2, by + 0.75, -7.2))]
     pts = [Wp(bez(*tp, u)) for u in np.linspace(0, 1, 16)]
     Q += tube(pts, [0.62 * (1 - u) ** 1.15 + 0.03 for u in np.linspace(0, 1, 16)], C['scale'], C['belly'], n=12)
     for i in range(1, 15, 2):                                                  # tail spikes
@@ -110,44 +133,53 @@ def dragon(P):
     def HP(x, y, z): return hc + RH @ V((x, y, z))
     Q += hd.ellip(hc, RH, (0.44, 0.42, 0.5), 16, 10, C['scale'], deform=lambda p: V((p[0] * (1 - 0.2 * max(0, p[1]) / 0.42), p[1] * (0.85 if p[1] > 0 else 1.0), p[2])),
                   colfn=lambda i, j, cl: C['belly'] if cl[1] < -0.22 else (C['scale'] if (i + j) % 3 else C['scale2']))
-    # upper jaw / snout (shorter, a raised nose ridge)
-    SL = 1.02; zs = np.linspace(0.15, SL, 7); cs = [HP(0, 0.03 + 0.05 * math.sin(PI * s * 0.8), z) for s, z in zip(np.linspace(0, 1, 7), zs)]
-    us = [RH @ V((1.0, 0, 0))] * 7; vs = [RH @ V((0, 1.0, 0))] * 7
-    rs = [(0.37 - 0.15 * s, 0.27 - 0.1 * s) for s in np.linspace(0, 1, 7)]
-    Q += hd.loft(cs, us, vs, rs, 16, C['scale'], th0=-0.15, th1=PI + 0.15, cap0=False, cap1=True, closed=False,
-                 colfn=lambda i, j: C['scale2'] if j in (7, 8) and i % 2 else C['scale'])
-    q = hd.face([HP(-0.37, -0.02, 0.15), HP(-0.22, -0.02, SL), HP(0.22, -0.02, SL), HP(0.37, -0.02, 0.15)], C['mouth']); Q += [q] if q else []
-    for i in range(4):                                                         # nose ridge bumps
-        c = HP(0, 0.03 + 0.05 * math.sin(PI * (0.2 + 0.18 * i) * 0.8) + 0.25 - 0.08 * i, 0.35 + 0.17 * i)
-        Q += hd.ellip(c, RH, (0.06, 0.035, 0.07), 6, 3, C['scale2'])
-    # lower jaw on a hinge
-    ja = 0.5 * g('jaw', 0.0); hinge = V((0, -0.12, 0.05)); RJ = RH @ hd.Rx(ja); JL = SL - 0.1
+    # upper jaw / snout: a CLOSED, flattened tube (23 Nov: the open half-tube read as a pipe in close-ups)
+    SL = 0.95; n_ = 7; ss = np.linspace(0, 1, n_)
+    def sn_w(s): return 0.33 - 0.13 * s
+    def sn_h(s): return 0.2 - 0.07 * s
+    def sn_y(s): return 0.02 - 0.02 * s
+    tipk = ((0.05, 0.82), (0.09, 0.5), (0.105, 0.15))                         # rounded nose tip
+    cs = [HP(0, sn_y(s), 0.12 + (SL - 0.12) * s) for s in ss] + [HP(0, sn_y(1) - 0.01 * j, SL + dz) for j, (dz, _) in enumerate(tipk)]
+    rr = [(sn_w(s), sn_h(s)) for s in ss] + [(sn_w(1) * f, sn_h(1) * f) for _, f in tipk]; us = [RH @ V((1.0, 0, 0))] * len(cs); vs = [RH @ V((0, 1.0, 0))] * len(cs)
+    Q += hd.loft(cs, us, vs, rr, 16, C['scale'], cap0=False, cap1=True,
+                 colfn=lambda i, j: (C['belly'] if 9 <= j <= 15 else (C['scale2'] if (i + j) % 3 == 0 else C['scale'])))
+    for i in range(3):                                                         # nose ridge
+        s = 0.25 + 0.25 * i; Q += hd.ellip(HP(0, sn_y(s) + sn_h(s) * 0.92, 0.12 + (SL - 0.12) * s), RH, (0.06, 0.03, 0.09), 6, 3, C['scale2'])
+    # lower jaw: a closed tube on a hinge that sits under the snout when shut
+    ja = 0.5 * g('jaw', 0.0); hinge = V((0, -0.1, 0.05)); RJ = RH @ hd.Rx(ja); JL = SL - 0.08
     def JP(x, y, z): return hc + RH @ hinge + RJ @ V((x, y, z))
-    cs = [JP(0, -0.02, z) for z in np.linspace(0.0, JL, 6)]; us = [RJ @ V((1.0, 0, 0))] * 6; vs = [RJ @ V((0, 1.0, 0))] * 6
-    rs = [(0.32 - 0.13 * s, 0.15 - 0.06 * s) for s in np.linspace(0, 1, 6)]
-    Q += hd.loft(cs, us, vs, rs, 12, C['belly'], th0=PI, th1=2 * PI, cap0=False, cap1=True, closed=False,
-                 colfn=lambda i, j: C['belly2'] if i % 2 else C['belly'])
-    q = hd.face([JP(-0.32, -0.01, 0.0), JP(-0.19, -0.01, JL), JP(0.19, -0.01, JL), JP(0.32, -0.01, 0.0)], C['mouth']); Q += [q] if q else []
-    # teeth
-    for i in range(6):
-        z = 0.32 + 0.12 * i; wdt = 0.37 - 0.15 * (z - 0.15) / (SL - 0.15) - 0.03
+    def jw(s): return 0.29 - 0.12 * s
+    def jh(s): return 0.1 - 0.035 * s
+    cs = [JP(0, -0.06, 0.05 + (JL - 0.05) * s) for s in ss] + [JP(0, -0.06, JL + dz) for dz, _ in tipk[:2]]
+    rr = [(jw(s), jh(s)) for s in ss] + [(jw(1) * f, jh(1) * f) for _, f in tipk[:2]]; us = [RJ @ V((1.0, 0, 0))] * len(cs); vs = [RJ @ V((0, 1.0, 0))] * len(cs)
+    Q += hd.loft(cs, us, vs, rr, 14, C['belly'], cap0=True, cap1=True,
+                 colfn=lambda i, j: C['belly2'] if (i % 2 or j < 7) else C['belly'])
+    if ja > 0.04:                                                              # the inside of the mouth shows only when it opens
+        q = hd.face([HP(-0.26, sn_y(0.1) - sn_h(0.1) * 0.85, 0.2), HP(-0.15, sn_y(0.95) - sn_h(0.95) * 0.85, SL - 0.06), HP(0.15, sn_y(0.95) - sn_h(0.95) * 0.85, SL - 0.06), HP(0.26, sn_y(0.1) - sn_h(0.1) * 0.85, 0.2)], C['mouth'])
+        Q += [q] if q else []
+        q = hd.face([JP(-0.24, -0.06 + jh(0.1) * 0.9, 0.12), JP(-0.13, -0.06 + jh(0.95) * 0.9, JL - 0.06), JP(0.13, -0.06 + jh(0.95) * 0.9, JL - 0.06), JP(0.24, -0.06 + jh(0.1) * 0.9, 0.12)], C['mouth'])
+        Q += [q] if q else []
+    # teeth: upper fangs on the snout's lower edge, lower teeth on the jaw's upper edge (short, so the closed mouth shows a neat row)
+    for i in range(5):
+        s = 0.25 + 0.17 * i
         for sd in (1, -1):
-            b = HP(sd * wdt, -0.03, z); Q.append(hd.face([b + RH @ V((0, 0, -0.035)), b + RH @ V((0, -0.09 - 0.04 * (i == 1), 0)), b + RH @ V((0, 0, 0.035))], C['teeth']))
-            if i < 5:
-                zj = 0.28 + 0.12 * i; wj = 0.32 - 0.13 * zj / JL - 0.03; bj = JP(sd * wj, -0.01, zj)
-                Q.append(hd.face([bj + RJ @ V((0, 0, -0.03)), bj + RJ @ V((0, 0.08, 0)), bj + RJ @ V((0, 0, 0.03))], C['teeth']))
+            x = sd * sn_w(s) * 0.82; b = HP(x, sn_y(s) - sn_h(s) * 0.55, 0.12 + (SL - 0.12) * s); ln = 0.075 + (0.05 if i == 1 else 0.0)
+            Q.append(hd.face([b + RH @ V((0, 0, -0.03)), b + RH @ V((0, -ln, 0)), b + RH @ V((0, 0, 0.03))], C['teeth']))
+            if i < 4:
+                sj = 0.2 + 0.18 * i; bj = JP(sd * jw(sj) * 0.8, -0.06 + jh(sj) * 0.55, 0.05 + (JL - 0.05) * sj)
+                Q.append(hd.face([bj + RJ @ V((0, 0, -0.025)), bj + RJ @ V((0, 0.06, 0)), bj + RJ @ V((0, 0, 0.025))], C['teeth']))
     # eyes (glowing, slit pupils), brow ridges, nostrils
     eg = g('eye', 1.0); bl = g('blink', 0.0)
     for sd in (1, -1):
         ec = HP(sd * 0.3, 0.1, 0.3); n = hd.nz(RH @ V((sd * 0.85, 0.15, 0.5)))
         if bl < 0.7:
-            for q in hd.ellip(ec, RH @ hd.Ry(sd * 0.9), (0.075, 0.055 * (1 - bl), 0.05), 8, 4, mixc((90, 60, 30), C['eye'], eg)):
+            for q in hd.ellip(ec, RH @ hd.Ry(sd * 0.9), (0.06, 0.046 * (1 - bl), 0.04), 8, 4, mixc((90, 60, 30), C['eye'], eg)):
                 q['emit'] = eg > 0.3; Q.append(q)
-            Q += hd.decal(ec + n * 0.045, n, RH @ V((0, 1.0, 0)), 0.016, 0.075 * (1 - bl), (20, 12, 8), lift=0.006)
+            Q += hd.decal(ec + n * 0.036, n, RH @ V((0, 1.0, 0)), 0.014, 0.06 * (1 - bl), (20, 12, 8), lift=0.006)
         else:
             Q += hd.ellip(ec, RH @ hd.Ry(sd * 0.9), (0.078, 0.058, 0.052), 8, 4, C['scale2'])
         Q += hd.bx(HP(sd * 0.28, 0.2, 0.3), RH @ hd.Rz(sd * 0.35) @ hd.Rx(-0.15), (0.13, 0.035, 0.12), C['scale2'])
-        Q += hd.decal(HP(sd * 0.1, 0.18, SL - 0.06), hd.nz(RH @ V((sd * 0.3, 1.0, 0.4))), RH @ V((0, 0, 1.0)), 0.07, 0.045, (24, 20, 18), lift=0.01)
+        Q += hd.decal(HP(sd * 0.09, 0.115, SL - 0.1), hd.nz(RH @ V((sd * 0.3, 1.0, 0.4))), RH @ V((0, 0, 1.0)), 0.07, 0.045, (24, 20, 18), lift=0.01)
         # horns: up and back from the top of the skull, curving
         h0 = HP(sd * 0.2, 0.3, -0.12); h1 = h0 + RH @ V((sd * 0.12, 0.34, -0.2)); h2 = h1 + RH @ V((sd * 0.06, 0.18, -0.36)); h3 = h2 + RH @ V((0, -0.02, -0.3))
         hcol = (196, 180, 140)
@@ -176,7 +208,7 @@ def dragon(P):
             Q += hd.limb(p0, p1, 0.065, 0.05, C['scale'], n=6, m=1) + hd.limb(p1, p2, 0.045, 0.006, C['claw'], n=6, m=1)
         # hind leg haunch + foot
         hc_ = Wp((sd * 1.05, by - 0.2, -2.3)); Q += hd.ellip(hc_, Rb, (0.5, 0.75, 0.85), 10, 6, C['scale'], colfn=lambda i, j, cl: C['scale2'] if j % 3 == 0 else C['scale'])
-        ft = Wp((sd * 1.25, 0.12, -1.6)); Q += hd.ellip(ft, Rb, (0.25, 0.13, 0.35), 8, 4, C['scale2'])
+        ft = Wp((sd * 0.85, by - 0.75, -3.0)) if fly else Wp((sd * 1.25, 0.12, -1.6)); Q += hd.ellip(ft, Rb, (0.25, 0.13, 0.35), 8, 4, C['scale2'])
         for f in range(3):
             a = -0.35 + 0.35 * f; dirf = Rb @ V((math.sin(a), 0, math.cos(a))); p0 = ft + dirf * 0.3
             Q += hd.limb(p0, p0 + dirf * 0.14 + V((0, -0.1, 0)), 0.045, 0.006, C['claw'], n=5, m=1)
@@ -372,7 +404,9 @@ LINES = _lines(); T0 = dict(LINES)
 def tend(k): return T0[k] + SCR['dur'][k]
 def ws(k, i): return T0[k] + SCR['sent'][k][i][0]
 def we(k, i): return T0[k] + SCR['sent'][k][i][1]
-DUR = round(tend('15') + 1.1, 2); N = int(round(DUR * FPS))
+T_POST = tend('15') + 0.7                       # LOOP: the king posts the quest again ...
+T_LOOP = T_POST + 1.25                          # ... and we are back in the cave, the moment before frame 0
+DUR = round(T_LOOP + 0.75, 2); N = int(round(DUR * FPS))
 T_PATCH = tend('01') + 0.15                       # cut to the woman and her patch
 T_OUT = T0['07'] - 0.15                           # the cave mouth, the night road
 T_CAP = T0['08'] - 0.12                           # the captain
@@ -384,7 +418,7 @@ T_KID = tend('13') + 0.1                          # the kid looks up
 T_SKY = tend('13') + 1.25
 T_FIN = T0['15'] - 0.25
 def scene(t):
-    for nm, a in (('fin', T_FIN), ('sky', T_SKY), ('dawn', T_DAWN), ('wing', T_WB), ('stand', T_STAND), ('capt', T_CAP), ('road', T_OUT)):
+    for nm, a in (('loop', T_LOOP), ('fin', T_FIN), ('sky', T_SKY), ('dawn', T_DAWN), ('wing', T_WB), ('stand', T_STAND), ('capt', T_CAP), ('road', T_OUT)):
         if t >= a: return nm
     return 'cave'
 CUTS = [0.0, T_PATCH, T0['03'] - 0.1, T0['04'] - 0.75, T0['05'] - 0.1, T0['06'] - 0.1, T_OUT, T_CAP, T_STAND, T0['10'] - 0.1, T0['11'] - 0.5,
@@ -506,6 +540,33 @@ def house(x, z, yaw, w, d, h, wall, roof, seed=0):
     Q += hd.bx(c + R @ V((w * 0.3, ridge - 0.2, d * 0.2)), R, (0.2, 0.7, 0.2), (110, 96, 86))
     return Q
 GATE_Z = 7.6
+def sky_set():
+    """dawn sky: emissive dome with a warm-to-blue gradient, clouds, a sun halo"""
+    def col(e):
+        stops = [(0.0, (255, 200, 150)), (0.08, (250, 176, 150)), (0.25, (214, 168, 190)), (0.5, (150, 160, 214)), (1.0, (96, 128, 200))]
+        for (a, ca), (b, cb) in zip(stops, stops[1:]):
+            if e <= b: return mixc(ca, cb, (e - a) / (b - a))
+        return stops[-1][1]
+    Q = hd.ellip((0, -4, 20), np.eye(3), (190, 150, 190), 28, 12, (200, 200, 220), v1=PI * 0.53, closed=False, colfn=lambda i, j, cl: col(max(0.0, (cl[1]) / 150)))
+    for q in Q: q['emit'] = True
+    for i in range(16):                                                          # clouds: flat, lit from below by the sun
+        a = -1.2 + 2.6 * hsh(i, 41); r = 120 + 30 * hsh(i, 42); x = r * math.sin(a); z = 20 + r * math.cos(a); y = 18 + 50 * hsh(i, 43)
+        sx = 14 + 16 * hsh(i, 44); cc = mixc((255, 214, 196), (236, 226, 236), y / 70)
+        for k in range(3):
+            C_ = hd.ellip((x + (k - 1) * sx * 0.6, y + 2 * (k % 2), z), hd.Ry(a), (sx * (0.6 + 0.2 * (k % 2)), 3.0 + 2 * (k % 2), 6), 10, 4, cc,
+                          colfn=lambda ii, jj, cl, cc=cc: hd.shade(cc, 0.9) if cl[1] < 0 else cc)
+            for q in C_: q['emit'] = True
+            Q += C_
+    Q += sky_disc((52, 12, 150), 16, (255, 214, 170)) + sky_disc((50, 11.5, 148), 7, (255, 244, 214))
+    return [q for q in Q if q]
+def birds(t):
+    Q = []
+    for i in range(7):
+        u = (t * 0.06 + hsh(i, 51)) % 1.0; x = -40 + 80 * u; y = 14 + 8 * hsh(i, 52) + 1.5 * math.sin(t * 0.7 + i); z = 40 + 25 * hsh(i, 53)
+        f = 0.6 * math.sin(t * 9 + i * 2); s = 0.5
+        for sd in (1, -1):
+            q = hd.face([(x, y, z), (x - 0.3 * s, y + 0.05, z + sd * 0.0), (x + 0.1, y + sd * 0.0 + f * s * 0.5, z + sd * 0.9 * s)], (60, 50, 60)); Q += [q] if q else []
+    return Q
 def square_set():
     Q = ground(-12, 12, -8, GATE_Z + 0.4, 0.55, [(150, 138, 120), (136, 126, 110), (160, 146, 126), (128, 118, 104)], seed=11)
     Q += ground(-30, 30, GATE_Z + 0.4, 70, 2.0, [(96, 124, 70), (104, 132, 74), (88, 116, 66)], seed=12)
@@ -651,7 +712,7 @@ def woman_sack(t, P):
     tp = T_PATCH; RW = P['_RW']; fw = V((math.sin(W_YAW), 0, math.cos(W_YAW)))
     if t < tp + 0.35: return None
     lift = sm(seg01(t, tp + 0.35, tp + 0.9)); hug = sm(seg01(t, tp + 1.75, tp + 2.35)) * (1 - sm(seg01(t, T0['11'] + 0.9, T0['11'] + 1.5)) * 0.0)
-    floor = V(SACK_T); lap = V(W_K) + fw * 0.38 + V((0, 0.42, 0)); chest = P['_chest'] + RW @ V((0, -0.2, 0.2))
+    floor = V(SACK_T); lap = V(W_K) + fw * 0.42 + V((0, 0.4, 0)); chest = P['_chest'] + RW @ V((0, -0.36, 0.33))
     p = floor + (lap - floor) * lift; p = p + (chest - p) * hug
     R = hd.Ry(lerp(ang_to(SACK_T, (0.5, 0, 0.8)) - 0.9, W_YAW - 0.9, lift)) @ hd.Rx(-0.25 * hug)
     return p, R
@@ -662,22 +723,26 @@ def woman_act(t):
         sk = woman_sack(t, Q_)
         reach = sm(seg01(t, tp, tp + 0.35))
         fw = V((math.sin(W_YAW), 0, math.cos(W_YAW))); sd_ = V((math.cos(W_YAW), 0, -math.sin(W_YAW)))
+        def side_hands(cen, h, rad, front=0.0, grip=0.3):
+            """both hands on the OUTSIDE of the sack, palms facing it (no fingers inside)"""
+            c_ = V(cen) + V((0, h, 0)) + fw * front
+            P['rh_w'] = tuple(c_ + sd_ * rad); P['lh_w'] = tuple(c_ - sd_ * rad); P['rgrip'] = P['lgrip'] = grip
+            P['rpalm'] = tuple(-sd_); P['lpalm'] = tuple(sd_); P['rpalm_local'] = False; P['lpalm_local'] = False
         if sk is None:
-            c = V(SACK_T) + V((0, 0.22, 0)); P['rh_w'] = tuple(c + sd_ * 0.2 * reach - fw * 0.05); P['lh_w'] = tuple(c - sd_ * 0.2 * reach - fw * 0.05)
+            side_hands(SACK_T, 0.16, 0.25 + 0.15 * (1 - reach), -0.04)
             P['nod'] = 0.35 * reach; P['eyes'] = 'open'
         else:
-            c = sk[0] + V((0, 0.2, 0)); s = 0.21
-            P['rh_w'] = tuple(c + sd_ * s); P['lh_w'] = tuple(c - sd_ * s); P['rgrip'] = P['lgrip'] = 0.5
-            st = win(t, tp + 1.0, tp + 1.85, 0.15)                              # strokes the patch with her right thumb side
+            side_hands(sk[0], 0.16, 0.255)
+            st = win(t, tp + 1.0, tp + 1.85, 0.15)                              # strokes the patch: the hand glides over it
             if st > 0:
-                P['rh_w'] = tuple(sk[0] + V((0, 0.13, 0)) + sk[1] @ hd.Ry(0.9) @ V((0.06 * math.sin((t - tp) * 9), 0.0, 0.27)) )
-                P['rgrip'] = 0.15
+                pn = hd.nz(sk[1] @ hd.Ry(0.9) @ V((0, 0, 1.0))); upv = sk[1] @ V((0, 1.0, 0)); tg_ = hd.nz(np.cross(upv, pn))
+                pp = sk[0] + upv * 0.11 + pn * 0.235 + tg_ * 0.05 * math.sin((t - tp) * 8)
+                P['rh_w'] = tuple(pp + pn * 0.03 + upv * 0.1); P['rpalm'] = tuple(-pn); P['rgrip'] = 0.1
             P['nod'] = 0.4; P['eyes'] = 'sad'; P['brow'] = -0.8; P['mouth'] = 'soft'
             hug = sm(seg01(t, tp + 1.75, tp + 2.35))
             if hug > 0:
                 P['eyes'] = 'closed' if t < T0['02'] - 0.15 else 'sad'; P['nod'] = lerp(0.4, 0.2, hug); P['head'] = (0.0, 0.0, 0.12 * hug)
-                P['rh_w'] = tuple(sk[0] + V((0, 0.15, 0)) + sd_ * 0.17 + fw * 0.1); P['lh_w'] = tuple(sk[0] + V((0, 0.25, 0)) - sd_ * 0.17 + fw * 0.1)
-                P['rgrip'] = P['lgrip'] = 0.4
+                side_hands(sk[0], 0.18, 0.25, 0.04, 0.45)
         if t >= T0['02'] - 0.2:                                              # looks up to the knight and the dragon
             u = sm(seg01(t, T0['02'] - 0.2, T0['02'] + 0.3)); P['nod'] = lerp(P.get('nod', 0.0), -0.25, u); P['head'] = (0.5 * u, -0.25 * u, 0.0)
             P['eyes'] = 'open' if t < T0['03'] else 'sad'
@@ -795,13 +860,14 @@ def knight_gate(t):
     return P, lw
 def sky_dragon(t):
     """flying: passes over the square (the kid's wave), dips a wing, then circles above the road"""
-    u = t - T_DAWN; w = 0.3; cx, cz, R_ = 0.0, 18.0, 12.0
+    u = t - T_DAWN; w = 0.3; cx, cz, R_ = 0.0, 24.0, 12.0
     a = -1.3 + w * (t - T_KID)
     p = (cx + R_ * math.cos(a) - 2.0, 10.0 + 1.0 * math.sin(t * 0.8), cz + R_ * math.sin(a) * 1.3)
     da = (-R_ * math.sin(a), 0, R_ * math.cos(a) * 1.3); yaw = math.atan2(da[0], da[2])
-    roll = -0.35 - 0.45 * win(t, T_SKY + 0.15, T_SKY + 1.15, 0.3)
-    return dict(base=p, yaw=yaw, roll=roll, pitch=0.05, wing=1.0, flap=0.35 * math.sin(t * 5.2), lie=0.0, head=(0, 1.9, 2.9), hpitch=-0.1,
-                rpaw=(0.9, 0.9, 0.5), lpaw=(-0.9, 0.9, 0.5), jaw=0.05, eye=0.4, tail=0.3 * math.sin(t * 1.5))
+    roll = -0.22 - 0.3 * win(t, T_SKY + 0.15, T_SKY + 1.15, 0.3); ph = t * 4.0
+    p = (p[0], p[1] - 0.22 * math.sin(ph), p[2])                              # the body rises on the down-stroke
+    return dict(base=p, yaw=yaw, roll=roll, pitch=0.06, wing=0.9 + 0.1 * math.cos(ph), flap=0.62 * math.sin(ph), lie=0.0, head=(0, 1.55, 3.6), hpitch=0.02,
+                rpaw=(0.7, 0.55, 0.9), lpaw=(-0.7, 0.55, 0.9), jaw=0.05, eye=0.4, tail=0.35 * math.sin(t * 1.3), fly=True)
 
 # ======================= camera =======================
 P3 = look.Path
@@ -838,7 +904,7 @@ def cam_shot(t):
 # ======================= render =======================
 _SETS = {}
 def get_set(name):
-    if name not in _SETS: _SETS[name] = {'cave': cave_set, 'out': outside_set, 'square': square_set}[name]()
+    if name not in _SETS: _SETS[name] = {'cave': cave_set, 'out': outside_set, 'square': square_set, 'sky': sky_set}[name]()
     return _SETS[name]
 def wall_torches(t, on=1.0):
     Q = []; L = []
@@ -874,7 +940,7 @@ def world(t):
             if i == 0 and t >= T_PATCH + 0.35: continue
             p, R = sack_state(i, t)
             if i in (1, 3, 4) and t >= T0['11'] - 0.3: continue                  # picked up by the villagers (drawn in their arms)
-            layers.append(sack(p, R, torn=(i == 0), patch=(i == 0), slump=0.5 if i == 0 else 0.0))
+            layers.append(sack(p, R, s=0.9 if i == 0 else 1.0, torn=(i == 0), patch=(i == 0), slump=0.5 if i == 0 else 0.0))
         K, _ = knight_pose(t); layers.append(knight(K))
         if t < T_OUT:
             lw_ = max(knight_low(t), sm(seg01(t, T0['06'] + 0.2, T0['06'] + 1.0))); tgt = dlw(DB0, DYAW, (0, 1.75, 2.3)) * (1 - lw_) + (V(KP0) + V((0.25, 0.0, 0.75))) * lw_
@@ -882,7 +948,7 @@ def world(t):
         else: tgt = V((0.6, 2.2, -6.6))
         layers.append(knight_sword(K, t, tgt))
         Wm = woman_act(t); layers.append(hd.human(WOMAN, Wm)); sk = woman_sack(t, Wm)
-        if sk is not None: layers.append(sack(sk[0], sk[1], torn=True, patch=True, slump=0.5))
+        if sk is not None: layers.append(sack(sk[0], sk[1], s=0.9, torn=True, patch=True, slump=0.5))
         if t >= T0['06'] - 0.1:
             cl = sm(seg01(t, ws('06', 1) - 0.1, ws('06', 1) + 0.25))
             if cl < 0.6: layers.append(coin(COIN_F, s=1.2))
@@ -897,9 +963,8 @@ def world(t):
         if dark > 0: L.append(((8.0, 12.0, -25.0), (120, 140, 210), 3.2 * dark))
         if sc == 'road': amb = 0.24
     else:
-        layers.append(get_set('square')); fog = (214, 182, 154); amb = 0.5; fs, fe = 30, 140
+        layers.append(get_set('square')); layers.append(get_set('sky')); layers.append(birds(t)); fog = (226, 190, 160); amb = 0.5; fs, fe = 40, 420
         L += [((40, 14, 50), (255, 214, 170), 2.4), ((-20, 18, -10), (170, 180, 220), 0.9)]
-        layers.append(sky_disc((40, 9, 120), 5.0, (255, 236, 200)))
         if sc != 'sky' or True:
             Wd = woman_dawn(t); layers.append(hd.human(WOMAN, Wd))
             layers.append(sack(V(Wd['_lwrist']) + V((0, -0.3, 0.0)), hd.Ry(Wd['yaw'] + PI - 0.9), s=0.85, torn=True, patch=True, slump=0.4))
@@ -968,9 +1033,23 @@ def seal_overlay(im, t):
 COL = {'N': (242, 238, 226), 'K': (120, 230, 255), 'D': (255, 128, 48), 'W': (255, 190, 90), 'C': (190, 190, 196)}
 SUBS = look.Subtitles(SCR, LINES, W, H, S, COL, title_key='01', card_y=0.68, card_sc=8.0, card_n=15,
                       hil={'DRAGON', 'TAXES', 'WINTER', 'KING', 'STARVED', 'RICH.', 'SOLDIERS', 'KILL', 'SLAY', 'THIEF.', 'STAND', 'GOLD', 'KEEP', 'WATCH', 'GUARDING'})
+def poster_overlay(im, t):
+    a, b = T_POST, T_LOOP
+    if not (a <= t < b): return
+    u = sm(seg01(t, a, a + 0.2)); w2 = int(330 * u); h2 = int(430 * u)
+    if w2 < 10: return
+    cx, cy = 540, 820; d = ImageDraw.Draw(im)
+    d.rectangle([cx - w2 - 14, cy - h2 - 14, cx + w2 + 14, cy + h2 + 14], fill=(0, 0, 0)); d.rectangle([cx - w2, cy - h2, cx + w2, cy + h2], fill=(226, 206, 160))
+    for k in range(0, 2 * h2, 22): d.rectangle([cx - w2, cy - h2 + k, cx + w2, cy - h2 + k + 3], fill=(214, 192, 146))
+    if u > 0.95:
+        for s, y, sc, col in (('BY ORDER OF', cy - 360, 5, (90, 60, 40)), ('THE KING', cy - 300, 7, (90, 60, 40)), ('QUEST:', cy - 150, 8, (150, 30, 28)),
+                              ('SLAY THE', cy - 60, 9, (150, 30, 28)), ('DRAGON', cy + 40, 10, (150, 30, 28)), ('REWARD: 500 GOLD', cy + 200, 5, (90, 60, 40))):
+            look.draw_cells(d, look.text_cells(s, int(cx - text_w(s, sc) / 2), y, sc, col), 0)
+        d.ellipse([cx - 60, cy + 290, cx + 60, cy + 410], fill=(160, 30, 30)); d.ellipse([cx - 40, cy + 310, cx + 40, cy + 390], fill=(196, 50, 44))
 def frame_final(t):
+    if t >= T_LOOP: t = t - DUR                                                   # the loop tail IS the start: frame N-1 -> frame 0 is one step
     img, vi = frame_low(t); arr = post.upscale(img, S)
-    im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)); hud_overlay(im, t); seal_overlay(im, t)
+    im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)); hud_overlay(im, t); seal_overlay(im, t); poster_overlay(im, t)
     arr = np.asarray(im).astype(np.float32)
     return SUBS.apply(arr, t)
 def frame(t): return Image.fromarray(np.clip(frame_final(t), 0, 255).astype(np.uint8)).resize((W, H), Image.BOX)
@@ -994,7 +1073,8 @@ QA = dict(fps=FPS, dur=DUR, W=W, frame=frame, chars={}, geom=lambda t, name, st,
                   dict(id='wing', t0=T_WB, t1=T_DAWN, action='one wingbeat: torches out, horses bolt, the captain backs away last'),
                   dict(id='dawn', t0=T_DAWN, t1=T_SKY, action='dawn square: coins handed out; the kid waves at the shadow'),
                   dict(id='sky', t0=T_SKY, t1=T_FIN, action='the dragon dips a wing, circles above the road'),
-                  dict(id='fin', t0=T_FIN, t1=DUR, action='QUEST UPDATED - PROTECT THE VILLAGE; the knight lowers his sword, turns to the villagers')],
+                  dict(id='fin', t0=T_FIN, t1=T_LOOP, action='QUEST UPDATED - PROTECT THE VILLAGE; the knight lowers his sword, turns to the villagers; the king posts the quest again'),
+                  dict(id='loop', t0=T_LOOP, t1=DUR, action='LOOP: back in the cave, the moment before frame 0')],
           texts=lambda: [('hud', 'QUEST: SLAY THE DRAGON', 6), ('hud', 'QUEST UPDATED', 8), ('hud', 'PROTECT THE VILLAGE', 6), ('seal', 'HEARTHMOOR', 7)])
 
 # ======================= AUDIO =======================
@@ -1074,12 +1154,13 @@ def build_audio(path):
     hooves(T_GUST + 0.6, T_DAWN - 0.2, 2.6, 0.06, seed=62, fade=2.5)
     hooves(T_GUST + 2.0, T_DAWN - 0.2, 2.6, 0.05, seed=70, fade=2.0)
     # ---- DAWN: birds, warm strings, coins, wingbeats overhead, the heroic note
-    dn = mask(T_DAWN, DUR + 1, 0.6)
+    dn = mask(T_DAWN, T_LOOP, 0.2)
     BED += s.filt(s.rng.normal(0, 1, n), lo=200, hi=1200) * 0.022 * dn
     for k in range(int((DUR - T_DAWN) / 0.7)):
         tb = T_DAWN + k * 0.7 + 0.4 * hsh(k, 12)
+        if tb > T_LOOP - 0.3: break
         for j in range(2 + k % 2): tt = s.T(0.09); put(BED, np.sin(2 * np.pi * (2900 + 800 * j + 500 * hsh(k, j)) * tt * (1 + 0.3 * tt / 0.09)) * np.sin(np.pi * tt / 0.09) ** 2, tb + j * 0.13, 0.006)
-    st_ = mask(T_DAWN, DUR + 1, 1.0)
+    st_ = mask(T_DAWN, T_LOOP, 0.3)
     for f, a in ((146.8, 1.0), (185.0, 0.6), (220.0, 0.55), (293.7, 0.3)): MUS += np.sin(2 * np.pi * f * t + a) * a * 0.016 * st_ * (1 + 0.15 * np.sin(2 * np.pi * 0.5 * t))
     for tk in GIVES: clink(tk, 0.025, int(tk * 10))
     for k in range(3):
@@ -1088,6 +1169,12 @@ def build_audio(path):
         tb = T_SKY + 1.4 + k * 0.9; tt = s.T(0.5); put(FX, s.filt_short(s.noise(0.5, 90 + k), lo=60, hi=600) * np.sin(np.pi * tt / 0.5) ** 2, tb, 0.05)
     for m, dl in ((62, 0.0), (66, 0.0), (69, 0.0), (74, 0.12)): tone(T_FIN + 0.1 + dl, m, 2.4, 0.03, dec=1.0, att=0.03, harm=(1.0, 0.6, 0.4, 0.25))     # the heroic note
     tone(T_FIN + 0.1, 50, 2.4, 0.04, dec=0.9, att=0.03, harm=(1.0, 0.7, 0.5))
+    # ---- LOOP: the poster (paper, nail, a low royal horn), then the cave again, as at the start
+    nb(T_POST, 0.35, 500, 4000, 0.035, 95, 1); thud(T_POST + 0.18, 75, 0.1, 0.2)
+    tone(T_POST + 0.25, 45, 1.2, 0.04, dec=1.4, att=0.08, harm=(1.0, 0.7, 0.5, 0.3))
+    lp = mask(T_LOOP - 0.08, DUR + 1, 0.12)
+    BED += s.filt(s.rng.normal(0, 1, n), lo=30, hi=180) * 0.05 * lp + soft_fire(s, level=0.018, mask=lp, seed=5)
+    BED += s.filt(s.rng.normal(0, 1, n), lo=60, hi=350) * 0.04 * (0.5 - 0.5 * np.cos(2 * np.pi * (t - DUR) / 3.4)) ** 2 * lp
     # ---- voices: RMS-levelled, the dragon gets a cave echo, ducking
     NB = np.zeros(n); wins = []
     ir_t = np.arange(int(0.9 * sr)) / sr; IR = s.rng.normal(0, 1, len(ir_t)) * np.exp(-ir_t * 5.0); IR[0] = 0; IR = IR / np.sqrt((IR ** 2).sum())

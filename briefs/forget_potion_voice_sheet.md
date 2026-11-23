@@ -1,4 +1,4 @@
-# Forget Potion - voice sheet for Enes (2-3 takes per line; files `<who>_<nr>_<take>.m4a` in `vocal/forget_potion/`, never committed)
+﻿# Forget Potion - voice sheet for Enes (2-3 takes per line; files `<who>_<nr>_<take>.m4a` in `vocal/forget_potion/`, never committed)
 | # | Who | Line | How |
 |---|---|---|---|
 | 01 | NARRATOR | What if every healing potion made someone forget you? | calm, close, curious |
@@ -8,7 +8,7 @@
 | 05 | INNKEEPER | Rooms are for paying guests. | flat, cold |
 | 06 | NARRATOR | The innkeeper forgot his face. | quiet |
 | 07 | NARRATOR | The label had been there all along. | slow, a realisation |
-| 08 | NARRATOR | Then, beneath the old bridge, he found Mira, dying. | low, urgent |
+| 08 | NARRATOR | Then, beneath the old bridge, he found Mira. The woman he loved. Dying. (23 Nov, Enes: Mira is his love) | low, urgent |
 | 09 | NARRATOR | One potion could save her. | almost a whisper |
 | 10 | NARRATOR | But someone would forget her. And he knew who. | slow, the heart of the story |
 | 11 | MIRA | You came back for me! | relief, warm |

@@ -1,4 +1,4 @@
-"""Voice for "What if every healing potion made someone forget you?" (fpo, 24 Nov 2026, Format 3.0 several voices). Brief: briefs/forget_potion.md,
+﻿"""Voice for "What if every healing potion made someone forget you?" (fpo, 24 Nov 2026, Format 3.0 several voices). Brief: briefs/forget_potion.md,
 line numbers = briefs/forget_potion_voice_sheet.md. Narrator N = Kokoro bm_george -> ChatterboxVC (Enes timbre). Characters raw Kokoro (brief):
   K Kaya af_heart | M Mira bf_emma | I innkeeper bm_lewis | A adventurer am_adam
   python tools/tts/fpo.py src ; <chatterbox python> tools/tts/vc.py fpo ; python tools/tts/fpo.py build vc
@@ -15,7 +15,8 @@ _D = [('01', 'N', [("What if every healing potion made someone forget you?", S, 
       ('05', 'I', [("Rooms are for paying guests.", 1.0, -0.5, 0.5, 0)]),
       ('06', 'N', [("The innkeeper forgot his face.", S * 0.97, -0.1, 0.5, 0)]),
       ('07', 'N', [("The label had been there all along.", S * 0.92, -0.2, 0.5, 0)]),
-      ('08', 'N', [("Then, beneath the old bridge,", S, 0, 0.5, 0), ("he found Mira, dying.", S * 0.92, -0.3, 0.5, 0.06)]),
+      ('08', 'N', [("Then, beneath the old bridge,", S, 0, 0.5, 0), ("he found Mira.", S * 0.95, -0.2, 0.5, 0.06), ("The woman he loved.", S * 0.88, -0.4, 0.5, 0.14),
+                   ("Dying.", S * 0.85, -0.6, 0.5, 0.16)]),
       ('09', 'N', [("One potion could save her.", S * 0.9, -0.3, 0.0, 0)]),
       ('10', 'N', [("But someone would forget her.", S * 0.92, -0.2, 0.5, 0), ("And he knew who.", S * 0.85, -0.5, 0.5, P + 0.1)]),
       ('11', 'M', [("You came back for me!", 1.02, 1.0, 1.0, 0)]),
