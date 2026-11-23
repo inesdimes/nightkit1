@@ -12,7 +12,23 @@
 6. **Research kit** (`research/README.md`): `tools/llm/gemini.py --youtube <link>` + `research/hook_template.txt` to analyse reference Shorts with Gemini.
 7. `vocal/` is in `.gitignore`: Enes's raw recordings are never committed.
 
-## Current task - THE LAST RESPAWN (Blender, phases 1-3, then STOP)
+## Current task - THE LAST RESPAWN, fixes after the first full preview (cloud review 23 Nov 2026)
+The Blender look works (depth, fog, lamps; motion 6.7, the hook moves from frame 0). Fix before the final:
+1. **Subtitles are unreadable on a phone** (small, thin, low contrast). Use the channel's standard burned-in style: big pixel
+   font (~7.5 px per font pixel at 1080 wide), black box behind, lower third, one highlighted word in cyan or amber.
+   Same for the HUD counter ("RESPAWNS LEFT: 0" / "RESPAWNS RESTORED"): large and boxed.
+2. **Too hazy:** brightness 106 but contrast 32 (target >= 35, ideally ~45). Thin the fog/volume near the camera, deepen the
+   shadows, keep the lamps and the cyan bright (`python tools/qa/look_metrics.py <mp4>`).
+3. **Bell chamber close-ups:** at ~24-40 s big blocks fill the frame in front of the camera (props/characters too close to the lens).
+   Keep every character whole and readable; no object closer than ~1 m to the lens unless it is the subject.
+4. **Loudness -20.3 LUFS** -> master to -14 LUFS, true peak <= -1.5 dBTP; keep the arrow whistle running across the loop boundary.
+5. **Loop:** last frame vs first frame differ ~2x more than a normal frame step. Match the camera, the Goblin's screen position
+   and pose (only the Bell Knight is missing) so the jump reads as the same shot.
+6. Final at **1080x1920** (the preview is 540x960). `python tools/qa/check.py` must pass.
+7. Voices: Enes's takes from `vocal/last_respawn/` when they exist; otherwise keep the placeholders and say so.
+No-stop for these fixes. Commit scripts, push, send the MP4.
+
+## Done - THE LAST RESPAWN phases 1-3 (full preview rendered 23 Nov)
 1. `git pull origin ccr-91720a78-gihjic`. Read `briefs/last_respawn.md` FIRST (it overrides parts of `briefs/last_respawn_gpt.md`), then the GPT brief.
 2. Use **Opus** for this task (new world, new rigs). Blender 5.3 per CLAUDE.md; characters are rigid-part puppets keyframed from Python.
 3. Run phase 1 (blockout + frame-0 still), phase 2 (hook test 00:00-00:08, preview quality, placeholder voices) and phase 3
