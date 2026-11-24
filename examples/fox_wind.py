@@ -88,7 +88,7 @@ DROP_SRC = float(A['drop']); BP = float(A['bp']); VOX_SRC = float(A['vox'])
 SRC0 = DROP_SRC - 4 * BP                    # the clip starts exactly four beats before the drop (one bar of build)
 DROP = DROP_SRC - SRC0                      # video time of the drop
 VOX = VOX_SRC - SRC0
-FINAL = DROP + 16 * BP                      # four bars after the drop: the last downbeat
+FINAL = DROP + 24 * BP                      # six bars after the drop: the song's last full downbeat
 DUR = round(FINAL + 0.62, 3)
 N = int(round(DUR * FPS))
 def beat_phase(t): return ((t - DROP) / BP) % 1.0
@@ -165,7 +165,7 @@ def _gap():
     best = (0, None)
     for i in range(1, len(PHR)):
         g0, g1 = PHR[i - 1][-1]['b'], PHR[i][0]['a']
-        if VOX + 0.5 < g0 < FINAL - 0.6 and g1 - g0 > best[0]: best = (g1 - g0, (g0, g1))
+        if VOX + 0.5 < g0 < DROP + 16 * BP - 0.6 and g1 - g0 > best[0]: best = (g1 - g0, (g0, g1))     # the wink stays in the first verse gap
     return best[1]
 GAP = _gap()
 beats_all = [DROP + k * BP for k in range(-4, 40)]
@@ -177,7 +177,7 @@ T_GAP = GAP[0] if GAP else None
 
 # ---------------------------------------------------------------- face performance tracks (targets, then springs)
 def _sm(x): x = np.clip(x, 0, 1); return x * x * (3 - 2 * x)
-CH = ('browR', 'browL', 'innerR', 'innerL', 'furrow', 'eyesR', 'eyesL', 'squintR', 'squintL', 'smR', 'smL', 'press',
+CH = ('cg', 'browR', 'browL', 'innerR', 'innerL', 'furrow', 'eyesR', 'eyesL', 'squintR', 'squintL', 'smR', 'smL', 'press',
       'open', 'round', 'wide', 'teeth', 'jaw', 'lookx', 'looky', 'tilt', 'nod')
 # the poses (values the springs travel between)
 POSE_DEADPAN = dict(browR=0.0, browL=0.0, innerR=0.0, innerL=0.0, furrow=0.0, eyesR=0.72, eyesL=0.72, squintR=0.15, squintL=0.15,
@@ -216,6 +216,12 @@ def build_face():
     # 4) the vocal phrase: confident face stays on, mouth sings
     sg = up(VOX - 0.2, VOX + 0.05)
     pose(POSE_SING, sg)
+    # cheeks are not pulled all the time: smirk phrases hold the cheek, the phrases in between let it go (vowels only)
+    C['cg'][:] = 1.0
+    for ph_i, ph in enumerate(PHR):
+        if ph_i % 2 == 1:
+            e = win(ph[0]['a'] + 0.05, ph[-1]['b'] - 0.05, 0.25, 0.3)
+            C['smR'] -= 0.55 * e; C['cg'] -= 0.65 * e
     n = np.interp(T, VA['T'], VA['n'])
     strongs = [s_ for s_ in SYL if s_['strong']]
     LONGEST = max(strongs, key=lambda s_: s_['b'] - s_['a']) if strongs else None
@@ -256,7 +262,7 @@ def build_face():
     C['browR'] += 0.2 * win(T_CLANK + 0.05, T_CLANK + 0.1, 0.06, 0.25)             # the clank: a tiny brow twitch, eyes stay on camera
     C['smR'] = np.clip(C['smR'], 0, 0.95); C['smL'] = np.clip(C['smL'], 0, 0.8)
     C['open'] = np.clip(C['open'], 0, 1.25); C['jaw'] = np.clip(C['jaw'], 0, 1.2)
-    speed = dict(browR=17, browL=17, innerR=17, innerL=17, furrow=14, eyesR=24, eyesL=24, squintR=16, squintL=16, smR=13, smL=13, press=18,
+    speed = dict(cg=9, browR=17, browL=17, innerR=17, innerL=17, furrow=14, eyesR=24, eyesL=24, squintR=16, squintL=16, smR=13, smL=13, press=18,
                  open=38, round=26, wide=26, teeth=30, jaw=32, lookx=26, looky=22, tilt=7, nod=8)
     dt = 1 / AF
     for k, w0 in speed.items():
@@ -664,7 +670,7 @@ def expression(t):
     E['look'] = (face_at('lookx', t) - yaw * 3.5, face_at('looky', t) - nod * 2.5)     # eyes stay on the camera while the head moves
     sing = min(1.0, E['jaw']) * (0.45 + 0.55 * max(0.0, E['wide'])) * (1 - max(0.0, E['round']))
     for sd in ('R', 'L'):
-        E['cheek' + sd] = min(1.0, 0.95 * E['sm' + sd] + 0.25 * E['squint' + sd] + 0.55 * sing)
+        E['cheek' + sd] = min(1.0, 0.95 * E['sm' + sd] + 0.15 * E['squint' + sd] + 0.5 * sing * E['cg'])
         E['hollow' + sd] = max(0.0, E['round']) * (0.5 + 0.5 * min(1.0, E['open'] * 2))
     if OVERRIDE: E.update(OVERRIDE)
     return E
