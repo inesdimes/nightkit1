@@ -2,6 +2,7 @@
 Videos (`renders/boss_health_bar/`):
 - English subtitles: `what_if_the_boss_health_bar_was_the_villages_v4_voiced_20s.mp4`
 - Turkish subtitles (same English voice, Turkish HUD): `what_if_the_boss_health_bar_was_the_villages_v4_voiced_TR_altyazi_20s.mp4`
+- **Turkish voice** (Enes's Turkish takes `vocal/boss_health_bar/türkçe/1..5.m4a`, Turkish subtitles + HUD) for the Turkish channel: `what_if_the_boss_health_bar_was_the_villages_v4_TR_seslendirme_20s.mp4` (19.6 s)
 
 Thumbnails: EN `renders/boss_health_bar/thumbnail_en.png`, TR `renders/boss_health_bar/thumbnail_tr.png` (made with `python tools/thumb.py voiced`)
 ---------------------------------------------------------------- ENGLISH CHANNEL

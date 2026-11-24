@@ -827,8 +827,11 @@ TR = {'01': ['AREN O ÜÇ VURUŞU SON DUYDUĞUNDA,', 'KARDEŞİ ÖLÜYORDU.'],
       '07': ['KARDEŞİNİN SESİNİ UNUTTU.', 'AMA ONDAN İSTEDİĞİNİ HİÇ UNUTMADI.']}
 def _sub_scr():
     if SUB_LANG != 'tr': return SCR
-    out = dict(SCR); out['sent'] = {k: [[a, b, tx] for (a, b, _), tx in zip(v, TR[k])] for k, v in SCR['sent'].items()}
-    assert all(len(SCR['sent'][k]) == len(TR[k]) for k in SCR['sent']), 'segment count changed: update TR'
+    out = dict(SCR); sent = {}
+    for k, v in SCR['sent'].items():
+        if len(v) == len(TR[k]): sent[k] = [[a, b, tx] for (a, b, _), tx in zip(v, TR[k])]
+        else: sent[k] = [[v[0][0], v[-1][1], ' '.join(TR[k])]]      # the take pauses elsewhere (e.g. a Turkish read): one subtitle for the line
+    out['sent'] = sent
     return out
 SUBS = look.Subtitles(_sub_scr(), LINES, W, H, S, COL, title_key='-none-', n=17,
                       hil=({'VURUŞU', 'VURUŞLARI', 'ÖLÜYORDU', 'MUM', 'SESİNİ', 'DEK', 'GÖSTERDİĞİNİ', 'SESİ', 'GÖRDÜ', 'ÖNDEN', 'YOLU', 'İSTEDİĞİNİ'} if SUB_LANG == 'tr' else
