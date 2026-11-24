@@ -94,61 +94,182 @@ N = int(round(DUR * FPS))
 def beat_phase(t): return ((t - DROP) / BP) % 1.0
 def beats_between(a, b): k0 = math.ceil((a - DROP) / BP); return [DROP + k * BP for k in range(k0, 64) if DROP + k * BP <= b]
 
-def lip_track():
-    """per video frame: open (0..1), wide (-1..1), sib (teeth), accent; from the vocal band of the song (mouth leads by ~1 frame)"""
-    cache = os.path.join(OUT, 'fox_wind_lips.npz')
-    if os.path.exists(cache) and os.path.getmtime(cache) > os.path.getmtime(__file__):
-        z = np.load(cache); return {k: z[k] for k in z.files}
-    x = load_song(); sr = 22050; Wn = 1536; win = np.hanning(Wn); f = np.fft.rfftfreq(Wn, 1 / sr)
-    LEAD = 0.035; nf = N + 2; ev = np.zeros(nf); cen = np.zeros(nf); sib = np.zeros(nf); fx = np.zeros(nf); prev = None
-    bv = (f > 250) & (f < 3500); bc = (f > 300) & (f < 3000); bs = (f > 4500) & (f < 9000)
-    for i in range(nf):
-        c = int((SRC0 + i / FPS + LEAD) * sr); a = x[max(0, c - Wn // 2): c + Wn // 2]
-        a = np.pad(a, (0, Wn - len(a))) * win; m = np.abs(np.fft.rfft(a)); p = m ** 2
-        ev[i] = p[bv].sum(); cen[i] = (f[bc] * p[bc]).sum() / (p[bc].sum() + 1e-12); sib[i] = p[bs].sum() / (p[bv].sum() + 1e-12)
-        lm = np.log1p(m[bv] * 10); fx[i] = 0 if prev is None else np.maximum(lm - prev, 0).sum(); prev = lm
-    db = 10 * np.log10(ev + 1e-12); tt = np.arange(nf) / FPS
-    vm = tt >= VOX - 0.05
-    lo, hi = np.percentile(db[vm], 18), np.percentile(db[vm], 96)
-    op = np.clip((db - lo) / (hi - lo), 0, 1) ** 0.85
-    # consonant closures: the frame before a sharp vocal onset narrows
-    thr = np.percentile(fx[vm], 80)
-    for i in range(1, nf - 1):
-        if fx[i + 1] > thr and fx[i + 1] > fx[i]: op[i] *= 0.4
-    op[~vm] = 0.0
-    # smoothing: fast attack, quick release
-    o2 = op.copy()
-    for i in range(1, nf): o2[i] = op[i] if op[i] > o2[i - 1] else o2[i - 1] * 0.35 + op[i] * 0.65
-    c0, c1 = np.percentile(cen[vm], 15), np.percentile(cen[vm], 85)
-    wide = np.clip((cen - c0) / (c1 - c0 + 1e-9) * 2 - 1, -1, 1)
-    sibf = np.clip((sib - np.percentile(sib[vm], 70)) / (np.percentile(sib[vm], 97) - np.percentile(sib[vm], 70) + 1e-9), 0, 1)
-    acc = np.clip((fx - thr) / (fx[vm].max() - thr + 1e-9), 0, 1) * vm
-    out = dict(open=o2, wide=wide, sib=sibf * vm, acc=acc)
-    np.savez(cache, **out); return out
-LIP = lip_track()
-def lip_at(t, key):
-    a = LIP[key]; u = t * FPS; i = int(min(len(a) - 2, max(0, math.floor(u)))); w = min(1.0, max(0.0, u - i)); return float(a[i] * (1 - w) + a[i + 1] * w)
-def acc_env(t, tau=0.22):
-    """decaying accent (brow pops on strong syllables)"""
-    i1 = int(t * FPS); best = 0.0
-    for i in range(max(0, i1 - 12), min(len(LIP['acc']), i1 + 1)):
-        best = max(best, float(LIP['acc'][i]) * math.exp(-(t - i / FPS) / tau))
-    return best
-
-# ======================= timing =======================
 T_SNAP = DROP + 0.04                         # the strap snaps on the gust
 T_LIFT = (T_SNAP + 0.06, T_SNAP + 0.36)      # straight up off the head
-T_GONE = T_SNAP + 1.35                        # out of frame
-T_GAP = None                                 # the phrase gap (eyebrow flash): longest quiet stretch in the vocal part
-def _find_gap():
-    o = LIP['open']; best = (0, None); run = 0
-    for i in range(int((VOX + 0.5) * FPS), int((FINAL - 0.6) * FPS)):
-        run = run + 1 if o[i] < 0.12 else 0
-        if run > best[0]: best = (run, (i - run + 1) / FPS)
-    return best[1] if best[0] >= 6 else None
-T_GAP = _find_gap()
+T_GONE = T_SNAP + 1.35                       # out of frame
 T_CLANK = FINAL + 0.24
-BLINKS = [0.95, VOX - 0.55, VOX + 2.4, (T_GAP + 0.35) if T_GAP else VOX + 3.6, FINAL - 0.75]
+AF = 100                                     # face-track rate (Hz)
+def vocal_analysis():
+    """sung syllables from the song's vocal band: nucleus (loudness peak), boundaries (dips), rough F1 / F2 (vowel colour), level"""
+    cache = os.path.join(OUT, 'fox_wind_syl.npz')
+    if os.path.exists(cache) and os.path.getmtime(cache) > os.path.getmtime(__file__):
+        z = np.load(cache); return {k: z[k] for k in z.files}
+    x = load_song(); sr = 22050; Wn = 1024; win = np.hanning(Wn); f = np.fft.rfftfreq(Wn, 1 / sr)
+    nA = int((DUR + 0.4) * AF); c = ((SRC0 + np.arange(nA) / AF) * sr).astype(int)
+    X = np.zeros((nA, Wn))
+    for i, ci in enumerate(c):
+        a = x[max(0, ci - Wn // 2): ci + Wn // 2]; X[i, :len(a)] = a
+    P = np.abs(np.fft.rfft(X * win, axis=1)) ** 2
+    bv = (f > 250) & (f < 3500); b1 = (f > 250) & (f < 1000); b2 = (f > 1000) & (f < 2800); bs = (f > 4500) & (f < 9000)
+    ev = P[:, bv].sum(1); f1 = (P[:, b1] * f[b1]).sum(1) / (P[:, b1].sum(1) + 1e-12); f2 = (P[:, b2] * f[b2]).sum(1) / (P[:, b2].sum(1) + 1e-12)
+    sib = P[:, bs].sum(1) / (ev + 1e-12)
+    db = 10 * np.log10(ev + 1e-12); db = np.convolve(db, np.ones(3) / 3, 'same')
+    L = np.log1p(np.sqrt(P[:, bv]) * 10); vfl = np.r_[0, np.maximum(np.diff(L, axis=0), 0).sum(1)]
+    vfl = np.convolve(vfl, np.ones(3) / 3, 'same')
+    T = np.arange(nA) / AF; vm = (T >= VOX - 0.06) & (T <= FINAL + 0.25)
+    lo, hi = np.percentile(db[vm], 15), np.percentile(db[vm], 97)
+    n = np.clip((db - lo) / (hi - lo), 0, 1); n[~vm] = 0
+    pk = []
+    for i in range(6, nA - 6):
+        if not vm[i] or n[i] < 0.3 or n[i] < n[i - 6:i + 7].max(): continue
+        if pk and (i - pk[-1] < 11 or db[pk[-1]:i + 1].min() > min(db[pk[-1]], db[i]) - 1.2):
+            if n[i] > n[pk[-1]]: pk[-1] = i
+            continue
+        pk.append(i)
+    syl = []
+    for k, p_ in enumerate(pk):
+        a = pk[k - 1] + int(np.argmin(db[pk[k - 1]:p_])) if k else max(0, p_ - 15)
+        b = p_ + int(np.argmin(db[p_:pk[k + 1]])) if k + 1 < len(pk) else min(nA - 1, p_ + 25)
+        while a < p_ and n[a] < 0.1: a += 1                # trim quiet tails so rests stay closed
+        while b > p_ and n[b] < 0.1: b -= 1
+        # long notes often hide several sung syllables: split at strong vocal-band onsets
+        thr = np.percentile(vfl[vm], 78); cuts = [a]
+        for i in range(a + 12, b - 11):
+            if vfl[i] > thr and vfl[i] == vfl[i - 5:i + 6].max() and i - cuts[-1] >= 12: cuts.append(i)
+        cuts.append(b)
+        for a2, b2 in zip(cuts[:-1], cuts[1:]):
+            p2 = a2 + int(np.argmax(n[a2:b2 + 1]))
+            w_ = slice(max(a2, p2 - 4), min(b2, p2 + 4) + 1)
+            syl.append([a2 / AF, p2 / AF, b2 / AF, n[p2], float(np.median(f1[w_])), float(np.median(f2[w_]))])
+    syl = np.array(syl)
+    out = dict(T=T, n=n, sib=sib, syl=syl)
+    np.savez(cache, **out); return out
+
+VA = vocal_analysis()
+def _rank(v): r = np.argsort(np.argsort(v)); return r / max(1, len(v) - 1)
+SYL = []
+_f1n = _rank(VA['syl'][:, 4]); _f2n = _rank(VA['syl'][:, 5])
+_lvl = VA['syl'][:, 3]; _lv75 = np.percentile(_lvl, 70)
+for k, (a, p_, b, lv, _x1, _x2) in enumerate(VA['syl']):
+    f1n, f2n = float(_f1n[k]), float(_f2n[k])
+    strong = bool(lv >= _lv75 and b - a >= 0.2)
+    SYL.append(dict(a=float(a), p=float(p_), b=float(b), lv=float(lv), f1=f1n, f2=f2n, strong=strong,
+                    rd=float(np.clip(1.7 * (0.5 - f2n), 0, 1) * (1 - 0.35 * f1n)),           # back vowels (o / u): rounded lips
+                    wd=float(np.clip(1.7 * (f2n - 0.5), 0, 1) * (1 - 0.3 * f1n)),            # front vowels (e / i): wide, teeth
+                    op=float((0.4 + 0.6 * f1n) * (0.65 + 0.35 * lv) * (1.25 if strong else 1.0))))  # open vowels (a): big jaw
+PHR = []                                     # phrases = syllable groups split by rests
+for s_ in SYL:
+    if PHR and s_['a'] - PHR[-1][-1]['b'] < 0.22: PHR[-1].append(s_)
+    else: PHR.append([s_])
+def _gap():
+    best = (0, None)
+    for i in range(1, len(PHR)):
+        g0, g1 = PHR[i - 1][-1]['b'], PHR[i][0]['a']
+        if VOX + 0.5 < g0 < FINAL - 0.6 and g1 - g0 > best[0]: best = (g1 - g0, (g0, g1))
+    return best[1]
+GAP = _gap()
+beats_all = [DROP + k * BP for k in range(-4, 40)]
+def nearest_beat(t): return min(beats_all, key=lambda b: abs(b - t))
+B_BROW = nearest_beat(DROP + 2 * BP)          # one eyebrow lifts
+B_NARROW = nearest_beat(DROP + 3 * BP)        # eyes narrow + side smirk
+T_BLINK = nearest_beat((GAP[0] + GAP[1]) / 2) if GAP else FINAL - 1.5      # the one expressive blink, on a beat in the phrase gap
+T_GAP = GAP[0] if GAP else None
+
+# ---------------------------------------------------------------- face performance tracks (targets, then springs)
+def _sm(x): x = np.clip(x, 0, 1); return x * x * (3 - 2 * x)
+def build_face():
+    T = np.arange(int((DUR + 0.4) * AF)) / AF; Z = np.zeros_like(T)
+    up = lambda a, b: _sm((T - a) / max(1e-6, b - a))                     # 0 -> 1 between a and b
+    win = lambda a, b, r1, r2: up(a - r1, a) * (1 - up(b, b + r2))         # 0 -> 1 -> 0
+    C = {k: Z.copy() for k in ('browR', 'browL', 'innerR', 'innerL', 'furrow', 'eyesR', 'eyesL', 'squintR', 'squintL', 'smR', 'smL',
+                                'open', 'round', 'wide', 'teeth', 'jaw', 'lookx', 'looky')}
+    def mixto(k, v, u): C[k] = C[k] + (v - C[k]) * u
+    # A) the build: calm, slightly serious
+    for k, v in dict(browR=-0.2, browL=-0.2, innerR=-0.3, innerL=-0.3, furrow=0.18, eyesR=0.86, eyesL=0.86, squintR=0.22, squintL=0.22).items(): C[k][:] = v
+    # B) the gust hits: squint into the wind
+    hit = up(DROP - 0.03, DROP + 0.06) * (1 - up(DROP + 0.12, DROP + 0.22))
+    for k, v in dict(squintR=0.85, squintL=0.85, eyesR=0.7, eyesL=0.7, furrow=0.5, innerR=-0.55, innerL=-0.55, browR=-0.4, browL=-0.4).items(): mixto(k, v, hit)
+    # C) surprised as the helmet flies off (brows up, eyes wide, small 'o'), eyes flick up after it
+    t0 = DROP + 0.17; t1 = B_BROW - 0.2
+    sp = up(t0, t0 + 0.12) * (1 - up(t1, t1 + 0.18))
+    for k, v in dict(browR=1.0, browL=1.0, innerR=0.55, innerL=0.55, furrow=0.0, eyesR=1.28, eyesL=1.28, squintR=0.0, squintL=0.0,
+                     open=0.3, round=0.85, jaw=0.25).items(): mixto(k, v, sp)
+    C['looky'] += 0.55 * win(t0 + 0.06, t0 + 0.3, 0.08, 0.18)
+    # D) one eyebrow lifts (lands on the beat)
+    ob = up(B_BROW - 0.16, B_BROW)
+    for k, v in dict(browR=1.0, innerR=0.25, browL=-0.3, innerL=-0.3, furrow=0.0, eyesR=1.05, eyesL=0.95, squintR=0.05, squintL=0.2).items(): mixto(k, v, ob)
+    # E) eyes narrow into a confident look + a small side smirk (lands on the next beat)
+    nr = up(B_NARROW - 0.16, B_NARROW)
+    for k, v in dict(browR=0.55, browL=-0.08, eyesR=0.9, eyesL=0.84, squintR=0.5, squintL=0.62, smR=0.5, smL=0.06).items(): mixto(k, v, nr)
+    # F) singing: a performing base, then per-syllable mouth + accents
+    sg = up(VOX - 0.15, VOX + 0.05)
+    for k, v in dict(browR=0.3, browL=0.1, innerR=0.05, innerL=0.05, eyesR=1.0, eyesL=0.97, squintR=0.25, squintL=0.33, smR=0.38, smL=0.08).items(): mixto(k, v, sg)
+    n = np.interp(T, VA['T'], VA['n'])
+    side = 1
+    strongs = [s_ for s_ in SYL if s_['strong']]
+    LONGEST = max(strongs, key=lambda s_: s_['b'] - s_['a']) if strongs else None
+    for ph_i, ph in enumerate(PHR):
+        a0 = ph[0]['a']
+        key = 'browR' if side > 0 else 'browL'; C[key] += 0.5 * win(a0, a0 + 0.12, 0.1, 0.45); side = -side     # phrase start: one brow pops
+        for s_ in ph:
+            a, b = s_['a'], s_['b']
+            m = (T >= a) & (T <= b)
+            shape = np.clip((n - 0.08) / (s_['lv'] - 0.08 + 1e-6), 0, 1) ** 0.7
+            edge = np.clip(np.minimum(T - a, b - T) / 0.05, 0.35, 1.0)
+            C['open'] = np.where(m, np.maximum(C['open'], s_['op'] * shape * edge), C['open'])
+            C['round'] = np.where(m, s_['rd'], C['round']); C['wide'] = np.where(m, s_['wd'], C['wide'])
+            C['jaw'] = np.where(m, np.maximum(C['jaw'], s_['op'] * shape * (1.15 if s_['strong'] else 0.85)), C['jaw'])
+            if s_['strong']:
+                if s_ is LONGEST or ((b - a) >= 0.32 and ph_i % 2 == 1):          # a long strong note: furrowed, squinting, feeling it
+                    e = win(a + 0.04, b, 0.12, 0.3)
+                    C['furrow'] += 0.65 * e; C['innerR'] -= 0.35 * e; C['innerL'] -= 0.35 * e; C['squintR'] += 0.4 * e; C['squintL'] += 0.35 * e
+                    C['browR'] -= 0.2 * e; C['browL'] -= 0.1 * e
+                else:                                           # a strong note: both brows up, eyes open
+                    e = win(a, min(b, a + 0.35), 0.08, 0.35)
+                    C['browR'] += 0.6 * e; C['browL'] += 0.55 * e; C['innerR'] += 0.3 * e; C['innerL'] += 0.3 * e
+                    C['eyesR'] += 0.15 * e; C['eyesL'] += 0.15 * e; C['squintR'] -= 0.2 * e; C['squintL'] -= 0.25 * e
+            elif s_['rd'] > 0.55:                              # rounded syllables: inner brows lift a touch ('oo')
+                e = win(a, b, 0.06, 0.15); C['innerR'] += 0.2 * e; C['innerL'] += 0.2 * e
+    sib = np.interp(T, VA['T'], VA['sib']); sv = sib[(T > VOX) & (T < FINAL)]
+    st = np.clip((sib - np.percentile(sv, 70)) / (np.percentile(sv, 97) - np.percentile(sv, 70) + 1e-9), 0, 1)
+    C['teeth'] = st * (1 - np.clip(C['open'] * 2, 0, 1)) * ((T > VOX) & (T < FINAL + 0.1))
+    # the smirk lives between syllables (closed mouth) and relaxes on open vowels
+    C['smR'] = C['smR'] * (1 - 0.55 * np.clip(C['open'], 0, 1) * sg) + 0.12 * sg * (1 - np.clip(C['open'] * 3, 0, 1))
+    # G) the one expressive blink in the phrase gap (on a beat), then an eyebrow flash + smirk
+    bl = np.clip(np.minimum((T - (T_BLINK - 0.11)) / 0.09, ((T_BLINK + 0.24) - T) / 0.17), 0, 1) ** 0.8
+    C['browR'] += 0.55 * win(T_BLINK + 0.26, T_BLINK + 0.4, 0.14, 0.3); C['browL'] += 0.5 * win(T_BLINK + 0.26, T_BLINK + 0.4, 0.14, 0.3)
+    C['smR'] += 0.18 * win(T_BLINK - 0.1, T_BLINK + 0.45, 0.15, 0.25)
+    # H) the final beat: confident smirk to camera, mouth closes; the glance to the off-screen clank and back
+    fk = up(FINAL - 0.08, FINAL + 0.1)
+    for k, v in dict(browR=0.7, browL=-0.05, innerR=0.1, innerL=-0.1, furrow=0.0, eyesR=0.95, eyesL=0.9, squintR=0.32, squintL=0.5,
+                     smR=0.58, smL=0.1, round=0.0, wide=0.0, teeth=0.0).items(): mixto(k, v, fk)
+    shut = up(FINAL + 0.04, FINAL + 0.2); C['open'] *= (1 - shut); C['jaw'] *= (1 - shut)
+    gl = win(T_CLANK + 0.06, T_CLANK + 0.28, 0.08, 0.14)
+    C['lookx'] -= 0.75 * gl; C['browL'] += 0.3 * gl
+    # quick natural blinks outside the performance beats: before the drop, one late
+    nb = Z.copy()
+    for tb, w_ in ((0.95, 0.07), (FINAL - 0.62, 0.06)): nb = np.maximum(nb, np.clip(1 - np.abs(T - tb) / w_, 0, 1))
+    C['smR'] = np.clip(C['smR'], 0, 0.62); C['smL'] = np.clip(C['smL'], 0, 0.3)          # no creepy grin
+    C['open'] = np.clip(C['open'], 0, 1.25); C['jaw'] = np.clip(C['jaw'], 0, 1.2)
+    # springs: every channel moves continuously (critically damped, per-channel speed)
+    speed = dict(browR=16, browL=16, innerR=16, innerL=16, furrow=14, eyesR=26, eyesL=26, squintR=14, squintL=14, smR=12, smL=12,
+                 open=38, round=26, wide=26, teeth=30, jaw=32, lookx=26, looky=22)
+    dt = 1 / AF
+    for k, w0 in speed.items():
+        x_ = C[k][0]; v_ = 0.0; out = np.empty_like(T)
+        for i, tg in enumerate(C[k]):
+            for _ in range(2):
+                v_ += (w0 * w0 * (tg - x_) - 2 * w0 * v_) * dt / 2; x_ += v_ * dt / 2
+            out[i] = x_
+        C[k] = out
+    for k in ('eyesR', 'eyesL'): C[k] = C[k] * (1 - np.maximum(bl, nb))       # lids after the springs (blinks are fast)
+    C['T'] = T
+    return C
+FACE = build_face()
+MOUTH_LEAD = 0.04                              # the mouth leads the sound by ~1 frame
+def face_at(k, t):
+    if k in ('open', 'round', 'wide', 'teeth', 'jaw'): t = t + MOUTH_LEAD
+    return float(np.interp(t, FACE['T'], FACE[k]))
 
 def wind(t):
     """gust envelope: a clear hit on the drop, sustain, then dies away"""
@@ -191,11 +312,11 @@ def expr_def(p, E):
         w = np.clip((-y - 0.058) / 0.022, 0, 1); w = w * w * (3 - 2 * w) * np.clip((z + 0.04) / 0.05, 0, 1)
         a = 0.2 * jaw * w; py, pz = y + 0.01, z + 0.02
         y = -0.01 + py * np.cos(a) - pz * np.sin(a); z = -0.02 + py * np.sin(a) + pz * np.cos(a)
-    for sd, key in ((1, 'smR'), (-1, 'smL')):
+    for sd, key in ((1, 'cheekR'), (-1, 'cheekL')):
         s_ = E.get(key, 0.0)
         if s_:
-            g = np.exp(-(((x - sd * 0.046) / 0.02) ** 2 + ((y + 0.03) / 0.018) ** 2)) * s_ * (z > 0)
-            z = z + 0.005 * g; y = y + 0.004 * g
+            g = np.exp(-(((x - sd * 0.047) / 0.022) ** 2 + ((y + 0.026) / 0.02) ** 2)) * s_ * (z > 0)
+            z = z + 0.0065 * g; y = y + 0.0055 * g
     return np.stack([x, y, z], -1)
 def sph(u, v): return np.stack([RX * np.sin(v) * np.sin(u), RY * np.cos(v), RZ * np.sin(v) * np.cos(u)], -1)
 def surf(u, v, E): return expr_def(base_def(sph(u, v)), E)
@@ -204,7 +325,7 @@ def on_uv(u, v, lift, E):
     du = surf(u + e, v, E) - surf(u - e, v, E); dv = surf(u, v + e, E) - surf(u, v - e, E)
     n = np.cross(du, dv); n = n / (np.linalg.norm(n, axis=-1, keepdims=True) + 1e-12)
     n = np.where((n * p).sum(-1, keepdims=True) < 0, -n, n)
-    return p + n * lift
+    return p + n * np.asarray(lift, float)[..., None] if np.ndim(lift) else p + n * lift
 def on(xy, lift, E):
     xy = np.asarray(xy, float).reshape(-1, 2); x, y = xy[:, 0], xy[:, 1]
     v = np.arccos(np.clip(y / RY, -0.995, 0.995)); u = np.arcsin(np.clip(x / (RX * np.sin(v)), -0.995, 0.995))
@@ -255,11 +376,12 @@ def eyes_geo(M, E):
         n = 9; s = np.linspace(-1, 1, n); hw = 0.0135
         x = cx + s * hw
         tilt = 0.0012 * s * sd                       # outer corner a touch higher
-        up_full = cy + tilt + 0.0085 * (1 - s ** 2) ** 0.8 + 0.0006
-        lo_full = cy + tilt - 0.0058 * (1 - s ** 2) ** 0.8
-        lid = lo_full + 0.0006 + (up_full - lo_full) * np.clip(op, 0, 1.2) * (1 - 0.45 * sq)
+        ck = E.get('cheek' + side, 0.0); wide_ = max(0.0, op - 1.0); KU = 0.0085 * (1 + 0.45 * wide_); KL = 0.0058 * (1 + 0.3 * wide_)
+        up_full = cy + tilt + KU * (1 - s ** 2) ** 0.8 + 0.0006
+        lo_full = cy + tilt - KL * (1 - s ** 2) ** 0.8
+        lid = lo_full + 0.0006 + (up_full - lo_full) * np.clip(op, 0, 1.0) * (1 - 0.42 * sq)
         lid = np.maximum(lid, lo_full + 0.0004)
-        llo = lo_full + (lid - lo_full) * 0.55 * sq
+        llo = lo_full + (lid - lo_full) * np.clip(0.62 * sq + 0.28 * ck, 0, 0.85)
         llo = np.minimum(llo, lid - 0.0002)
         P2 = lambda xs, ys, lift: on(np.stack([xs, ys], -1), lift, E)
         # sclera
@@ -270,31 +392,41 @@ def eyes_geo(M, E):
         def ring(r):
             xs = ix + np.cos(th) * r; ys = iy + np.sin(th) * r
             ss = np.clip((xs - cx) / hw, -0.97, 0.97)
-            top = cy + 0.0012 * ss * sd + 0.0085 * (1 - ss ** 2) ** 0.8; bot = cy + 0.0012 * ss * sd - 0.0058 * (1 - ss ** 2) ** 0.8
+            top = cy + 0.0012 * ss * sd + KU * (1 - ss ** 2) ** 0.8; bot = cy + 0.0012 * ss * sd - KL * (1 - ss ** 2) ** 0.8
             return np.stack([xs, np.clip(ys, bot, top)], -1)
         M.fan(on([[ix, iy]], 0.0018, E)[0], on(ring(0.0056), 0.0018, E), KNIGHT['eye'])
         M.fan(on([[ix, iy]], 0.0022, E)[0], on(ring(0.0035), 0.0022, E), shade(KNIGHT['eye'], 0.55))
         M.fan(on([[ix, iy]], 0.0026, E)[0], on(ring(0.0022), 0.0026, E), (16, 12, 12))
         g0 = on([[ix + 0.0016, iy + 0.0018]], 0.003, E)[0]
-        M.fan(g0, on(np.stack([ix + 0.0016 + np.cos(th[::3]) * 0.0009, iy + 0.0018 + np.sin(th[::3]) * 0.0009], -1), 0.003, E), (255, 255, 250), emit=True)
+        M.fan(g0, on(np.stack([ix + 0.0016 + np.cos(th[::3]) * 0.0009, iy + 0.0018 + np.sin(th[::3]) * 0.0009], -1), 0.003, E), (255, 255, 250))
         # upper lid (covers everything above the lid line) + lash line + crease
         lidcol = shade(SKIN, 0.9)
         M.strip(P2(x, up_full + 0.0034, 0.0034), P2(x, lid, 0.0034), lidcol)
         lash = np.where(s * sd > 0, 0.0017, 0.0011)
         M.strip(P2(x * 1.0 + sd * 0.0006 * (s * sd > 0.6), lid + lash, 0.0038), P2(x, lid - 0.0003, 0.0038), (34, 22, 18))
-        M.strip(P2(x[1:-1], up_full[1:-1] + 0.0042, 0.0036), P2(x[1:-1], up_full[1:-1] + 0.0034, 0.0036), shade(SKIN, 0.78))
+        M.strip(P2(x[1:-1], up_full[1:-1] + 0.0042, 0.0036), P2(x[1:-1], up_full[1:-1] + 0.0034, 0.0036), shade(SKIN, 0.84))
         # lower lid
         M.strip(P2(x, llo, 0.0032), P2(x, lo_full - 0.0026, 0.0032), shade(SKIN, 0.95))
         M.strip(P2(x, llo + 0.0004, 0.0034), P2(x, llo - 0.0004, 0.0034), shade(SKIN, 0.8))
 
 def brows_geo(M, E):
+    fu = max(0.0, E.get('furrow', 0.0))
     for sd, side in ((1, 'R'), (-1, 'L')):
-        r = E['brow' + side]; inn = E['inner' + side]
+        r = E['brow' + side]; inn = E['inner' + side] - 0.5 * fu
         s = np.linspace(-1, 1, 7)                       # -1 = inner end, +1 = outer end
-        x = sd * (0.033 + 0.017 * s)
-        y = 0.0335 + 0.0068 * r + 0.0026 * (1 - s ** 2) + 0.0042 * inn * (1 - s) / 2 - 0.0012 * s
-        th = 0.0048 - 0.0018 * (s + 1) / 2
+        x = sd * (0.033 + 0.017 * s - 0.0035 * fu * (1 - s) / 2)
+        y = 0.0335 + 0.0072 * r + 0.0026 * (1 - s ** 2) + 0.0048 * inn * (1 - s) / 2 - 0.0012 * s
+        th = 0.0052 - 0.002 * (s + 1) / 2
         M.strip(on(np.stack([x, y + th * 0.55], -1), 0.0042, E), on(np.stack([x, y - th * 0.45], -1), 0.0042, E), BROW)
+        if r > 0.55:                                     # forehead line over a high brow
+            k_ = min(1.0, (r - 0.55) / 0.4); ys = 0.0335 + 0.0072 * r + 0.011
+            xs = sd * np.linspace(0.02, 0.046, 5)
+            M.strip(on(np.stack([xs, np.full(5, ys + 0.0006 * k_)], -1), 0.0018, E), on(np.stack([xs, np.full(5, ys - 0.0006 * k_)], -1), 0.0018, E), shade(SKIN, 0.86))
+    if fu > 0.12:                                        # furrow creases between the brows
+        for sd in (1, -1):
+            w_ = 0.0007 * min(1.0, fu * 1.6)
+            a = on([[sd * 0.0062 - w_, 0.036], [sd * 0.0062 + w_, 0.036]], 0.0026, E); b = on([[sd * 0.0072 - w_, 0.024], [sd * 0.0072 + w_, 0.024]], 0.0026, E)
+            M.tri(a[0], a[1], b[1], shade(SKIN, 0.78)); M.tri(a[0], b[1], b[0], shade(SKIN, 0.78))
     # a little scar through the left brow (his left = screen right)
     a = on([[-0.045, 0.046], [-0.042, 0.047]], 0.0046, E); b = on([[-0.036, 0.024], [-0.0335, 0.0245]], 0.0046, E)
     M.tri(a[0], a[1], b[1], (214, 150, 136)); M.tri(a[0], b[1], b[0], (214, 150, 136))
@@ -313,25 +445,26 @@ def nose_geo(M, E):
     M.tri(nR, und, wR, (90, 50, 44)); M.tri(nL, wL, und, (90, 50, 44))
 
 def mouth_geo(M, E):
-    op = E['open']; wd = E['wide']; smL, smR = E['smL'], E['smR']; tee = E.get('teeth', 0.0)
+    op = max(0.0, E['open']); wd = max(0.0, E['wide']); rd = max(0.0, E.get('round', 0.0)); smL, smR = E['smL'] * (1 - rd), E['smR'] * (1 - 0.7 * rd); tee = E.get('teeth', 0.0)
     n = 13; s = np.linspace(-1, 1, n)
-    halfw = 0.0185 * (1 + 0.15 * wd) * (1 + 0.07 * (smL + smR)) * (1 - 0.12 * max(0.0, -wd) * op)
-    ih = 0.0011 + 0.021 * op + 0.003 * tee
+    halfw = 0.0185 * (1 + 0.24 * wd) * (1 + 0.07 * (smL + smR)) * (1 - 0.45 * rd)
+    ih = 0.0011 + 0.021 * op * (1 + 0.1 * rd) * (1 - 0.25 * wd) + 0.003 * tee
     cy = -0.051; shift = 0.0026 * (smR - smL)
     smv = np.where(s > 0, smR, smL)
-    corner = 0.0085 * smv * np.abs(s) ** 1.5 - 0.0012 * np.abs(s) ** 2
-    prof = (1 - s ** 2) ** (0.75 if wd >= 0 else 0.55)
+    corner = 0.0105 * smv * np.abs(s) ** 1.5 - 0.0012 * np.abs(s) ** 2
+    prof = (1 - s ** 2) ** (0.75 - 0.3 * rd)
     x = s * halfw + shift
     iu = cy + corner + ih * 0.32 * prof
     il = cy + corner - ih * 0.68 * prof
     sq = np.sqrt(np.clip(1 - s ** 2, 0, 1))
-    ou = iu + (0.0042 + 0.0012 * (1 - np.abs(s))) * sq - 0.0011 * np.exp(-(s / 0.14) ** 2) * sq
-    ol = il - 0.0072 * sq * (1 - 0.25 * op)
-    P2 = lambda xs, ys, lift: on(np.stack([xs, ys], -1), lift, E)
+    ou = iu + (0.0042 + 0.0012 * (1 - np.abs(s))) * sq * (1 + 0.45 * rd) - 0.0011 * np.exp(-(s / 0.14) ** 2) * sq
+    ol = il - 0.0072 * sq * (1 - 0.25 * op) * (1 + 0.3 * rd)
+    pk = 0.0022 * rd                                   # rounded lips push forward
+    P2 = lambda xs, ys, lift: on(np.stack([xs, ys], -1), lift + pk * np.sqrt(np.clip(1 - (np.asarray(xs) - shift) ** 2 / (halfw * 1.05) ** 2, 0, 1)), E)
     M.strip(P2(x, iu, 0.0012), P2(x, il, 0.0012), MOUTH_IN)
     if ih > 0.0035:
         tw = np.abs(s) < 0.78
-        th_ = np.minimum(iu - il, 0.0042 + 0.003 * tee)
+        th_ = np.minimum(iu - il, 0.0042 + 0.003 * tee + 0.002 * wd)
         M.strip(P2(x[tw], iu[tw] + 0.0002, 0.0016), P2(x[tw], iu[tw] - th_[tw], 0.0016), TEETH)
         if tee > 0.3:
             M.strip(P2(x[tw], il[tw] + np.minimum(iu - il, 0.003)[tw], 0.0016), P2(x[tw], il[tw] - 0.0002, 0.0016), shade(TEETH, 0.9))
@@ -477,71 +610,30 @@ def helmet_geo(hc, R, t, snapped, strap_u):
 
 # ======================= the knight (body + custom head) =======================
 def head_tilt(t):
-    """(yaw, nod, tilt) of the head over time"""
+    """(yaw, nod, tilt) of the head over time: small rhythmic tilts + nods"""
     yaw = 0.0; nod = 0.0; tilt = 0.0
-    # build: still, breathing
-    nod += 0.008 * math.sin(t * 2.1)
-    # gust hit: head pushed back a touch
+    nod += 0.008 * math.sin(t * 2.1)                                              # breathing
     w = wind(t); nod += 0.07 * w * (1 - sm(seg01(t, DROP + 0.5, DROP + 1.2))) + 0.02 * flutter(t, 1, 14) * w * 0.3
-    # after the reveal: confident head moves on the beat (small)
+    nod += 0.05 * bump(t, DROP + 0.45, 0.18)                                      # surprised: chin up after the helmet
+    tilt += 0.07 * sm(seg01(t, B_BROW - 0.2, B_BROW)) * (1 - sm(seg01(t, B_NARROW, B_NARROW + 0.4)))   # head cocks with the brow
     if t > DROP + 0.7:
         k = sm(seg01(t, DROP + 0.7, DROP + 1.1))
         for b in beats_between(DROP + 0.5, DUR + 1):
-            nod -= 0.028 * k * bump(t, b + 0.03, 0.07)
-        tilt += k * (0.07 * math.sin(2 * PI * (t - DROP) / (4 * BP) + 0.6))
-        yaw += k * 0.05 * math.sin(2 * PI * (t - DROP) / (8 * BP))
-    # the final pose: chin up a touch, head tilt, and the glance to the clank
+            nod -= 0.022 * k * bump(t, b + 0.03, 0.07)
+        for s_ in SYL:
+            if s_['strong']: nod -= 0.03 * bump(t, s_['a'] + 0.04, 0.09)
+        tilt += k * (0.065 * math.sin(2 * PI * (t - DROP) / (4 * BP) + 0.6))
+        yaw += k * 0.045 * math.sin(2 * PI * (t - DROP) / (8 * BP))
     fk = sm(seg01(t, FINAL - 0.05, FINAL + 0.15))
     nod = lerp(nod, 0.05, fk); tilt = lerp(tilt, -0.08, fk); yaw = lerp(yaw, 0.03, fk)
     return yaw, nod, tilt
 
 def expression(t):
-    E = dict(eyesR=1.0, eyesL=1.0, squintR=0.12, squintL=0.12, browR=0.0, browL=0.0, innerR=0.0, innerL=0.0, look=(0.0, 0.0),
-             open=0.0, wide=0.0, smL=0.0, smR=0.0, teeth=0.0, jaw=0.0)
-    # build: calm, slightly serious
-    E.update(browR=-0.2, browL=-0.2, innerR=-0.35, innerL=-0.35, smR=0.0, smL=0.0, eyesR=0.82, eyesL=0.82, squintR=0.22, squintL=0.22)
-    w = wind(t)
-    # gust: squint into the wind
-    g = w * (1 - sm(seg01(t, DROP + 0.55, DROP + 0.95)))
-    E['squintR'] = E['squintL'] = 0.22 + 0.65 * g; E['eyesR'] = E['eyesL'] = 0.82 - 0.1 * g
-    E['innerR'] = E['innerL'] = -0.25 - 0.4 * g; E['browR'] = E['browL'] = -0.15 - 0.3 * g
-    # reveal -> cocky: one brow up, smirk
-    c = sm(seg01(t, DROP + 0.6, DROP + 0.95))
-    if c > 0:
-        E['browR'] = lerp(E['browR'], 0.75, c); E['innerR'] = lerp(E['innerR'], 0.1, c)
-        E['browL'] = lerp(E['browL'], -0.05, c); E['innerL'] = lerp(E['innerL'], -0.1, c)
-        E['smR'] = lerp(E['smR'], 0.8, c); E['smL'] = lerp(E['smL'], 0.15, c)
-        E['squintR'] = lerp(E['squintR'], 0.1, c); E['squintL'] = lerp(E['squintL'], 0.38, c)    # a little squint on one eye
-        E['eyesR'] = lerp(E['eyesR'], 1.0, c); E['eyesL'] = lerp(E['eyesL'], 0.95, c)
-    # singing
-    if t > VOX - 0.2:
-        k = sm(seg01(t, VOX - 0.2, VOX + 0.1))
-        op = lip_at(t, 'open'); wd = lip_at(t, 'wide'); sb = lip_at(t, 'sib'); ac = acc_env(t)
-        E['open'] = op * k; E['wide'] = wd * k; E['teeth'] = sb * (1 - op) * k; E['jaw'] = op * 0.9 * k
-        E['smR'] = lerp(E['smR'], 0.38 + 0.25 * (1 - op), k); E['smL'] = lerp(E['smL'], 0.1 + 0.1 * (1 - op), k)
-        E['browR'] = lerp(E['browR'], 0.25 + 0.55 * ac, k); E['browL'] = lerp(E['browL'], 0.1 + 0.5 * ac, k)
-        E['innerR'] = lerp(E['innerR'], 0.15 * ac, k); E['innerL'] = lerp(E['innerL'], 0.25 * ac, k)
-        E['squintR'] = lerp(E['squintR'], 0.15 + 0.25 * op, k); E['squintL'] = lerp(E['squintL'], 0.3 + 0.2 * op, k)
-    # the eyebrow flash in the phrase gap
-    if T_GAP:
-        f = math.exp(-((t - (T_GAP + 0.12)) / 0.16) ** 2)
-        E['browR'] += 0.6 * f; E['browL'] += 0.55 * f; E['smR'] += 0.3 * f
-    # final beat: confident look, then the glance to the clank and back
-    fk = sm(seg01(t, FINAL - 0.06, FINAL + 0.12))
-    if fk > 0:
-        op = E['open'] * (1 - sm(seg01(t, FINAL + 0.05, FINAL + 0.2)))
-        E.update(open=op, jaw=op * 0.9, teeth=0.0)
-        E['smR'] = lerp(E['smR'], 0.9, fk); E['smL'] = lerp(E['smL'], 0.22, fk)
-        E['browR'] = lerp(E['browR'], 0.8, fk); E['browL'] = lerp(E['browL'], 0.0, fk)
-        E['squintL'] = lerp(E['squintL'], 0.45, fk); E['squintR'] = lerp(E['squintR'], 0.18, fk)
-        gl = sm(seg01(t, T_CLANK + 0.04, T_CLANK + 0.12)) * (1 - sm(seg01(t, T_CLANK + 0.3, T_CLANK + 0.4)))
-        E['look'] = (-0.95 * gl, 0.15 * gl)
-        E['browL'] += 0.35 * gl
-    # blinks
-    for b in BLINKS:
-        if b is None: continue
-        bl = max(0.0, 1 - abs(t - b) / 0.07)
-        E['eyesR'] = min(E['eyesR'], 1 - bl); E['eyesL'] = min(E['eyesL'], 1 - bl)
+    E = {k: face_at(k, t) for k in ('browR', 'browL', 'innerR', 'innerL', 'furrow', 'eyesR', 'eyesL', 'squintR', 'squintL', 'smR', 'smL',
+                                     'open', 'round', 'wide', 'teeth', 'jaw')}
+    yaw, nod, _ = head_tilt(t)
+    E['look'] = (face_at('lookx', t) - yaw * 3.5, face_at('looky', t) - nod * 2.5)     # eyes stay on the camera while the head moves
+    E['cheekR'] = min(1.0, 0.9 * E['smR'] + 0.3 * E['squintR']); E['cheekL'] = min(1.0, 0.9 * E['smL'] + 0.3 * E['squintL'])
     return E
 
 def pose(t):
@@ -722,8 +814,9 @@ HC0, _ = head_frame(0.0)
 def camera(t):
     push = sm(seg01(t, 0, DUR)) * 0.03
     sh = 0.0035 * w_shake(t)
-    pos = V((0.0 + sh, HC0[1] + 0.02 + sh * 0.6, HC0[2] + 0.52 - push))
-    tgt = V((0.0, HC0[1] - 0.045, HC0[2]))
+    ci = sm(seg01(t, T_GONE - 0.3, T_GONE + 0.35))                 # after the helmet has left the frame
+    pos = V((0.0 + sh, HC0[1] + 0.02 - 0.012 * ci + sh * 0.6, HC0[2] + 0.52 - push - 0.13 * ci))
+    tgt = V((0.0, HC0[1] - 0.045 + 0.04 * ci, HC0[2]))
     return pos, tgt, 40.0
 def w_shake(t):
     if not (DROP - 0.02 < t < DROP + 0.35): return 0.0
