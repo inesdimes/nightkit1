@@ -23,7 +23,7 @@ for n,key in enumerate(keys,1):
     while i0<nf and db[i0]<=-80: i0+=1                                 # leading digital zeros
     c=i0
     while c<nf and db[c]>-80: c+=1                                     # the record-button click at the start, then digital silence
-    if c<nf*0.5: i0=c                                                  # click = burst then digital zeros early on; no digital zeros (other phones, e.g. Betul) -> keep the speech
+    if c<nf*0.5 and c-i0<30: i0=c                                                  # click = burst then digital zeros early on; no digital zeros (other phones, e.g. Betul) -> keep the speech
     i1=i0
     while i1<nf and db[i1]<-62: i1+=1                                  # first voiced frame
     last=max(j for j in range(nf) if db[j]>-66)

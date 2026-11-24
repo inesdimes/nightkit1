@@ -2,6 +2,7 @@
 Videos (`renders/the_last_echo/`):
 - English subtitles: `the_last_echo_v3_voiced_66s.mp4`
 - Turkish subtitles (same English voice, "YILLAR ÖNCE" label): `the_last_echo_v3_voiced_TR_altyazi_66s.mp4`
+- **Turkish voice** (Enes's Turkish takes `vocal/the_last_echo/türkçe/1..7.m4a`, Turkish subtitles) for İkinci Diski Takınız: `the_last_echo_v3_TR_seslendirme_62s.mp4` (62.2 s)
 
 Thumbnails: EN `renders/the_last_echo/thumbnail_en.png`, TR `renders/the_last_echo/thumbnail_tr.png` (made with `python tools/thumb.py voiced`)
 ---------------------------------------------------------------- ENGLISH CHANNEL
@@ -38,6 +39,7 @@ Would you trade his voice for that memory? 👇
 Would you light the candle, knowing you'd forget his voice? 🕯️👇
 
 ---------------------------------------------------------------- TÜRKÇE KANAL
+Kanal: **İkinci Diski Takınız** (YouTube / TikTok / Instagram: ikincidiskitakiniz). Türkçe kanala Türkçe sesli sürüm gider.
 
 ## YouTube Shorts (TR)
 **Başlık:** O Üç Vuruşu Son Duyduğunda Kardeşi Ölüyordu 🕯️
@@ -47,16 +49,18 @@ Harabenin içinden üç vuruş. Aren onları son duyduğunda kardeşi enkazın a
 
 Tek bir mum o geceyi yeniden canlandırabilirdi. Ama mum sönünce kardeşinin sesini sonsuza dek unutacaktı.
 
-Hiç var olmamış bir retro oyundan minik bir hikâye. Sen olsan mumu yakar mıydın? 👇
+Hiç var olmamış bir retro oyundan minik bir hikâye. 💿
 
-#ps1 #retrooyun #oyun #rpg #kısafilm #oyunhikayesi #hüzünlü #fantastik #shorts #türkçe
+Sen olsan mumu yakar mıydın? 👇
+
+#ikincidiskitakiniz #ps1 #retrooyun #oyun #rpg #kısafilm #oyunhikayesi #hüzünlü #fantastik #shorts #türkçe
 
 ## TikTok (TR)
 Üç vuruş. 🕯️
 
 Onları son duyduğunda kardeşi ölüyordu.
 
-#ps1 #retrooyun #oyun #rpg #hüzünlü #oyunhikayesi #keşfet #türkçe
+#ikincidiskitakiniz #ps1 #retrooyun #oyun #rpg #hüzünlü #oyunhikayesi #keşfet #türkçe
 
 ## Instagram Reels (TR)
 Kardeşinin son sözleri: "Benim için geri dönme. Onları dışarı çıkar." 🕯️
@@ -65,7 +69,7 @@ Aren yıllarca gittiği için kendini suçladı. Sonra bir çocuk aynı üç vur
 
 Onun sesini bu anı için verir miydin? 👇
 
-#ps1 #retrooyun #oyun #rpg #kısafilm #hüzünlü #oyunhikayesi #reels #keşfet
+#ikincidiskitakiniz #ps1 #retrooyun #oyun #rpg #kısafilm #hüzünlü #oyunhikayesi #reels #keşfet
 
 ## Sabit yorum (TR)
 Kardeşinin sesini unutacağını bile bile mumu yakar mıydın? 🕯️👇
