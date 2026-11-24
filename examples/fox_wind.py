@@ -177,83 +177,85 @@ T_GAP = GAP[0] if GAP else None
 
 # ---------------------------------------------------------------- face performance tracks (targets, then springs)
 def _sm(x): x = np.clip(x, 0, 1); return x * x * (3 - 2 * x)
+CH = ('browR', 'browL', 'innerR', 'innerL', 'furrow', 'eyesR', 'eyesL', 'squintR', 'squintL', 'smR', 'smL', 'press',
+      'open', 'round', 'wide', 'teeth', 'jaw', 'lookx', 'looky', 'tilt', 'nod')
+# the poses (values the springs travel between)
+POSE_DEADPAN = dict(browR=0.0, browL=0.0, innerR=0.0, innerL=0.0, furrow=0.0, eyesR=0.72, eyesL=0.72, squintR=0.15, squintL=0.15,
+                    smR=0.0, smL=0.0, press=1.0, tilt=0.0, nod=0.0)
+POSE_REACT = dict(browR=1.0, browL=0.85, innerR=0.45, innerL=0.4, furrow=0.0, eyesR=1.3, eyesL=1.3, squintR=0.0, squintL=0.0,
+                  smR=0.0, smL=0.0, press=0.4, nod=0.05, tilt=0.0)
+POSE_SMIRK = dict(browR=1.0, browL=-0.45, innerR=0.3, innerL=-0.35, furrow=0.0, eyesR=0.9, eyesL=0.82, squintR=0.32, squintL=0.62,
+                  smR=0.85, smL=0.0, press=0.55, tilt=0.12, nod=-0.045)
+POSE_SING = dict(browR=0.8, browL=-0.3, innerR=0.2, innerL=-0.25, furrow=0.0, eyesR=0.98, eyesL=0.86, squintR=0.22, squintL=0.48,
+                 smR=0.7, smL=0.0, press=0.0, tilt=0.07, nod=-0.025)
+POSE_SMUG = dict(browR=0.9, browL=-0.25, innerR=0.25, innerL=-0.2, furrow=0.0, eyesR=0.92, eyesL=0.84, squintR=0.3, squintL=0.55,
+                 smR=0.9, smL=0.3, press=0.5, tilt=0.1, nod=-0.04, round=0.0, wide=0.0, teeth=0.0)
+T_REACT = DROP + 0.17                         # the face clears the helmet rim
+T_WINK = T_BLINK                              # the wink lands on the beat in the phrase gap
+def _sm(x): x = np.clip(x, 0, 1); return x * x * (3 - 2 * x)
 def build_face():
     T = np.arange(int((DUR + 0.4) * AF)) / AF; Z = np.zeros_like(T)
-    up = lambda a, b: _sm((T - a) / max(1e-6, b - a))                     # 0 -> 1 between a and b
-    win = lambda a, b, r1, r2: up(a - r1, a) * (1 - up(b, b + r2))         # 0 -> 1 -> 0
-    C = {k: Z.copy() for k in ('browR', 'browL', 'innerR', 'innerL', 'furrow', 'eyesR', 'eyesL', 'squintR', 'squintL', 'smR', 'smL',
-                                'open', 'round', 'wide', 'teeth', 'jaw', 'lookx', 'looky')}
-    def mixto(k, v, u): C[k] = C[k] + (v - C[k]) * u
-    # A) the build: calm, slightly serious
-    for k, v in dict(browR=-0.2, browL=-0.2, innerR=-0.3, innerL=-0.3, furrow=0.18, eyesR=0.86, eyesL=0.86, squintR=0.22, squintL=0.22).items(): C[k][:] = v
-    # B) the gust hits: squint into the wind
-    hit = up(DROP - 0.03, DROP + 0.06) * (1 - up(DROP + 0.12, DROP + 0.22))
-    for k, v in dict(squintR=0.85, squintL=0.85, eyesR=0.7, eyesL=0.7, furrow=0.5, innerR=-0.55, innerL=-0.55, browR=-0.4, browL=-0.4).items(): mixto(k, v, hit)
-    # C) surprised as the helmet flies off (brows up, eyes wide, small 'o'), eyes flick up after it
-    t0 = DROP + 0.17; t1 = B_BROW - 0.2
-    sp = up(t0, t0 + 0.12) * (1 - up(t1, t1 + 0.18))
-    for k, v in dict(browR=1.0, browL=1.0, innerR=0.55, innerL=0.55, furrow=0.0, eyesR=1.28, eyesL=1.28, squintR=0.0, squintL=0.0,
-                     open=0.3, round=0.85, jaw=0.25).items(): mixto(k, v, sp)
-    C['looky'] += 0.55 * win(t0 + 0.06, t0 + 0.3, 0.08, 0.18)
-    # D) one eyebrow lifts (lands on the beat)
-    ob = up(B_BROW - 0.16, B_BROW)
-    for k, v in dict(browR=1.0, innerR=0.25, browL=-0.3, innerL=-0.3, furrow=0.0, eyesR=1.05, eyesL=0.95, squintR=0.05, squintL=0.2).items(): mixto(k, v, ob)
-    # E) eyes narrow into a confident look + a small side smirk (lands on the next beat)
-    nr = up(B_NARROW - 0.16, B_NARROW)
-    for k, v in dict(browR=0.55, browL=-0.08, eyesR=0.9, eyesL=0.84, squintR=0.5, squintL=0.62, smR=0.5, smL=0.06).items(): mixto(k, v, nr)
-    # F) singing: a performing base, then per-syllable mouth + accents
-    sg = up(VOX - 0.15, VOX + 0.05)
-    for k, v in dict(browR=0.3, browL=0.1, innerR=0.05, innerL=0.05, eyesR=1.0, eyesL=0.97, squintR=0.25, squintL=0.33, smR=0.38, smL=0.08).items(): mixto(k, v, sg)
+    up = lambda a, b: _sm((T - a) / max(1e-6, b - a))
+    win = lambda a, b, r1, r2: up(a - r1, a) * (1 - up(b, b + r2))
+    C = {k: Z.copy() for k in CH}
+    def pose(P, u):
+        for k, v in P.items(): C[k] = C[k] + (v - C[k]) * u
+    # 1) before the beat: deadpan stare, lips pressed, relaxed brows
+    for k, v in POSE_DEADPAN.items(): C[k][:] = v
+    # gust hit: eyes screw up for a moment
+    hit = up(DROP - 0.03, DROP + 0.05) * (1 - up(DROP + 0.1, DROP + 0.18))
+    pose(dict(squintR=0.9, squintL=0.9, eyesR=0.55, eyesL=0.55, furrow=0.5, browR=-0.3, browL=-0.3), hit)
+    # 2) helmet flies off: quick brow lift + eye-widening (~0.4 s, not held)
+    rx = up(T_REACT - 0.04, T_REACT + 0.06) * (1 - up(T_REACT + 0.3, T_REACT + 0.42))
+    pose(POSE_REACT, rx)
+    C['looky'] += 0.5 * win(T_REACT + 0.04, T_REACT + 0.22, 0.06, 0.14)          # eyes flick up after the helmet
+    # 3) revealed: eyes narrow, one brow way up, head tilts, crooked smirk (lands on the beat)
+    pose(POSE_SMIRK, up(T_REACT + 0.32, B_BROW))
+    C['browR'] += 0.25 * win(B_NARROW, B_NARROW + 0.05, 0.08, 0.25)                # a little brow bounce on the next beat
+    C['smR'] += 0.1 * win(B_NARROW, B_NARROW + 0.05, 0.08, 0.25)
+    # 4) the vocal phrase: confident face stays on, mouth sings
+    sg = up(VOX - 0.2, VOX + 0.05)
+    pose(POSE_SING, sg)
     n = np.interp(T, VA['T'], VA['n'])
-    side = 1
     strongs = [s_ for s_ in SYL if s_['strong']]
     LONGEST = max(strongs, key=lambda s_: s_['b'] - s_['a']) if strongs else None
     for ph_i, ph in enumerate(PHR):
         a0 = ph[0]['a']
-        key = 'browR' if side > 0 else 'browL'; C[key] += 0.5 * win(a0, a0 + 0.12, 0.1, 0.45); side = -side     # phrase start: one brow pops
+        C['browR'] += 0.25 * win(a0, a0 + 0.1, 0.1, 0.35)                           # phrase start: his signature brow bounce
+        C['tilt'] += (0.05 if ph_i % 2 else -0.05) * win(a0, ph[-1]['b'], 0.3, 0.4)  # each phrase leans the head a different way
         for s_ in ph:
             a, b = s_['a'], s_['b']
             m = (T >= a) & (T <= b)
-            shape = np.clip((n - 0.08) / (s_['lv'] - 0.08 + 1e-6), 0, 1) ** 0.7
             edge = np.clip(np.minimum(T - a, b - T) / 0.05, 0.35, 1.0)
+            shape = np.clip((n - 0.08) / (s_['lv'] - 0.08 + 1e-6), 0, 1) ** 0.7
             C['open'] = np.where(m, np.maximum(C['open'], s_['op'] * shape * edge), C['open'])
             C['round'] = np.where(m, s_['rd'], C['round']); C['wide'] = np.where(m, s_['wd'], C['wide'])
-            C['jaw'] = np.where(m, np.maximum(C['jaw'], s_['op'] * shape * (1.15 if s_['strong'] else 0.85)), C['jaw'])
-            if s_['strong']:
-                if s_ is LONGEST or ((b - a) >= 0.32 and ph_i % 2 == 1):          # a long strong note: furrowed, squinting, feeling it
-                    e = win(a + 0.04, b, 0.12, 0.3)
-                    C['furrow'] += 0.65 * e; C['innerR'] -= 0.35 * e; C['innerL'] -= 0.35 * e; C['squintR'] += 0.4 * e; C['squintL'] += 0.35 * e
-                    C['browR'] -= 0.2 * e; C['browL'] -= 0.1 * e
-                else:                                           # a strong note: both brows up, eyes open
-                    e = win(a, min(b, a + 0.35), 0.08, 0.35)
-                    C['browR'] += 0.6 * e; C['browL'] += 0.55 * e; C['innerR'] += 0.3 * e; C['innerL'] += 0.3 * e
-                    C['eyesR'] += 0.15 * e; C['eyesL'] += 0.15 * e; C['squintR'] -= 0.2 * e; C['squintL'] -= 0.25 * e
-            elif s_['rd'] > 0.55:                              # rounded syllables: inner brows lift a touch ('oo')
-                e = win(a, b, 0.06, 0.15); C['innerR'] += 0.2 * e; C['innerL'] += 0.2 * e
+            C['jaw'] = np.where(m, np.maximum(C['jaw'], s_['op'] * shape * (1.2 if s_['strong'] else 0.8)), C['jaw'])
+            if s_ is LONGEST:                                  # the big held note: eyes squeeze, brows knit, cheeks up -> 'feeling it'
+                e = win(a + 0.04, b, 0.12, 0.3)
+                C['furrow'] += 0.55 * e; C['squintR'] += 0.35 * e; C['squintL'] += 0.2 * e; C['browL'] -= 0.15 * e; C['browR'] -= 0.35 * e
+                C['smL'] += 0.35 * e; C['nod'] += 0.04 * e
+            elif s_['strong']:                                 # strong vowel: both brows jump (still lopsided), cheeks lift
+                e = win(a, min(b, a + 0.3), 0.07, 0.3)
+                C['browR'] += 0.35 * e; C['browL'] += 0.6 * e; C['smL'] += 0.35 * e; C['smR'] += 0.15 * e
+                C['eyesR'] += 0.12 * e; C['eyesL'] += 0.15 * e
+            if s_['rd'] > 0.4:                                 # rounded vowel: pucker, the smirk lets go a little
+                e = win(a, b, 0.05, 0.12); C['smR'] -= 0.3 * e * s_['rd']
     sib = np.interp(T, VA['T'], VA['sib']); sv = sib[(T > VOX) & (T < FINAL)]
     st = np.clip((sib - np.percentile(sv, 70)) / (np.percentile(sv, 97) - np.percentile(sv, 70) + 1e-9), 0, 1)
     C['teeth'] = st * (1 - np.clip(C['open'] * 2, 0, 1)) * ((T > VOX) & (T < FINAL + 0.1))
-    # the smirk lives between syllables (closed mouth) and relaxes on open vowels
-    C['smR'] = C['smR'] * (1 - 0.55 * np.clip(C['open'], 0, 1) * sg) + 0.12 * sg * (1 - np.clip(C['open'] * 3, 0, 1))
-    # G) the one expressive blink in the phrase gap (on a beat), then an eyebrow flash + smirk
-    bl = np.clip(np.minimum((T - (T_BLINK - 0.11)) / 0.09, ((T_BLINK + 0.24) - T) / 0.17), 0, 1) ** 0.8
-    C['browR'] += 0.55 * win(T_BLINK + 0.26, T_BLINK + 0.4, 0.14, 0.3); C['browL'] += 0.5 * win(T_BLINK + 0.26, T_BLINK + 0.4, 0.14, 0.3)
-    C['smR'] += 0.18 * win(T_BLINK - 0.1, T_BLINK + 0.45, 0.15, 0.25)
-    # H) the final beat: confident smirk to camera, mouth closes; the glance to the off-screen clank and back
-    fk = up(FINAL - 0.08, FINAL + 0.1)
-    for k, v in dict(browR=0.7, browL=-0.05, innerR=0.1, innerL=-0.1, furrow=0.0, eyesR=0.95, eyesL=0.9, squintR=0.32, squintL=0.5,
-                     smR=0.58, smL=0.1, round=0.0, wide=0.0, teeth=0.0).items(): mixto(k, v, fk)
+    # 5) the wink on the accent (the beat in the phrase gap): left eye shuts, cheek up, brow down; the other brow lifts
+    wk = up(T_WINK - 0.1, T_WINK - 0.02) * (1 - up(T_WINK + 0.16, T_WINK + 0.3))
+    pose(dict(browL=-0.6, innerL=-0.3, squintL=1.0, smL=0.5, browR=1.05, smR=0.9, tilt=0.16, nod=-0.03, open=0.0, jaw=0.0), wk)
+    # final: smug smile straight into the lens, lips closed
+    fk = up(FINAL - 0.08, FINAL + 0.12)
+    pose(POSE_SMUG, fk)
     shut = up(FINAL + 0.04, FINAL + 0.2); C['open'] *= (1 - shut); C['jaw'] *= (1 - shut)
-    gl = win(T_CLANK + 0.06, T_CLANK + 0.28, 0.08, 0.14)
-    C['lookx'] -= 0.75 * gl; C['browL'] += 0.3 * gl
-    # quick natural blinks outside the performance beats: before the drop, one late
-    nb = Z.copy()
-    for tb, w_ in ((0.95, 0.07), (FINAL - 0.62, 0.06)): nb = np.maximum(nb, np.clip(1 - np.abs(T - tb) / w_, 0, 1))
-    C['smR'] = np.clip(C['smR'], 0, 0.62); C['smL'] = np.clip(C['smL'], 0, 0.3)          # no creepy grin
+    C['browR'] += 0.2 * win(T_CLANK + 0.05, T_CLANK + 0.1, 0.06, 0.25)             # the clank: a tiny brow twitch, eyes stay on camera
+    C['smR'] = np.clip(C['smR'], 0, 0.95); C['smL'] = np.clip(C['smL'], 0, 0.55)
     C['open'] = np.clip(C['open'], 0, 1.25); C['jaw'] = np.clip(C['jaw'], 0, 1.2)
-    # springs: every channel moves continuously (critically damped, per-channel speed)
-    speed = dict(browR=16, browL=16, innerR=16, innerL=16, furrow=14, eyesR=26, eyesL=26, squintR=14, squintL=14, smR=12, smL=12,
-                 open=38, round=26, wide=26, teeth=30, jaw=32, lookx=26, looky=22)
+    speed = dict(browR=17, browL=17, innerR=17, innerL=17, furrow=14, eyesR=24, eyesL=24, squintR=16, squintL=16, smR=13, smL=13, press=18,
+                 open=38, round=26, wide=26, teeth=30, jaw=32, lookx=26, looky=22, tilt=7, nod=8)
     dt = 1 / AF
     for k, w0 in speed.items():
         x_ = C[k][0]; v_ = 0.0; out = np.empty_like(T)
@@ -262,13 +264,15 @@ def build_face():
                 v_ += (w0 * w0 * (tg - x_) - 2 * w0 * v_) * dt / 2; x_ += v_ * dt / 2
             out[i] = x_
         C[k] = out
-    for k in ('eyesR', 'eyesL'): C[k] = C[k] * (1 - np.maximum(bl, nb))       # lids after the springs (blinks are fast)
+    # the wink lid after the springs (fast, deliberate)
+    wl = np.clip(np.minimum((T - (T_WINK - 0.1)) / 0.08, ((T_WINK + 0.26) - T) / 0.12), 0, 1)
+    C['eyesL'] = C['eyesL'] * (1 - wl)
     C['T'] = T
     return C
 FACE = build_face()
 MOUTH_LEAD = 0.04                              # the mouth leads the sound by ~1 frame
 def face_at(k, t):
-    if k in ('open', 'round', 'wide', 'teeth', 'jaw'): t = t + MOUTH_LEAD
+    if k in ('open', 'round', 'wide', 'teeth', 'jaw', 'press'): t = t + MOUTH_LEAD
     return float(np.interp(t, FACE['T'], FACE[k]))
 
 def wind(t):
@@ -316,7 +320,7 @@ def expr_def(p, E):
         s_ = E.get(key, 0.0)
         if s_:
             g = np.exp(-(((x - sd * 0.047) / 0.022) ** 2 + ((y + 0.026) / 0.02) ** 2)) * s_ * (z > 0)
-            z = z + 0.0065 * g; y = y + 0.0055 * g
+            z = z + 0.008 * g; y = y + 0.0075 * g
     return np.stack([x, y, z], -1)
 def sph(u, v): return np.stack([RX * np.sin(v) * np.sin(u), RY * np.cos(v), RZ * np.sin(v) * np.cos(u)], -1)
 def surf(u, v, E): return expr_def(base_def(sph(u, v)), E)
@@ -376,12 +380,12 @@ def eyes_geo(M, E):
         n = 9; s = np.linspace(-1, 1, n); hw = 0.0135
         x = cx + s * hw
         tilt = 0.0012 * s * sd                       # outer corner a touch higher
-        ck = E.get('cheek' + side, 0.0); wide_ = max(0.0, op - 1.0); KU = 0.0085 * (1 + 0.45 * wide_); KL = 0.0058 * (1 + 0.3 * wide_)
+        ck = E.get('cheek' + side, 0.0); wide_ = float(np.clip((op - 1.0) / 0.3, 0, 1)); KU = 0.0085 * (1 + 0.3 * wide_); KL = 0.0058 * (1 + 0.2 * wide_)
         up_full = cy + tilt + KU * (1 - s ** 2) ** 0.8 + 0.0006
         lo_full = cy + tilt - KL * (1 - s ** 2) ** 0.8
-        lid = lo_full + 0.0006 + (up_full - lo_full) * np.clip(op, 0, 1.0) * (1 - 0.42 * sq)
+        lid = lo_full + 0.0006 + (up_full - lo_full) * np.clip(op / 1.3, 0, 1.0) * (1 - 0.5 * sq)
         lid = np.maximum(lid, lo_full + 0.0004)
-        llo = lo_full + (lid - lo_full) * np.clip(0.62 * sq + 0.28 * ck, 0, 0.85)
+        llo = lo_full + (lid - lo_full) * np.clip(0.55 * sq + 0.35 * ck, 0, 0.88)
         llo = np.minimum(llo, lid - 0.0002)
         P2 = lambda xs, ys, lift: on(np.stack([xs, ys], -1), lift, E)
         # sclera
@@ -415,11 +419,11 @@ def brows_geo(M, E):
         r = E['brow' + side]; inn = E['inner' + side] - 0.5 * fu
         s = np.linspace(-1, 1, 7)                       # -1 = inner end, +1 = outer end
         x = sd * (0.033 + 0.017 * s - 0.0035 * fu * (1 - s) / 2)
-        y = 0.0335 + 0.0072 * r + 0.0026 * (1 - s ** 2) + 0.0048 * inn * (1 - s) / 2 - 0.0012 * s
+        y = 0.0295 + 0.0095 * r + (0.0024 + 0.0028 * max(0.0, r)) * (1 - s ** 2) + 0.0045 * inn * (1 - s) / 2 - 0.0012 * s
         th = 0.0052 - 0.002 * (s + 1) / 2
         M.strip(on(np.stack([x, y + th * 0.55], -1), 0.0042, E), on(np.stack([x, y - th * 0.45], -1), 0.0042, E), BROW)
         if r > 0.55:                                     # forehead line over a high brow
-            k_ = min(1.0, (r - 0.55) / 0.4); ys = 0.0335 + 0.0072 * r + 0.011
+            k_ = min(1.0, (r - 0.55) / 0.4); ys = 0.0295 + 0.0095 * r + 0.012
             xs = sd * np.linspace(0.02, 0.046, 5)
             M.strip(on(np.stack([xs, np.full(5, ys + 0.0006 * k_)], -1), 0.0018, E), on(np.stack([xs, np.full(5, ys - 0.0006 * k_)], -1), 0.0018, E), shade(SKIN, 0.86))
     if fu > 0.12:                                        # furrow creases between the brows
@@ -446,19 +450,20 @@ def nose_geo(M, E):
 
 def mouth_geo(M, E):
     op = max(0.0, E['open']); wd = max(0.0, E['wide']); rd = max(0.0, E.get('round', 0.0)); smL, smR = E['smL'] * (1 - rd), E['smR'] * (1 - 0.7 * rd); tee = E.get('teeth', 0.0)
-    n = 13; s = np.linspace(-1, 1, n)
+    n = 13; s = np.linspace(-1, 1, n); pr = float(np.clip(E.get('press', 0.0), 0, 1))
     halfw = 0.0185 * (1 + 0.24 * wd) * (1 + 0.07 * (smL + smR)) * (1 - 0.45 * rd)
     ih = 0.0011 + 0.021 * op * (1 + 0.1 * rd) * (1 - 0.25 * wd) + 0.003 * tee
-    cy = -0.051; shift = 0.0026 * (smR - smL)
-    smv = np.where(s > 0, smR, smL)
-    corner = 0.0105 * smv * np.abs(s) ** 1.5 - 0.0012 * np.abs(s) ** 2
+    cy = -0.051; shift = 0.003 * (smR - smL)
+    smv = np.where(s > 0, smR, smL); opp = np.where(s > 0, smL, smR)
+    # one-sided smirk: the smiling corner lifts and pulls out, the other corner sinks a touch
+    corner = 0.0125 * smv * np.abs(s) ** 1.7 - 0.0025 * np.clip(np.where(s > 0, smL - smR, smR - smL), 0, 1) * np.abs(s) ** 2 - 0.0012 * np.abs(s) ** 2
     prof = (1 - s ** 2) ** (0.75 - 0.3 * rd)
-    x = s * halfw + shift
+    x = s * halfw * (1 + 0.22 * smv * (np.abs(s) > 0.5)) + shift
     iu = cy + corner + ih * 0.32 * prof
     il = cy + corner - ih * 0.68 * prof
     sq = np.sqrt(np.clip(1 - s ** 2, 0, 1))
-    ou = iu + (0.0042 + 0.0012 * (1 - np.abs(s))) * sq * (1 + 0.45 * rd) - 0.0011 * np.exp(-(s / 0.14) ** 2) * sq
-    ol = il - 0.0072 * sq * (1 - 0.25 * op) * (1 + 0.3 * rd)
+    ou = iu + (0.0042 + 0.0012 * (1 - np.abs(s))) * sq * (1 + 0.45 * rd) * (1 - 0.4 * pr) - 0.0011 * np.exp(-(s / 0.14) ** 2) * sq
+    ol = il - 0.0072 * sq * (1 - 0.25 * op) * (1 + 0.3 * rd) * (1 - 0.45 * pr)
     pk = 0.0022 * rd                                   # rounded lips push forward
     P2 = lambda xs, ys, lift: on(np.stack([xs, ys], -1), lift + pk * np.sqrt(np.clip(1 - (np.asarray(xs) - shift) ** 2 / (halfw * 1.05) ** 2, 0, 1)), E)
     M.strip(P2(x, iu, 0.0012), P2(x, il, 0.0012), MOUTH_IN)
@@ -614,26 +619,22 @@ def head_tilt(t):
     yaw = 0.0; nod = 0.0; tilt = 0.0
     nod += 0.008 * math.sin(t * 2.1)                                              # breathing
     w = wind(t); nod += 0.07 * w * (1 - sm(seg01(t, DROP + 0.5, DROP + 1.2))) + 0.02 * flutter(t, 1, 14) * w * 0.3
-    nod += 0.05 * bump(t, DROP + 0.45, 0.18)                                      # surprised: chin up after the helmet
-    tilt += 0.07 * sm(seg01(t, B_BROW - 0.2, B_BROW)) * (1 - sm(seg01(t, B_NARROW, B_NARROW + 0.4)))   # head cocks with the brow
+    tilt += face_at('tilt', t); nod += face_at('nod', t)                          # acting: smirk tilt, chin down, wink lean
     if t > DROP + 0.7:
         k = sm(seg01(t, DROP + 0.7, DROP + 1.1))
         for b in beats_between(DROP + 0.5, DUR + 1):
             nod -= 0.022 * k * bump(t, b + 0.03, 0.07)
         for s_ in SYL:
             if s_['strong']: nod -= 0.03 * bump(t, s_['a'] + 0.04, 0.09)
-        tilt += k * (0.065 * math.sin(2 * PI * (t - DROP) / (4 * BP) + 0.6))
+        tilt += k * (0.04 * math.sin(2 * PI * (t - DROP) / (2 * BP) + 0.6))
         yaw += k * 0.045 * math.sin(2 * PI * (t - DROP) / (8 * BP))
-    fk = sm(seg01(t, FINAL - 0.05, FINAL + 0.15))
-    nod = lerp(nod, 0.05, fk); tilt = lerp(tilt, -0.08, fk); yaw = lerp(yaw, 0.03, fk)
     return yaw, nod, tilt
 
 def expression(t):
-    E = {k: face_at(k, t) for k in ('browR', 'browL', 'innerR', 'innerL', 'furrow', 'eyesR', 'eyesL', 'squintR', 'squintL', 'smR', 'smL',
-                                     'open', 'round', 'wide', 'teeth', 'jaw')}
+    E = {k: face_at(k, t) for k in CH if k not in ('lookx', 'looky', 'tilt', 'nod')}
     yaw, nod, _ = head_tilt(t)
     E['look'] = (face_at('lookx', t) - yaw * 3.5, face_at('looky', t) - nod * 2.5)     # eyes stay on the camera while the head moves
-    E['cheekR'] = min(1.0, 0.9 * E['smR'] + 0.3 * E['squintR']); E['cheekL'] = min(1.0, 0.9 * E['smL'] + 0.3 * E['squintL'])
+    E['cheekR'] = min(1.0, 0.85 * E['smR'] + 0.35 * E['squintR']); E['cheekL'] = min(1.0, 0.85 * E['smL'] + 0.35 * E['squintL'])
     return E
 
 def pose(t):
