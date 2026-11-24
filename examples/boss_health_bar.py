@@ -192,7 +192,10 @@ def seal_faces(c, R, glow=0.0, crack=0.0, split=0.0, t=0.0):
     for side, (a0, a1) in ((-1, (PI / 2, 3 * PI / 2)), (1, (-PI / 2, PI / 2))):
         off = u * side * 0.12 * split - v * 0.35 * split * (1 if side < 0 else 0.4); Rs = R
         cc = c + off
-        Q += hd.lathe(cc + u * side * 0.56, R @ hd.Rz(PI / 2) @ hd.Rx(0.0), [(0.085, -0.03), (0.085, 0.03)], 8, IRON2)      # the ring the chain hangs from
+        sh_ = [V((side * 0.3, 0.4, 0.0)), V((side * 0.3, 0.78, 0.0)), V((side * 0.16, 0.92, 0.0)), V((0.0, 0.94, 0.0))]   # the padlock shackle (half)
+        if split > 0: sh_ = sh_[:3]
+        for a_, b_ in zip(sh_, sh_[1:]): Q += hd.limb(cc + R @ a_, cc + R @ b_, 0.065, 0.065, IRON2, n=6, m=1)
+        Q += hd.bx(cc + R @ V((side * 0.3, 0.42, 0.0)), R, (0.1, 0.06, 0.1), IRON)                                # shackle collar
         Q += half_disc(cc, Rs, 0.52, 0.12, a0, a1, IRON)
         Q += half_disc(cc - w * 0.065, Rs, 0.43, 0.02, a0, a1, rim)
         Q += half_disc(cc - w * 0.075, Rs, 0.39, 0.02, a0, a1, (70, 66, 78))
@@ -204,7 +207,10 @@ def seal_faces(c, R, glow=0.0, crack=0.0, split=0.0, t=0.0):
         off = (u * side * 0.12 * split - v * 0.35 * split * (1 if side < 0 else 0.4)) if side else V((0.0, 0, 0))
         for pc, col, dz in [(p_, cg, 0.09) for p_ in CROWN_PCS] + [(j_, (230, 50, 50), 0.1) for j_ in JEWELS] + [(b_, (60, 120, 230), 0.1) for b_ in BAND_GEMS]:
             pp = clipx(pc, -side)
+            pp = [(x * 0.78, y * 0.78 - 0.04) for x, y in pp]
             if len(pp) >= 3: Q += hd.poly_decal(c + off - w * dz, -w, v, pp, col, emit=glow > 0.3)
+    if split <= 0:                                                                                                  # keyhole
+        Q += hd.decal(c - w * 0.1 - v * 0.3, -w, v, 0.07, 0.07, (14, 12, 16), lift=0.0) + hd.decal(c - w * 0.1 - v * 0.36, -w, v, 0.035, 0.1, (14, 12, 16), lift=0.0)
     if crack > 0 and split <= 0:                                                                                   # the crack line runs top -> bottom
         pts = [(0.0, 0.5), (0.05, 0.3), (-0.04, 0.12), (0.04, -0.05), (-0.05, -0.25), (0.02, -0.5)]
         k = max(2, int(round(crack * len(pts))))
@@ -220,6 +226,7 @@ SEAL_C = V((2.35, 1.45, 1.15)); SEAL_N = nz((-0.35, 0.0, -1.0))    # the seal fa
 def seal_R():
     w = -SEAL_N; v = V((0, 1.0, 0)); u = nz(np.cross(v, w)); return np.column_stack([u, v, w])
 SEAL_R = seal_R()
+SH_L = SEAL_C + SEAL_R @ V((-0.12, 0.93, 0.0)); SH_R = SEAL_C + SEAL_R @ V((0.12, 0.93, 0.0))   # where the two chain ends loop through the shackle
 PILLAR = (2.45, 0.0, 1.35)
 HILL_X0, HILL_K = 20.0, 0.6                          # the village hillside: rises from x = 20 towards +x, facing the ruin
 def hill_y(x, z): return max(0.0, HILL_K * (x - HILL_X0))
@@ -243,7 +250,7 @@ def shift(Q, d):
     return out
 CAST0 = V((-75.0, 0.0, 40.0))                      # the king's castle on its hill (-x, behind the ruin)
 GA = [V((-1.55, 0.06, 3.05)), V((1.45, 0.06, 3.15))]   # floor rings of the wrist chains
-GROUND_CH = [SEAL_C + SEAL_R @ V((0.58, 0.0, 0.0)), SEAL_C + SEAL_R @ V((0.75, -0.6, 0.1)), V((3.3, 0.06, 1.8)), V((4.2, 0.04, 4.6))]
+GROUND_CH = [SH_R, SEAL_C + SEAL_R @ V((0.75, 0.2, 0.1)), SEAL_C + SEAL_R @ V((0.85, -0.6, 0.1)), V((3.3, 0.06, 1.8)), V((4.2, 0.04, 4.6))]
 for _k in range(1, 13):
     _p = V((4.2, 0, 4.6)) + (vil((-2.0, 0, -5.0)) - V((4.2, 0, 4.6))) * (_k / 12); GROUND_CH.append(V((_p[0], hill_y(_p[0], _p[2]) + 0.05, _p[2])))
 
@@ -262,7 +269,9 @@ LANT_L = V((0.95 + 0.75, 1.82, -1.6 - 0.32))          # her door lantern (villag
 LANT_W = vil(LANT_L) + V((0, hill_y(*vil((0, 0, 0))[[0, 2]]) - VIL0[1], 0))
 WOM0 = tuple(vil((1.0, 0.0, -2.75)))                # on her house's terrace
 DIE = {5: T_HIT + 0.02, 7: B(3.4), 9: B(11.2)}
-RELIGHT = {5: F(14.45), 7: F(14.85), 9: F(15.5)}
+# v3 (GPT review 2): the seal strike -> chain breaks -> current back -> the village relights to 10/10, one sequence
+T_IMPACT2 = B(19.0); T_REV = F(12.95); T_RELIT = F(13.55); T_FREE = F(14.85); T_STAND = F(15.05)
+RELIGHT = {5: F(13.75), 7: F(14.05), 9: F(14.35)}
 def light_on(i, t):
     if i not in DIE: return 1.0
     a = DIE[i]; b = RELIGHT[i]
@@ -277,29 +286,27 @@ def village_count(t):
 # ======================= timeline (build seconds; the brief's timeline x 1.2) =======================
 TTS_DIR = os.environ.get('TTS_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tts'))
 SCR = json.load(open(os.path.join(TTS_DIR, 'bhb', 'script.json')))
-SLOT = {'01': F(0.4), '02': F(2.45), '03': F(4.4), '04': F(5.85), '05': F(9.1), '06': F(10.5), '07': F(18.4)}
+SLOT = {'01': F(0.4), '02': F(2.45), '03': F(4.4), '04': F(5.85), '05': F(9.1), '06': F(10.5), '07': F(17.05)}
 KEYS = ['01', '02', '03', '04', '05', '06', '07']
 def _lines():
     out = []; prev = 0.0
     for k in KEYS: t0 = max(SLOT[k], prev + 0.2); out.append((k, round(t0, 3))); prev = t0 + SCR['dur'][k]
     return out
-LINES = _lines(); T0 = dict(LINES)
+LINES = _lines(); T0 = dict(LINES); T_0Q = T0['07'] - F(0.2)
 def tend(k): return T0[k] + SCR['dur'][k]
 T_QUEST = tend('07') + 0.05                          # the quest UI appears right after the guardian's line
-DUR = round(T_QUEST + 1.5, 2); N = int(round(DUR * FPS))   # ... and the video ends ~1.25 s later (final)
+T_TURN = T_QUEST + 0.2                               # ... then the knight turns to the castle, and the video ends
+DUR = round(T_TURN + 1.35, 2); N = int(round(DUR * FPS))
 T_SHOUT = B(16.64)
-CUTS = [('hit', 0.0), ('wom1', B(3.0)), ('shield', B(6.0)), ('wom2', B(9.0)), ('track', B(12.0)), ('point', B(15.0)),
-        ('shout', T_SHOUT), ('strike', B(18.0)), ('reverse', B(21.0)), ('relight', F(14.2)), ('lamp', B(23.2)), ('free', B(24.0)), ('quest', B(27.0))]
+T_CU = B(18.6)                                       # cut to the close-up of the seal, just before the swing lands
+CUTS = [('hit', 0.0), ('wom1', B(3.0)), ('shield', B(6.0)), ('wom2', F(6.6)), ('track', B(12.0)), ('point', B(15.0)),
+        ('shout', T_SHOUT), ('strike', B(18.0)), ('sealcu', T_CU), ('reverse', T_REV), ('relight', T_RELIT), ('free', T_FREE), ('quest', T_0Q)]
 def scene(t):
     cur = 'hit'
     for nm, a in CUTS:
         if t >= a: cur = nm
     return cur
-T_IMPACT2 = B(19.0)                                 # the seal strike
-T_STAND = B(24.6)                                   # the guardian rises
-T_TURN = 1e9                                        # v2: no turn to the castle, the video ends on the quest UI
 PULSES = [(B(1.0), 'out'), (B(6.6), 'wave'), (B(9.7), 'out'), (B(12.2), 'out')]     # curse pulses along the chain to the village
-T_REV = B(21.0)                                     # the current reverses
 
 def talking(t, key):
     if key not in T0: return 0.0
@@ -384,7 +391,7 @@ def knight_pose(t):
         if t >= T_SHOUT: P['head'] = (0.45, 0.05, 0.0)
         return P, tip
     # the strike on the seal: pivot, step, swing
-    if t < B(24.0):
+    if t < T_FREE:
         piv = sm(seg01(t, B(18.0), B(18.6))); stp = seg01(t, B(18.2), B(18.85))
         k1 = V((1.05, 0.0, 0.35)); P['base'] = tuple(V(K0) + (k1 - V(K0)) * sm(stp))
         if 0 < stp < 1: P['walk'] = sm(stp) * 4.0; P['stride'] = 0.35
@@ -540,7 +547,7 @@ def sky_set():
 
 # ======================= curse: pulses along the chain, the dark wave, the reverse current =======================
 def chest_chain_pts(t):
-    G = guardian_pose(t); gp = dict(G); guardian(gp); a = gp['_anchor']; b = SEAL_C + SEAL_R @ V((-0.58, 0.0, 0.0))
+    G = guardian_pose(t); gp = dict(G); guardian(gp); a = gp['_anchor']; b = SH_L
     taut = win(t, T_HIT, T_HIT + 0.9, 0.08) + 0.6 * win(t, T_STAND - 0.5, T_STAND + 0.1, 0.2)
     return sagline(a, b, 0.32 * (1 - 0.8 * min(1.0, taut)) + 0.02 * math.sin(t * 2.0), n=20), gp
 def full_route(t):
@@ -582,8 +589,8 @@ def curse_faces(t):
             q = hd.face([(x - s, y, z), (x, y + s * 1.6, z + s * 0.3), (x + s, y - s * 0.4, z)], c, emit=True); Q += [q] if q else []
         L.append(((0.0, 2.0, G0[2] + 1.5), (140, 60, 230), 0.35 * win(t, B(6.4), B(9.4), 0.4)))
     # after the seal breaks: the current reverses, races back along the ground chain and up into the sky to the castle
-    if T_REV <= t < F(15.2):
-        u = seg01(t, T_REV, T_REV + 1.5)
+    if T_REV <= t < T_FREE:
+        u = seg01(t, T_REV, T_REV + 0.9)
         back = GROUND_CH[::-1] + [SEAL_C, SEAL_C + V((-3, 4, 0.5)), SEAL_C + V((-25, 14, 10)), CAST0 + V((0, 22, 0))]
         for k in range(70):
             f = u * 1.3 - 0.0045 * k
@@ -606,7 +613,7 @@ def falling_links(t):
     """after the strike: the chest chain drops from the broken seal and hangs from the guardian's chest ring to the floor"""
     pts, gp = chest_chain_pts(t); a = gp['_anchor']
     u = sm(seg01(t, T_IMPACT2, T_IMPACT2 + 0.45))
-    end0 = SEAL_C + SEAL_R @ V((-0.5, 0, 0)); end1 = V((1.2, 0.05, 1.5))
+    end0 = SH_L; end1 = V((1.2, 0.05, 1.5))
     e = end0 + (end1 - end0) * u
     if t >= T_STAND + 0.3:                                                                  # it rises: the ring snaps, the chain lies on the floor
         k = sm(seg01(t, T_STAND + 0.3, T_STAND + 0.8)); a = a + (V((0.4, 0.05, 1.9)) - a) * k
@@ -645,12 +652,15 @@ def world(t):
     if not broken: layers.append(chain(chest_chain_pts(t)[0]))
     else: layers.append(chain(falling_links(t)))
     layers.append(chain(wrist_chain(t, gp, 'r', 0)) + chain(wrist_chain(t, gp, 'l', 1)))
-    layers.append(chain(GROUND_CH[:4]) + chain(GROUND_CH[3:], step=0.5, big=1.7))
+    gch = list(GROUND_CH)
+    if broken:
+        k_ = sm(seg01(t, T_IMPACT2, T_IMPACT2 + 0.4)); gch[0] = SH_R + (V((2.9, 0.05, 1.05)) - SH_R) * k_; gch[1] = gch[1] + (V((3.0, 0.05, 1.4)) - gch[1]) * k_
+    layers.append(chain(gch[:5]) + chain(gch[4:], step=0.5, big=1.7))
     glow = max([win(t, a + 0.9, a + 1.5, 0.2) for a, _ in PULSES] + [0.0]) if not broken else 0.0
     crack = sm(seg01(t, T_IMPACT2 - 0.02, T_IMPACT2 + 0.12)); split = sm(seg01(t, T_IMPACT2 + 0.15, T_IMPACT2 + 0.6))
     layers.append(seal_faces(SEAL_C, SEAL_R, glow=glow + 0.8 * win(t, T_IMPACT2 - 0.02, T_IMPACT2 + 0.3, 0.05), crack=crack, split=split, t=t))
     if glow > 0.05: L.append((tuple(SEAL_C + SEAL_N * 0.6), (180, 90, 255), 0.9 * glow))
-    if win(t, T_IMPACT2 - 0.02, T_IMPACT2 + 0.35, 0.05) > 0: L.append((tuple(SEAL_C + SEAL_N * 0.4), (255, 240, 200), 3.0 * win(t, T_IMPACT2 - 0.02, T_IMPACT2 + 0.35, 0.05)))
+    if win(t, T_IMPACT2 - 0.02, T_IMPACT2 + 0.35, 0.05) > 0: L.append((tuple(SEAL_C + SEAL_N * 0.4), (255, 240, 200), 1.4 * win(t, T_IMPACT2 - 0.02, T_IMPACT2 + 0.3, 0.05)))
     if 0 <= t - T_HIT < 0.3: L.append((tuple(gp['_rsh'] + V((0, 0.2, -0.6))), (255, 236, 200), 1.0 * (1 - (t - T_HIT) / 0.3)))
     if 0 <= t - T_HIT < 0.35: layers.append(sparks(gp['_rsh'] + V((0.05, 0.05, -0.32)), t, T_HIT))
     if 0 <= t - T_IMPACT2 < 0.35: layers.append(sparks(SEAL_C + SEAL_N * 0.12, t, T_IMPACT2))
@@ -681,9 +691,9 @@ def cam_shot(t):
         u = seg01(t, B(3.0), B(6.0)); c = V(WOM0)
         return tuple(c + RV @ (V((-0.25, 1.45, -1.95)) + V((0.0, 0.0, 0.15)) * u)), tuple(c + RV @ V((-0.45, 1.65, 0.6))), lerp(46.0, 43.0, u)
     if sc == 'shield':
-        u = seg01(t, B(6.0), B(9.0)); return lerp3((-1.45, 1.15, -0.4), (-1.3, 1.15, -0.25), u), lerp3((0.35, 1.45, 2.0), (0.35, 1.45, 2.1), u), lerp(48.0, 45.0, u)
+        u = seg01(t, B(6.0), F(6.6)); return lerp3((-1.45, 1.15, -0.4), (-1.3, 1.15, -0.25), u), lerp3((0.35, 1.45, 2.0), (0.35, 1.45, 2.1), u), lerp(48.0, 45.0, u)
     if sc == 'wom2':
-        u = seg01(t, B(9.0), B(10.6)); c = V(WOM0)
+        u = seg01(t, F(6.6), B(12.0)); c = V(WOM0)
         return tuple(c + RV @ (V((0.55, 1.3, -1.9)) + V((0, 0, 0.12)) * u)), tuple(c + RV @ V((0.4, 1.6, 0.4))), lerp(46.0, 43.0, u)
     if sc == 'stream':
         u = seg01(t, B(10.6), B(12.0)); c = V(WOM0)
@@ -700,19 +710,23 @@ def cam_shot(t):
         c = V(WOM0); u = seg01(t, T_SHOUT, B(18.0)); return tuple(c + RV @ (V((-0.45, 1.35, -1.7)) + V((0, 0, 0.15)) * u)), tuple(c + RV @ V((0.05, 1.45, 0.3))), 42.0
     if sc == 'strike':
         u = seg01(t, B(18.0), B(21.0)); return lerp3((-0.5, 1.5, -2.3), (-0.4, 1.45, -2.15), u), lerp3((1.3, 1.3, 1.3), (1.35, 1.3, 1.3), u), lerp(50.0, 46.0, u)
+    if sc == 'sealcu':                                                           # close on the padlock: the sword comes in from the left
+        u = seg01(t, T_CU, T_REV); u_, v_ = SEAL_R[:, 0], SEAL_R[:, 1]
+        c = SEAL_C + v_ * 0.25
+        return tuple(c + SEAL_N * 1.15 + u_ * 0.75 + v_ * 0.1 - SEAL_N * 0.12 * u), tuple(c - u_ * 0.15), lerp(52.0, 50.0, u)
     if sc == 'reverse':                                                          # at the broken seal: the current races back past it, up to the castle
-        u = seg01(t, B(21.0), F(14.2)); return lerp3((6.2, 1.1, -1.6), (6.0, 1.3, -1.5), u), lerp3((1.2, 1.9, 1.6), (0.6, 2.6, 1.8), u), 52.0
+        u = seg01(t, T_REV, T_RELIT); return lerp3((6.2, 1.1, -1.6), (6.0, 1.3, -1.5), u), lerp3((1.2, 1.9, 1.6), (0.6, 2.6, 1.8), u), 52.0
     if sc == 'relight':
-        u = seg01(t, B(21.0), B(23.2)); return lerp3((-2.4, 3.0, -1.9), (-2.1, 3.1, -1.7), u), lerp3((34.0, 13.0, 0.5), (36.0, 13.6, 0.5), u), lerp(26.0, 22.0, u)
+        u = seg01(t, T_RELIT, T_FREE); return lerp3((-2.4, 3.0, -1.9), (-2.1, 3.1, -1.7), u), lerp3((34.0, 13.0, 0.5), (36.0, 13.6, 0.5), u), lerp(26.0, 22.0, u)
     if sc == 'lamp':
         u = seg01(t, B(23.2), B(24.0)); c = V(WOM0)
         return tuple(vil((0.65, 1.6, -4.1)) + RV @ V((0, 0, 0.2)) * u), tuple(vil((1.3, 1.62, -2.3))), 36.0
     if sc == 'free':
-        u = seg01(t, B(24.0), B(27.0)); return lerp3((-0.6, 0.9, -1.0), (-0.55, 0.85, -1.2), u), lerp3((0.3, 2.0, 2.3), (0.2, 2.4, 2.3), u), lerp(50.0, 52.0, u)
+        u = seg01(t, T_FREE, T_0Q); return lerp3((-0.6, 0.9, -1.0), (-0.55, 0.85, -1.2), u), lerp3((0.3, 2.0, 2.3), (0.2, 2.4, 2.3), u), lerp(50.0, 52.0, u)
     # quest: behind/beside the knight looking up at the guardian; then follows the knight's turn to the castle
     u = sm(seg01(t, T_TURN, T_TURN + 1.2))
-    p0, t0_ = V((2.3, 1.3, -0.4)), V((0.3, 2.35, 2.2)); p1, t1_ = V((3.4, 1.8, -0.95)), V((-4.3, 2.6, 3.1))
-    u = seg01(t, B(27.0), DUR); return tuple(p0 + V((0.15, 0, 0.15)) * u), tuple(t0_), lerp(48.0, 45.0, u)
+    p0, t0_ = V((3.0, 1.45, -2.0)), V((0.75, 2.15, 2.0)); p1, t1_ = V((3.4, 1.8, -0.95)), V((-4.3, 2.6, 3.1))
+    return tuple(p0 + (p1 - p0) * u), tuple(t0_ + (t1_ - t0_) * u), lerp(48.0, 45.0, u)
 
 # ======================= render =======================
 def proj(cam, fov, P):
@@ -753,11 +767,30 @@ def frame_low(t):
                 u = (t - DIE[i]) / 0.45; rad = 3 + 14 * u; gx, gy = np.meshgrid(np.arange(W) + 0.5, np.arange(H) + 0.5)
                 ring = np.abs(np.hypot(gx - r[0], gy - r[1]) - rad) < 1.1
                 a[ring] = a[ring] * (0.3 + 0.7 * u) + V((255.0, 70.0, 60.0)) * (1 - u) * 0.9
+        if i in RELIGHT and 0 <= t - RELIGHT[i] < 0.45:
+            r = proj(cam, fov, p)
+            if r is not None and 0 <= r[0] < W and 0 <= r[1] < H:
+                u = (t - RELIGHT[i]) / 0.45; rad = 3 + 14 * u; gx, gy = np.meshgrid(np.arange(W) + 0.5, np.arange(H) + 0.5)
+                ring = np.abs(np.hypot(gx - r[0], gy - r[1]) - rad) < 1.1
+                a[ring] = a[ring] * (0.3 + 0.7 * u) + V((120.0, 255.0, 140.0)) * (1 - u) * 0.9
     a = np.clip((a * np.array([1.0, 0.98, 1.06]) - 80) * 1.22 + 86, 0, 255)
     # impact flashes
-    fl = max(0.0, 1 - abs(t - T_HIT - 0.03) / 0.08) * 0.3 + max(0.0, 1 - abs(t - T_IMPACT2 - 0.03) / 0.1) * 0.6
+    fl = max(0.0, 1 - abs(t - T_HIT - 0.03) / 0.08) * 0.3 + max(0.0, 1 - abs(t - T_IMPACT2 - 0.03) / 0.08) * 0.3
     if fl > 0: a = a + (255 - a) * fl * 0.5
+    if t < INSET_END: a = draw_inset(a, t, layers, L, fog)
     return post.ps1(Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)), levels=6), vi
+INSET_END = B(2.9); IX, IY, IW, IH = 8, 58, 84, 64
+def draw_inset(a, t, layers, L, fog):
+    p, n = WIN[5]; cam = Camera.look(tuple(p + n * 3.2 + V((0, 0.35, 0)) - RV @ V((0.6, 0, 0))), tuple(p - V((0, 0.15, 0))))
+    R = Renderer(IW, IH, fog=fog); Lv = L + [(tuple(p + n * 2.5 + V((0, 1.5, 0))), (120, 130, 200), 0.5)]
+    img, _, zb = zrender(R, cam, layers, Lv, fov=38, fog_start=30, fog_end=170, ambient=0.3, return_z=True)
+    b = look.outline(np.asarray(img).astype(np.float32), zb)
+    x0, y0 = IX, IY
+    hot = 0 <= t - DIE[5] < 0.6 and int(t * 24) % 4 < 2
+    bc = V((255.0, 80.0, 70.0)) if hot else V((246.0, 242.0, 230.0))
+    a[y0 - 2:y0 + IH + 2, x0 - 2:x0 + IW + 2] = bc; a[y0 - 1:y0 + IH + 1, x0 - 1:x0 + IW + 1] = 0
+    a[y0:y0 + IH, x0:x0 + IW] = b
+    return a
 
 # ======================= HUD + subtitles (1080 x 1920) =======================
 def text_w(s, sc): return len(s) * 6 * sc - sc
@@ -893,8 +926,8 @@ def build_audio(path):
     for k in range(10): clink(T_IMPACT2 + 0.5 + 0.09 * k + 0.05 * hsh(k, 3), 0.018, seed=60 + k)                # chain links on stone
     quiet = 1 - 0.9 * mask(T_IMPACT2 + 0.12, T_IMPACT2 + 0.9, 0.05)
     # ---- reverse rush + the bell rings again + lights back on
-    tt = s_.T(1.6); env = (tt / 1.6) ** 3; put(FX, s_.filt_short(s_.noise(1.6, 70), lo=80, hi=3000) * env * np.exp(-np.maximum(0, tt - 1.45) * 30), T_REV - 0.1, 0.22)
-    tt = s_.T(1.6); put(FX, s_.filt_short(s_.noise(1.6, 71), lo=40, hi=600) * np.exp(-tt * 2.5), T_REV + 1.45, 0.25)
+    tt = s_.T(1.0); env = (tt / 1.0) ** 2; put(FX, s_.filt_short(s_.noise(1.0, 70), lo=80, hi=3000) * env * np.exp(-np.maximum(0, tt - 0.85) * 30), T_REV - 0.1, 0.22)
+    tt = s_.T(1.6); put(FX, s_.filt_short(s_.noise(1.6, 71), lo=40, hi=600) * np.exp(-tt * 2.5), T_REV + 0.75, 0.25)
     bell(RELIGHT[5] - 0.05, 0.07); bell(RELIGHT[9] - 0.05, 0.05)
     for k, (i, a) in enumerate(sorted(RELIGHT.items(), key=lambda x: x[1])): hud_up(a, 72 + 2 * k)
     warm = mask(T_REV, DUR + 1, 0.8)
@@ -905,6 +938,7 @@ def build_audio(path):
     for k in range(12): clink(T_STAND + 0.25 + 0.08 * k + 0.04 * hsh(k, 8), 0.02, seed=90 + k)
     for k in range(2): thud(T_STAND + 1.8 + 0.5 * k, 45, 0.25, 0.5)
     # ---- quest updated + the knight turns to the castle
+    nb(T_TURN, 0.5, 300, 2200, 0.03, 95, 2); tone(T_TURN + 0.55, 88, 1.2, 0.03, dec=3.0, harm=(1.0, 0.5, 0.3))   # the turn + the sword raised
     for m, dl in ((62, 0.0), (66, 0.1), (69, 0.2), (74, 0.32)): tone(T_QUEST + dl, m, 1.8, 0.03, dec=1.4, att=0.01, harm=(1.0, 0.5, 0.25))
     # ---- voices (Enes's takes, when present): RMS-levelled, the guardian gets a stone-hall echo
     NB = np.zeros(n); wins = []
