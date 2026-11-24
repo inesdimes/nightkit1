@@ -268,7 +268,8 @@ DOOR = _hpt(0, 0.95, 1.0)
 LANT_L = V((0.95 + 0.75, 1.82, -1.6 - 0.32))          # her door lantern (village-local), on a bracket right of the door
 LANT_W = vil(LANT_L) + V((0, hill_y(*vil((0, 0, 0))[[0, 2]]) - VIL0[1], 0))
 WOM0 = tuple(vil((1.0, 0.0, -2.75)))                # on her house's terrace
-DIE = {5: T_HIT + 0.02, 7: B(3.4), 9: B(11.2)}
+T_VWIN = T_HIT + 0.1; T_VBACK = F(1.15)              # v3.1: the cut to the village window right after the impact
+DIE = {5: T_VWIN + 0.14, 7: B(3.4), 9: B(11.2)}
 # v3 (GPT review 2): the seal strike -> chain breaks -> current back -> the village relights to 10/10, one sequence
 T_IMPACT2 = B(19.0); T_REV = F(12.95); T_RELIT = F(13.55); T_FREE = F(14.85); T_STAND = F(15.05)
 RELIGHT = {5: F(13.75), 7: F(14.05), 9: F(14.35)}
@@ -276,7 +277,7 @@ def light_on(i, t):
     if i not in DIE: return 1.0
     a = DIE[i]; b = RELIGHT[i]
     if t < a: return 1.0
-    fo = 0.1 if i == 5 else 0.35                                                                    # the opening window goes out WITH the hit
+    fo = 0.3                                                                    # the opening window goes out WITH the hit
     if t < a + fo: return max(0.0, 1 - (t - a) / fo) * (0.55 + 0.45 * (math.sin(t * 60) > 0))   # flicker out
     if t < b: return 0.0
     return min(1.0, (t - b) / 0.2) * (0.7 + 0.3 * (math.sin((t - b) * 50) > -0.3) if t < b + 0.3 else 1.0)
@@ -286,8 +287,8 @@ def village_count(t):
 # ======================= timeline (build seconds; the brief's timeline x 1.2) =======================
 TTS_DIR = os.environ.get('TTS_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tts'))
 SCR = json.load(open(os.path.join(TTS_DIR, 'bhb', 'script.json')))
-SLOT = {'01': F(0.4), '02': F(2.45), '03': F(4.4), '04': F(5.85), '05': F(9.1), '06': F(10.5), '07': F(17.05)}
-KEYS = ['01', '02', '03', '04', '05', '06', '07']
+SLOT = {'01': F(0.4), '02': F(2.45), '04': F(4.75), '05': F(9.1), '06': F(10.5), '07': F(17.05)}
+KEYS = ['01', '02', '04', '05', '06', '07']
 def _lines():
     out = []; prev = 0.0
     for k in KEYS: t0 = max(SLOT[k], prev + 0.2); out.append((k, round(t0, 3))); prev = t0 + SCR['dur'][k]
@@ -299,7 +300,7 @@ T_TURN = T_QUEST + 0.2                               # ... then the knight turns
 DUR = round(T_TURN + 1.35, 2); N = int(round(DUR * FPS))
 T_SHOUT = B(16.64)
 T_CU = B(18.6)                                       # cut to the close-up of the seal, just before the swing lands
-CUTS = [('hit', 0.0), ('wom1', B(3.0)), ('shield', B(6.0)), ('wom2', F(6.6)), ('track', B(12.0)), ('point', B(15.0)),
+CUTS = [('hit', 0.0), ('vwin', T_VWIN), ('hit', T_VBACK), ('wom1', B(3.0)), ('shield', B(6.0)), ('wom2', F(6.6)), ('track', B(12.0)), ('point', B(15.0)),
         ('shout', T_SHOUT), ('strike', B(18.0)), ('sealcu', T_CU), ('reverse', T_REV), ('relight', T_RELIT), ('free', T_FREE), ('quest', T_0Q)]
 def scene(t):
     cur = 'hit'
@@ -626,7 +627,7 @@ def wrist_chain(t, gp, key, idx):
     return sagline(end, GA[idx], 0.05, n=10)
 def world(t):
     sc = scene(t); layers = []; L = []; glows = []
-    in_vil = sc in ('wom1', 'wom2', 'shout', 'lamp')
+    in_vil = sc in ('wom1', 'wom2', 'shout', 'lamp', 'vwin')
     layers.append(get_set('sky')); layers.append(get_set('plain')); layers.append(get_set('village'))
     layers.append(get_set('ruin'))
     # village lights
@@ -668,7 +669,7 @@ def world(t):
     cq, cl = curse_faces(t); layers.append(cq); L += cl
     for p_, s_ in pulse_heads(t)[:1]: glows.append((p_, (190, 100, 255), 1.4))
     # the old woman (only drawn near the village cameras)
-    if in_vil or sc in ('stream',):
+    if sc in ('wom1', 'wom2', 'shout', 'lamp'):
         Wm = woman_pose(t); layers.append(hd.human(dtx.WOMAN, Wm))
     # lights
     L.append(((6.0, 9.0, 12.0), (120, 140, 210), 0.9))                            # moonlight (rim from behind the guardian)
@@ -687,6 +688,9 @@ def cam_shot(t):
     G = V(G0)
     if sc == 'hit':
         u = seg01(t, 0, B(3.0)); return lerp3((-3.0, 0.95, 1.45), (-2.8, 0.95, 1.45), u), lerp3((0.1, 1.5, 1.45), (0.1, 1.5, 1.45), u), lerp(42.0, 40.0, u)
+    if sc == 'vwin':                                                             # a real window in the village, its light dies
+        u = seg01(t, T_VWIN, T_VBACK); p, n = WIN[5]
+        return tuple(p + n * (7.5 - 0.6 * u) + V((0, 1.6, 0)) - RV @ V((1.2, 0, 0))), tuple(p - V((0, 0.9, 0))), 44.0
     if sc == 'wom1':
         u = seg01(t, B(3.0), B(6.0)); c = V(WOM0)
         return tuple(c + RV @ (V((-0.25, 1.45, -1.95)) + V((0.0, 0.0, 0.15)) * u)), tuple(c + RV @ V((-0.45, 1.65, 0.6))), lerp(46.0, 43.0, u)
@@ -777,20 +781,7 @@ def frame_low(t):
     # impact flashes
     fl = max(0.0, 1 - abs(t - T_HIT - 0.03) / 0.08) * 0.3 + max(0.0, 1 - abs(t - T_IMPACT2 - 0.03) / 0.08) * 0.3
     if fl > 0: a = a + (255 - a) * fl * 0.5
-    if t < INSET_END: a = draw_inset(a, t, layers, L, fog)
     return post.ps1(Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)), levels=6), vi
-INSET_END = B(2.9); IX, IY, IW, IH = 8, 58, 84, 64
-def draw_inset(a, t, layers, L, fog):
-    p, n = WIN[5]; cam = Camera.look(tuple(p + n * 3.2 + V((0, 0.35, 0)) - RV @ V((0.6, 0, 0))), tuple(p - V((0, 0.15, 0))))
-    R = Renderer(IW, IH, fog=fog); Lv = L + [(tuple(p + n * 2.5 + V((0, 1.5, 0))), (120, 130, 200), 0.5)]
-    img, _, zb = zrender(R, cam, layers, Lv, fov=38, fog_start=30, fog_end=170, ambient=0.3, return_z=True)
-    b = look.outline(np.asarray(img).astype(np.float32), zb)
-    x0, y0 = IX, IY
-    hot = 0 <= t - DIE[5] < 0.6 and int(t * 24) % 4 < 2
-    bc = V((255.0, 80.0, 70.0)) if hot else V((246.0, 242.0, 230.0))
-    a[y0 - 2:y0 + IH + 2, x0 - 2:x0 + IW + 2] = bc; a[y0 - 1:y0 + IH + 1, x0 - 1:x0 + IW + 1] = 0
-    a[y0:y0 + IH, x0:x0 + IW] = b
-    return a
 
 # ======================= HUD + subtitles (1080 x 1920) =======================
 def text_w(s, sc): return len(s) * 6 * sc - sc
@@ -814,8 +805,13 @@ def hud_overlay(im, t):
             if on and drop and i == n - 1: c = (255, 140, 120)
             d.rectangle([bx0 + i * (pw + gap), by0, bx0 + i * (pw + gap) + pw, by0 + ph], fill=c)
             if on: d.rectangle([bx0 + i * (pw + gap), by0, bx0 + i * (pw + gap) + pw, by0 + 8], fill=(255, 150, 140))
-        if t >= T_IMPACT2 and t < T_REV:                                                   # the bar stops dropping
-            pass
+        ev = [(a, i) for i, a in list(DIE.items()) + [(i + 100, b) for i, b in RELIGHT.items()] if 0 <= t - a < 0.8]
+        for a, i in sorted(ev)[-1:]:
+            if True:
+                u = (t - a) / 0.8; s3 = '-1' if i < 100 else '+1'; c3 = (255, 80, 70) if i < 100 else (120, 255, 140)
+                x3 = x + text_w(s1, sc) + 3 * sc * 6 // 2 + text_w(s2, sc) + 36; y3 = int(y - 30 * u)
+                look.draw_cells(d, look.text_cells('-1', x3, y3, 9, c3), 4)
+                if i >= 100: d.rectangle([x3 + 18, y3 + 9, x3 + 26, y3 + 44], fill=c3)          # the font has no '+': draw the bar
     else:
         u = seg01(t, T_QUEST, T_QUEST + 0.25); s1 = 'QUEST UPDATED'; sc1 = 8 if u >= 1 else 10
         look.draw_cells(d, look.text_cells(s1, int(540 - text_w(s1, sc1) / 2), 100, sc1, (255, 214, 96)), 4)
@@ -906,7 +902,7 @@ def build_audio(path):
     tone(h0, 93, 1.6, 0.06, dec=2.2, harm=(1.0, 0.6, 0.4, 0.2)); tone(h0, 86, 1.2, 0.04, dec=3.0, harm=(1.0, 0.5)); nb(h0, 0.25, 2000, 9000, 0.06, 1, 1)
     thud(h0, 55, 0.35, 0.5); thud(h0 + 0.05, 42, 0.25, 0.6)
     for k in range(6): clink(h0 + 0.08 + 0.05 * k, 0.03 + 0.01 * (k % 2), seed=k * 5)
-    bell(h0 - 0.6, 0.06, mute=0.75); hud_drop(h0 + 0.03)
+    bell(h0 - 0.6, 0.06, mute=0.75); hud_drop(DIE[5]); nb(DIE[5] - 0.05, 0.35, 600, 4000, 0.03, 25, 2)
     tt = s_.T(1.5); put(FX, s_.filt_short(s_.noise(1.5, 9), lo=30, hi=160) * np.exp(-tt * 2.0), h0 + 0.15, 0.3)      # stone groan as it recoils
     # ---- village: wind, distant rumble; each light that dies: a soft pfft + the HUD drop
     for i, a in DIE.items():
