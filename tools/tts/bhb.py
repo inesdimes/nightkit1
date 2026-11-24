@@ -9,14 +9,14 @@ import os, sys, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import multi
 VOICES = {'K': ('am_adam', 'en-us'), 'W': ('bf_emma', 'en-gb'), 'G': ('bm_george', 'en-gb')}
-D = [('01', 'N', [("What if every hit on the boss hurt the village instead?", 1.0, 0, 0, 0)]),
+D = [('01', 'N', [("What if every hit hurt the village?", 1.0, 0, 0, 0)]),
      ('02', 'W', [("Stop!", 1.0, 0, 0, 0), ("Every wound reaches us!", 1.0, 0, 0, 0.15)]),
      ('03', 'K', [("It attacked first!", 1.0, 0, 0, 0)]),
      ('04', 'W', [("It's holding the curse back.", 1.0, 0, 0, 0)]),
      ('05', 'K', [("Then what do I strike?", 1.0, 0, 0, 0)]),
      ('06', 'W', [("The king's seal!", 1.0, 0, 0, 0)]),
      ('07', 'G', [("The king is next.", 1.0, 0, 0, 0)])]
-PLAN = {'01': [2.7], '02': [0.6, 1.4], '03': [1.25], '04': [1.75], '05': [1.45], '06': [1.05], '07': [1.6]}    # seconds at 1x (the film runs 1.2x after)
+PLAN = {'01': [1.9], '02': [0.6, 1.4], '03': [1.25], '04': [1.75], '05': [1.45], '06': [1.05], '07': [1.6]}    # seconds at 1x (the film runs 1.2x after)
 def plan():
     out = os.path.join(multi.TTS_DIR, 'bhb'); os.makedirs(out, exist_ok=True); dur = {}; txt = {}; sent = {}; spk = {}
     for k, s, ss in D:

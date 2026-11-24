@@ -52,3 +52,28 @@ Top 3 fixes this round:
 2. 
 3. 
 
+## Round 3 - 2026-11-24 - what_if_the_boss_health_bar_was_the_villages_v2_21s.mp4
+
+- duration 21.04 s, 505 frames, 19 cuts at 0.33, 0.38, 0.96, 2.21, 4.29, 4.58, 5.75, 7.04, 7.42, 9.04, 10.42, 11.54, 13.42, 14.21, 15.21, 15.54, 15.62, 16.21, 18.25
+- opening motion (first 1 s): 5.55
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 0.5 s
+- sheet: out\qa\boss_health_bar\critique_r3.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3. 
+
