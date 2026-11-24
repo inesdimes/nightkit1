@@ -3,6 +3,7 @@ Videos (`renders/the_last_echo/`):
 - English subtitles: `the_last_echo_v3_voiced_66s.mp4`
 - Turkish subtitles (same English voice, "YILLAR ÖNCE" label): `the_last_echo_v3_voiced_TR_altyazi_66s.mp4`
 
+Thumbnails: EN `renders/the_last_echo/thumbnail_en.png`, TR `renders/the_last_echo/thumbnail_tr.png` (made with `python tools/thumb.py voiced`)
 ---------------------------------------------------------------- ENGLISH CHANNEL
 
 ## YouTube Shorts

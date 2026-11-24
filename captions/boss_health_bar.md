@@ -3,6 +3,7 @@ Videos (`renders/boss_health_bar/`):
 - English subtitles: `what_if_the_boss_health_bar_was_the_villages_v4_voiced_20s.mp4`
 - Turkish subtitles (same English voice, Turkish HUD): `what_if_the_boss_health_bar_was_the_villages_v4_voiced_TR_altyazi_20s.mp4`
 
+Thumbnails: EN `renders/boss_health_bar/thumbnail_en.png`, TR `renders/boss_health_bar/thumbnail_tr.png` (made with `python tools/thumb.py voiced`)
 ---------------------------------------------------------------- ENGLISH CHANNEL
 
 ## YouTube Shorts
@@ -77,7 +78,7 @@ Aynı yöntem: her replik ayrı dosya, `vocal/boss_health_bar_tr/Kayıt (n).m4a`
 | 2 | Yaşlı kadın | The king's seal sends every wound to us! | Kralın mührü her yarayı bize gönderiyor! | 3.3 s |
 | 3 | Şövalye | Why? | Neden? | 0.6 s |
 | 4 | Yaşlı kadın | To keep him immortal. | Onu ölümsüz kılmak için. | 2.3 s |
-| 5 | Muhafız | Now the king can bleed again. | Artık kral da kanayabilir. | 2.7 s |
+| 5 | Muhafız | Now the king can bleed again. | Artık kralın da canı yanacak. | 2.7 s |
 2 ve 4 Betül'e uygun (kadın repliği).
 
 ## Script (EN, for reference)

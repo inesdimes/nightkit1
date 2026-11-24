@@ -46,3 +46,19 @@ if __name__=='__main__' and len(sys.argv)>1 and sys.argv[1]=='hd':
     if which=='dt_b': make_hd('dragon_taxes',31.1,DTL,os.path.join(R,'dragon_taxes','thumbnail_b.png'),os.path.join(R,'dragon_taxes','betul_tts'))
     if which=='fpo': make_hd('forget_potion',26.75,[('ONE POTION',1380,WHT,17),('SAVES HER',1510,YEL,17),('HE FORGETS HER',1660,RED,12)],
                              os.path.join(R,'forget_potion','thumbnail.png'),os.path.join(R,'forget_potion','betul_tts'))
+
+def make_v(name,t,lines,out,lang='en',hud=None):
+    """24 Nov 2026: voiced EN / TR-subtitle shorts (boss_health_bar, the_last_echo). lang sets SUB_LANG so in-picture HUD / labels match; no subtitles."""
+    os.environ['SUB_LANG']=lang; mod=load(name); r=mod.frame_low(t); img=r[0] if isinstance(r,tuple) else r
+    im=Image.fromarray(np.clip(post.upscale(img,mod.S),0,255).astype(np.uint8)).resize((1080,1920),Image.LANCZOS)
+    if hud: getattr(mod,hud)(im,t)
+    d=ImageDraw.Draw(im)
+    for s,y,col,sc in lines: big(d,s,y,col,sc)
+    os.makedirs(os.path.dirname(out),exist_ok=True); im.save(out); print(out)
+if __name__=='__main__' and len(sys.argv)>1 and sys.argv[1]=='voiced':
+    YEL=(255,214,40); WHT=(255,255,255); RED=(255,70,60); R=os.path.join(ROOT,'..','renders')
+    B=os.path.join(R,'boss_health_bar'); L=os.path.join(R,'the_last_echo')
+    make_v('boss_health_bar',2.0,[('EVERY HIT',1360,WHT,17),('KILLS A',1500,YEL,17),('VILLAGER',1650,RED,19)],os.path.join(B,'thumbnail_en.png'),'en','hud_overlay')
+    make_v('boss_health_bar',2.0,[('HER DARBE',1360,WHT,17),('BİR KÖYLÜYÜ',1500,YEL,15),('ÖLDÜRÜYOR',1650,RED,19)],os.path.join(B,'thumbnail_tr.png'),'tr','hud_overlay')
+    make_v('the_last_echo',18.0,[('3 KNOCKS',150,YEL,24),('HIS BROTHER',1490,WHT,15),('WAS DYING',1650,RED,18)],os.path.join(L,'thumbnail_en.png'),'en')
+    make_v('the_last_echo',18.0,[('3 VURUŞ',150,YEL,24),('KARDEŞİ',1490,WHT,18),('ÖLÜYORDU',1650,RED,18)],os.path.join(L,'thumbnail_tr.png'),'tr')
