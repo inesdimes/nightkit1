@@ -52,3 +52,28 @@ Top 3 fixes this round:
 2. 
 3. 
 
+## Round 3 - 2026-11-24 - the_last_echo_v2_59s.mp4
+
+- duration 58.75 s, 1410 frames, 22 cuts at 1.29, 5.54, 5.92, 7.17, 9.46, 14.46, 15.75, 17.00, 19.50, 22.04, 24.21, 27.54, 28.58, 29.71, 32.00, 32.04, 32.79, 42.83, 43.67, 45.17, 47.21, 54.25
+- opening motion (first 1 s): 1.69
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): 13.0-14.6 s, 34.6-36.8 s, 43.4-45.1 s, 49.7-51.6 s
+- longest gap between voice-level sounds: 2.2 s
+- sheet: out\qa\the_last_echo\critique_r3.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3. 
+

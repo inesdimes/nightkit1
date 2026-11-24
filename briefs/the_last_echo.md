@@ -25,3 +25,25 @@ In the present, a child trapped in the same ruined watchtower taps the same thre
 - END: fade out on the dead candle in Aren's hand. No sequel tease.
 
 Notes: warm candlelight for the memory and cold light for the present. Close shots for the emotional beats; wide shots only to establish places. Subtitles must match the spoken words exactly.
+
+## v2: revision brief (pasted by Enes, 24 Nov) - what was built
+The story's causality is now shown on screen:
+- Hook: the child's fist knocks three times on a stone under a fallen beam. Cut to Aren freezing. Narrator: "The last time Aren heard those three knocks, his brother was dying."
+- Candle: he lights it, the camera pushes into the flame, and a warm bloom carries the cut to the memory. A "YEARS AGO" label appears and the color goes warm.
+- Memory:
+  - The brother is trapped behind the beam and the stones. He knocks the same three times, with an echo.
+  - Young Aren rushes toward him. The brother points past him to the passage, which shows the moonlit outside (safety).
+  - Brother: "Don't come back for me. Get them out."
+  - Young Aren looks at the passage, then back at his brother. He leads the two survivors through the passage and looks back once.
+  - The last memory shot is behind the brother's pointing hand, looking at the passage.
+- The click: that composition dissolves into the same passage today. The child knocks the same three times. Aren freezes. A flash replays the pointing hand. A frontal shot then shows the passage.
+- Rescue:
+  - Aren tries the doorway and pulls at the rubble. The rubble shifts, stones slide at him, the lintel sags and he is thrown back.
+  - He runs to the passage, sets the candle on a rock and crawls in.
+  - Inside, the child crawls to him and takes his hand. Stones crash where the child was.
+  - Outside, he backs out pulling the child, and the passage lintel collapses behind them.
+- Payoff:
+  - The child runs to the mother. The candle on the rock dies (close-up with the reunion beyond).
+  - Aren turns toward the passage. There is silence; no voice comes.
+  - He picks up the dead candle. Narrator: "He forgot the sound of his brother's voice. He never forgot what his brother asked him to do." Fade out.
+- Removed from v1: the ghost, "Were you scared?" / "Yes.", and the dawn walk. The brief says no extra dialogue.

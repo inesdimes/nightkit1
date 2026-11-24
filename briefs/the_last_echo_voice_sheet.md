@@ -1,24 +1,20 @@
-# The Last Echo: voice sheet (11 lines)
+# The Last Echo v2: voice sheet (7 lines)
 
-Enes records lines 1-8, 10 and 11. Betül records line 9 (the child). Use one file per line, named `vocal/The Last Echo/Kayit (n).m4a`, where n is the line number.
-The film takes its timing from the takes (`tools/tts/le.py` + `examples/the_last_echo.py`), so a slower read makes the video longer but does not break it.
-The current draft uses AI voices: the narrator is Kokoro converted to Enes's timbre, the characters are raw Kokoro voices.
+This sheet follows the revision brief (24 Nov). Enes records all 7 lines, one file per line, named `vocal/The Last Echo/Kayit (n).m4a`, where n is the line number.
+There are no child or Aren lines in v2. The film takes its timing from the takes (`tools/tts/le.py` + `examples/the_last_echo.py`), so a slower read makes the video longer but does not break it.
+The current draft uses AI voices: the narrator is Kokoro converted to Enes's timbre, the brother is Kokoro bm_daniel.
 
 | # | Speaker | Line | Draft window (s) | Direction |
 |---|---|---|---|---|
-| 1 | Narrator | What if one candle let you hear the dead again, but took their voice from you forever? | 1.45-6.37 | Warm, intimate, quiet. Small breath after "again,". |
-| 2 | Narrator | Aren had saved one candle for his brother. | 6.57-9.17 | Restrained. |
-| 3 | Narrator | Every time it replayed his final memory, Aren would lose more of the sound of his voice. | 9.47-14.92 | Slow on "the sound of his voice". |
-| 4 | Brother | Aren... | 15.22-16.10 | Soft and natural, like an ordinary brother calling him. NOT ghostly. |
-| 5 | Brother | Don't come back for me. Take them through the passage. Get them home. | 19.44-24.05 | Urgent but loving. Short pause between sentences. |
-| 6 | Narrator | For years, Aren thought those knocks meant, 'Come back for me.' They didn't. His brother was showing him the way out. | 24.35-31.70 | Pause before "They didn't." |
-| 7 | Narrator | Then, from beneath the same stones, a child tapped the same signal. This time, Aren understood. | 34.14-40.77 | Pause before "This time". |
-| 8 | Narrator | He couldn't save his brother. But he could still do what his brother asked. | 47.82-52.04 | Gentle and warm. |
-| 9 | Child (Betül) | Were you scared? | 55.29-56.31 | Quiet, small voice. |
-| 10 | Aren | Yes. | 56.71-57.35 | Tired and honest, with a small relieved breath. |
-| 11 | Narrator | The voice was gone. The lesson stayed. | 58.45-61.64 | Slow. Leave a pause between the two sentences. |
+| 1 | Narrator | The last time Aren heard those three knocks, his brother was dying. | 1.59-5.80 | Quiet hook. Small pause before "his brother was dying". |
+| 2 | Narrator | One candle could replay his brother's final memory. When it went out, Aren would forget the sound of his voice forever. | 6.05-13.09 | Warm, intimate. Slow on "forever". |
+| 3 | Brother | Don't come back for me. Get them out. | 16.83-19.44 | An ordinary, loving brother: urgent, not ghostly. |
+| 4 | Narrator | For years, Aren remembered the knocks, but blamed himself for leaving. He never understood where his brother was pointing. | 19.99-27.29 | Pause before "He never understood". |
+| 5 | Narrator | Then the child made the same sound. This time, Aren saw what he had missed. | 30.08-34.90 | Pause before "This time". |
+| 6 | Narrator | He couldn't reach the child from the front. So he followed the way his brother had shown him. | 38.50-43.42 | A little more drive (this is the rescue). |
+| 7 | Narrator | He forgot the sound of his brother's voice. He never forgot what his brother asked him to do. | 51.60-57.44 | Slow and quiet. Leave a pause between the two sentences. |
 
-Sound beats (not voiced): three identical knocks at 0.30 s, in the memory (with echo) and from the child. The candle goes out at about 52.5 s, followed by silence.
+Sound beats (not voiced): the same three knocks at 0.15 s (the child), 14.7 s (the brother, with an echo) and 28.7 s (the child). The candle dies at 49.5 s, followed by about 2 s of silence.
 
 After recording:
 `python tools/tts/own_prep.py le "vocal/The Last Echo" --lines` -> `python tools/tts/le.py build own` -> render_parts (prefix `le`, audio `the_last_echo.wav`).
