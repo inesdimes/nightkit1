@@ -20,6 +20,7 @@ from nightkit.audio import Sound, duck_envelope
 W, H, S = 270, 480, 4
 PI = math.pi
 FPS = 24
+SUB_LANG = os.environ.get('SUB_LANG', 'en')            # 'tr' = Turkish subtitles + labels (voice stays)
 V = np.array
 OUT = 'out'; os.makedirs(OUT, exist_ok=True)
 TTS_DIR = os.environ.get('TTS_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tts'))
@@ -813,11 +814,25 @@ def text_w(s, sc): return len(s) * 6 * sc - sc
 def label_overlay(im, t):
     a, b = T_MEM + 0.2, T_MEM + 2.2
     if not (a <= t < b): return
-    d = ImageDraw.Draw(im); s = 'YEARS AGO'; sc = 9
+    d = ImageDraw.Draw(im); s = 'YILLAR ÖNCE' if SUB_LANG == 'tr' else 'YEARS AGO'; sc = 9
     look.draw_cells(d, look.text_cells(s, int(540 - text_w(s, sc) / 2), 170, sc, (255, 226, 170)), 4)
 COL = {'N': (242, 238, 226), 'B': (255, 196, 120)}
-SUBS = look.Subtitles(SCR, LINES, W, H, S, COL, title_key='-none-', n=17,
-                      hil={'KNOCKS,', 'KNOCKS', 'DYING.', 'CANDLE', 'VOICE', 'FOREVER.', 'POINTING.', 'SOUND.', 'MISSED.', 'FRONT.', 'SHOWN', 'ASKED'})
+# Turkish subtitles (SUB_LANG=tr): same timing, one entry per spoken segment of the take; text already upper-case
+TR = {'01': ['AREN O ÜÇ VURUŞU SON DUYDUĞUNDA,', 'KARDEŞİ ÖLÜYORDU.'],
+      '02': ['TEK BİR MUM, KARDEŞİNİN SON ANISINI CANLANDIRABİLİRDİ.', 'MUM SÖNÜNCE AREN, ONUN SESİNİ SONSUZA DEK UNUTACAKTI.'],
+      '03': ['BENİM İÇİN GERİ DÖNME.', 'ONLARI DIŞARI ÇIKAR.'],
+      '04': ['AREN YILLARCA O VURUŞLARI HATIRLADI,', 'AMA GİTTİĞİ İÇİN KENDİNİ SUÇLADI.', 'KARDEŞİNİN NEREYİ GÖSTERDİĞİNİ HİÇ ANLAMADI.'],
+      '05': ['SONRA ÇOCUK AYNI SESİ ÇIKARDI.', 'BU KEZ AREN, GÖZDEN KAÇIRDIĞINI GÖRDÜ.'],
+      '06': ['ÇOCUĞA ÖNDEN ULAŞAMADI.', 'BU YÜZDEN KARDEŞİNİN GÖSTERDİĞİ YOLU İZLEDİ.'],
+      '07': ['KARDEŞİNİN SESİNİ UNUTTU.', 'AMA ONDAN İSTEDİĞİNİ HİÇ UNUTMADI.']}
+def _sub_scr():
+    if SUB_LANG != 'tr': return SCR
+    out = dict(SCR); out['sent'] = {k: [[a, b, tx] for (a, b, _), tx in zip(v, TR[k])] for k, v in SCR['sent'].items()}
+    assert all(len(SCR['sent'][k]) == len(TR[k]) for k in SCR['sent']), 'segment count changed: update TR'
+    return out
+SUBS = look.Subtitles(_sub_scr(), LINES, W, H, S, COL, title_key='-none-', n=17,
+                      hil=({'VURUŞU', 'VURUŞLARI', 'ÖLÜYORDU', 'MUM', 'SESİNİ', 'DEK', 'GÖSTERDİĞİNİ', 'SESİ', 'GÖRDÜ', 'ÖNDEN', 'YOLU', 'İSTEDİĞİNİ'} if SUB_LANG == 'tr' else
+                           {'KNOCKS,', 'KNOCKS', 'DYING.', 'CANDLE', 'VOICE', 'FOREVER.', 'POINTING.', 'SOUND.', 'MISSED.', 'FRONT.', 'SHOWN', 'ASKED'}))
 def frame_final(t):
     img = frame_low(t); arr = post.upscale(img, S)
     im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)); label_overlay(im, t); arr = np.asarray(im).astype(np.float32)

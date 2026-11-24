@@ -33,6 +33,7 @@ def B(x):
     """v2 recut (Enes, 24 Nov: 20-22 s): the v1 timeline (brief seconds) mapped onto the new final seconds, x1.2 = build seconds"""
     for (a0, b0), (a1, b1) in zip(RECUT, RECUT[1:]):
         if x <= a1 or (a1, b1) == RECUT[-1]: return round(1.2 * (b0 + (b1 - b0) * (x - a0) / (a1 - a0)), 3)
+SUB_LANG = os.environ.get('SUB_LANG', 'en')            # 'tr' = Turkish subtitles + HUD (voice stays)
 def F(x): return round(x * 1.2, 3)                  # new final seconds -> build seconds
 T_HIT = B(0.0)                                      # the sword lands (0.3 s into the video)
 def nz(v): v = V(v, float); n = np.linalg.norm(v); return v / n if n > 1e-9 else v
@@ -300,9 +301,10 @@ def tend(k): return T0[k] + SCR['dur'][k]
 T_QUEST = tend('05') + 0.05                          # the quest UI appears right after the guardian's line
 T_TURN = 1e9                                         # v4: no turn; QUEST COMPLETE, then the end
 DUR = round(T_QUEST + F(1.1), 2); N = int(round(DUR * FPS))
+T_CASTLE = max(F(7.05), tend('03') + 0.05)            # own takes: the castle cut waits for the end of 'Why?'
 T_SHOUT = B(16.64)
 T_CU = B(18.6)                                       # cut to the close-up of the seal, just before the swing lands
-CUTS = [('hit', 0.0), ('vwin', T_VWIN), ('hit', T_VBACK), ('track', F(3.0)), ('wom2', F(4.7)), ('why', F(6.0)), ('castle', F(7.05)), ('siphon', T_SIP), ('king', F(9.4)),
+CUTS = [('hit', 0.0), ('vwin', T_VWIN), ('hit', T_VBACK), ('track', F(3.0)), ('wom2', F(4.7)), ('why', F(6.0)), ('castle', T_CASTLE), ('siphon', T_SIP), ('king', F(9.4)),
         ('strike', F(11.0)), ('sealcu', T_CU), ('reverse', T_REV), ('vwin2', T_RELIT), ('kfall', T_KFALL), ('quest', T_FREE)]
 def scene(t):
     cur = 'hit'
@@ -826,9 +828,9 @@ def cam_shot(t):
     if sc == 'strike':
         u = seg01(t, B(18.0), B(21.0)); return lerp3((-0.5, 1.5, -2.3), (-0.4, 1.45, -2.15), u), lerp3((1.3, 1.3, 1.3), (1.35, 1.3, 1.3), u), lerp(50.0, 46.0, u)
     if sc == 'why':                                                              # the knight's face: the chain, then up towards the castle: "Why?"
-        u = seg01(t, F(6.0), F(7.05)); return tuple(V(K0) + V((-0.6, 1.6, 1.05)) + V((0.05, 0, -0.1)) * u), tuple(V(K0) + V((0.0, 1.55, 0.0))), 40.0
+        u = seg01(t, F(6.0), T_CASTLE); return tuple(V(K0) + V((-0.6, 1.6, 1.05)) + V((0.05, 0, -0.1)) * u), tuple(V(K0) + V((0.0, 1.55, 0.0))), 40.0
     if sc == 'castle':                                                           # what he sees: the king's castle on its hill
-        u = seg01(t, F(7.05), T_SIP); c = V(K0) + V((0, 2.3, 0)); tg = CAST0 + V((0, 20.0, 0)); return tuple(c + nz(tg - c) * 1.5 * u), tuple(tg), 26.0
+        u = seg01(t, T_CASTLE, T_SIP); c = V(K0) + V((0, 2.3, 0)); tg = CAST0 + V((0, 20.0, 0)); return tuple(c + nz(tg - c) * 1.5 * u), tuple(tg), 26.0
     if sc in ('king', 'kfall'):                                                  # the king on the castle wall
         if sc == 'king':
             u = seg01(t, F(9.4), F(11.0)); return tuple(KING0 + V((0.7, 1.55, -2.7)) + V((0, 0, 0.3)) * u), tuple(KING0 + V((0.3, 1.65, 0))), 44.0
@@ -910,7 +912,7 @@ def hud_overlay(im, t):
         n = village_count(t)
         drop = any(0 <= t - DIE[i] < 0.5 for i in DIE)
         up = any(0 <= t - RELIGHT[i] < 0.4 for i in RELIGHT)
-        sc = 7; s1 = 'VILLAGE'; s2 = f'{n}/10'
+        sc = 7; s1 = 'KÖY' if SUB_LANG == 'tr' else 'VILLAGE'; s2 = f'{n}/10'
         col = (255, 90, 80) if drop else ((140, 255, 150) if up else (255, 226, 150))
         bump = 1 if (drop or up) and (int(t * 24) % 4 < 2) else 0
         x = 64; y = 92 - 4 * bump
@@ -925,13 +927,20 @@ def hud_overlay(im, t):
             d.rectangle([bx0 + i * (pw + gap), by0, bx0 + i * (pw + gap) + pw, by0 + ph], fill=c)
             if on: d.rectangle([bx0 + i * (pw + gap), by0, bx0 + i * (pw + gap) + pw, by0 + 8], fill=(255, 150, 140))
     else:
-        u = seg01(t, T_QUEST, T_QUEST + 0.25); s1 = 'QUEST COMPLETE'; sc1 = 8 if u >= 1 else 10
+        u = seg01(t, T_QUEST, T_QUEST + 0.25); s1 = 'GÖREV TAMAMLANDI' if SUB_LANG == 'tr' else 'QUEST COMPLETE'; sc1 = 8 if u >= 1 else 10
         look.draw_cells(d, look.text_cells(s1, int(540 - text_w(s1, sc1) / 2), 100, sc1, (255, 214, 96)), 4)
         if t >= T_QUEST + 0.35:
-            s2 = 'VILLAGE SAVED'; sc2 = 7; look.draw_cells(d, look.text_cells(s2, int(540 - text_w(s2, sc2) / 2), 200, sc2, (246, 242, 230)), 4)
+            s2 = 'KÖY KURTARILDI' if SUB_LANG == 'tr' else 'VILLAGE SAVED'; sc2 = 7; look.draw_cells(d, look.text_cells(s2, int(540 - text_w(s2, sc2) / 2), 200, sc2, (246, 242, 230)), 4)
 COL = {'N': (242, 238, 226), 'K': (120, 230, 255), 'W': (255, 190, 90), 'G': (170, 220, 255)}
-SUBS = look.Subtitles(SCR, LINES, W, H, S, COL, title_key='none', card_y=0.70, card_sc=8.0, card_n=15,
-                      hil={'HIT', 'KILLED', 'VILLAGER'})
+TR = {'01': ['YA MUHAFIZA VURULAN HER DARBE BİR KÖYLÜYÜ ÖLDÜRÜYORSA?'], '02': ['KRALIN MÜHRÜ HER YARAYI BİZE GÖNDERİYOR!'],
+      '03': ['NEDEN?'], '04': ['ONU ÖLÜMSÜZ KILMAK İÇİN.'], '05': ['ARTIK KRAL DA KANAYABİLİR.']}
+def _sub_scr():
+    if SUB_LANG != 'tr': return SCR
+    out = dict(SCR); out['sent'] = {k: [[a, b, tx] for (a, b, _), tx in zip(v, TR[k])] for k, v in SCR['sent'].items()}
+    assert all(len(SCR['sent'][k]) == len(TR[k]) for k in SCR['sent']), 'segment count changed: update TR'
+    return out
+SUBS = look.Subtitles(_sub_scr(), LINES, W, H, S, COL, title_key='none', card_y=0.70, card_sc=8.0, card_n=15,
+                      hil=({'DARBE', 'KÖYLÜYÜ', 'ÖLDÜRÜYORSA'} if SUB_LANG == 'tr' else {'HIT', 'KILLED', 'VILLAGER'}))
 def frame_final(t):
     img, vi = frame_low(t); arr = post.upscale(img, S)
     im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)); hud_overlay(im, t)
