@@ -68,17 +68,18 @@ MF = MOUND + DOOR_DIR * 1.3                                      # where Aren st
 DIG = MOUND + DOOR_DIR * 0.72 + V((0, 0.55, 0))                  # the stone he pulls at
 A0 = V((0.3, 0.0, 0.55)); YAW0 = ang_to(A0, TC)
 M0 = V((-2.5, 0.0, 0.25))                                        # the mother, waiting
-CROUCH = PASS_OUT + OUTD * 0.75 + PERP * 0.45                    # he kneels here at the passage
-RK = PASS_OUT + OUTD * 0.25 + PERP * 0.66                        # the rock he sets the candle on
+CROUCH = PASS_OUT + OUTD * 0.45 + PERP * 0.5                     # he kneels here, beside the passage mouth
+RK = PASS_OUT + OUTD * 0.35 + PERP * 0.95                        # the rock he sets the candle on
 CANDLE_ON_ROCK = RK + V((0, 0.115, 0))
 C_ST = PASS_OUT + OUTD * 1.05 - PERP * 0.12                      # the child, out
-AEND = PASS_OUT + OUTD * 0.75 + PERP * 1.05                      # Aren after the rescue (aside)
-HUGP = M0 + flat(C_ST - M0) * 0.55
+AEND = CROUCH
+HUGP = M0 + flat(C_ST - M0) * 0.92
 # memory: passage -> young Aren -> beam -> brother on one line
 YA0 = PASS_IN + DIRM * 0.95 - PERPM * 0.15; YA1 = PASS_IN + DIRM * 1.75
 BEAM_C = PASS_IN + DIRM * 2.35; BR = PASS_IN + DIRM * 3.15
 MEMC = BEAM_C + DIRM * 0.38 - PERPM * 0.55 + V((0, 0.62, 0))
-SLAB = BR - DIRM * 0.38 + PERPM * 0.2 + V((0, 0.42, 0))
+YAWB = math.atan2(PASS_IN[0] - BR[0], PASS_IN[2] - BR[2])
+SLAB = BR + hd.Ry(YAWB) @ V((0.34, 0.36, 0.27))                   # the stone he knocks on (beside his pinned legs)
 # present inside: the child under a fallen beam, near the passage
 CH = PASS_IN + DIRM * 1.3 + PERPM * 0.45
 KNOCKST = CH + flat(PASS_IN - CH) * 0.3 + V((PERPM[0] * -0.12, 0.3, PERPM[2] * -0.12))
@@ -90,7 +91,7 @@ T0 = {}
 KN = 0.42
 def tend(k): return T0[k] + D_(k)
 def ws(k, i): return T0[k] + SCR['sent'][k][i][0]
-T_K0 = 0.15                                                       # hook: the child's knocks
+T_K0 = 0.3                                                        # hook: the child's knocks
 T_FRZ0 = T_K0 + 2 * KN + 0.3                                      # cut to Aren freezing
 T0['01'] = T_FRZ0 + 0.3
 T_LIGHT = tend('01') - 0.1
@@ -130,7 +131,7 @@ T_OUTP = (T_EXIT, T_EXIT + 1.5)
 T_COLLAPSE = T_OUTP[1] + 0.1
 T_RUNM = (T_COLLAPSE + 0.45, T_COLLAPSE + 1.75)                   # the child runs to the mother
 T_HUG = T_RUNM[1]
-T_COUT = T_HUG + 1.0                                              # the candle dies
+T_COUT = T_HUG + 1.6                                              # the candle dies
 T_TURN = (T_COUT + 0.55, T_COUT + 1.25)
 T0['07'] = T_COUT + 2.1
 T_END = ws('07', 1) - 0.2                                         # last shot: the dead candle in his hand
@@ -149,8 +150,8 @@ SHOTS = [(0.0, 'hook'), (T_FRZ0, 'freeze0'), (T_LIGHT - 0.55, 'light'), (T_WIDE,
          (T_MEM, 'm_est'), (T_MK - 0.25, 'm_knock'), (T_RUSH[0], 'm_point'), (T0['03'] + 0.15, 'm_face'), (tend('03') + 0.05, 'm_hes'),
          (T_LEAVE[0], 'm_leave'), (T_PTCU, 'm_hand'),
          (T_NOW, 'p_match'), (T_CK - 0.12, 'p_knock'), (T_FRZ - 0.05, 'p_freeze'), (T_FLASH[0], 'flash'), (T_FLASH[1], 'p_see'),
-         (T_DIRECT, 'p_direct'), (T_RUNP[0] + 0.9, 'p_pass'), (T_INSIDE, 'p_inside'), (T_EXIT, 'p_exit'),
-         (T_RUNM[0], 'h_run'), (T_COUT - 0.75, 'h_candle'), (T_COUT + 0.45, 'h_turn'), (T0['07'] + 0.2, 'h_two'), (T_END, 'h_end')]
+         (T_DIRECT, 'p_direct'), (T_RUNP[0] + 0.9, 'p_pass'), (T_CRAWL[0], 'p_rescue'),
+         (T_RUNM[0], 'h_run'), (T_COUT - 0.7, 'h_candle'), (T_COUT + 0.45, 'h_turn'), (T0['07'] + 0.2, 'h_two'), (T_END, 'h_end')]
 def shot_at(t):
     nm = SHOTS[0][1]
     for a, n in SHOTS:
@@ -244,7 +245,11 @@ def memory_set():
         c = BEAM_C + PERPM * u + DIRM * (0.15 + v) + V((0, 0.12 + 0.4 * (1 - abs(u) / 1.2) * hsh(i, 5), 0))
         if np.linalg.norm((c - BR)[[0, 2]]) < 0.45: continue
         Q += rock(c, 0.12 + 0.13 * hsh(i, 6), seed=i + 50)
-    Q += hd.bx(SLAB - V((0, 0.2, 0)), hd.Ry(ang_to(BR, PASS_IN)), (0.22, 0.2, 0.16), (122, 118, 110))
+    Q += hd.bx(SLAB - V((0, 0.18, 0)), hd.Ry(YAWB), (0.15, 0.18, 0.13), (122, 118, 110))
+    RB_ = hd.Ry(YAWB)                                                                              # the beam across his legs
+    Q += hd.limb(BR + RB_ @ V((-0.95, 0.12, 0.4)), BR + RB_ @ V((0.75, 0.42, 0.36)), 0.12, 0.11, (88, 58, 38), n=8, m=3)
+    for i in range(7):
+        x = -0.7 + 0.25 * i; Q += rock(BR + RB_ @ V((x, 0.5 + 0.05 * (x + 0.95), 0.38 + 0.1 * (hsh(i, 8) - 0.5))), 0.09 + 0.05 * hsh(i, 9), (112, 104, 94), seed=i + 120)
     Q += hd.bx(MEMC - V((0, 0.08, 0)), np.eye(3), (0.12, 0.08, 0.12), (110, 106, 100))
     return [q for q in Q if q]
 def inside_now_set():
@@ -281,13 +286,13 @@ def candle(base, lit=1.0, t=0.0, smoke=0.0, seed=0):
         for i in range(7):
             u = ((t * 0.5 + i / 7) % 1.0); y = 0.01 + 0.35 * u; s = 0.003 + 0.006 * u
             c = wk + V((0.02 * math.sin(i * 2 + t * 3) * u + 0.04 * u, y, 0.015 * math.cos(i + t * 2) * u))
-            if u < smoke * 0.8: Q.append(hd.face([c + V((-s, 0, 0)), c + V((0, s * 1.6, 0)), c + V((s, 0, 0)), c + V((0, -s, 0))], mixc((110, 110, 116), (70, 72, 80), u)))
+            if u < smoke * 0.8: Q.append(hd.face([c + V((-s, 0, 0)), c + V((0, s * 1.6, 0)), c + V((s, 0, 0)), c + V((0, -s, 0))], mixc((150, 150, 158), (100, 102, 110), u), emit=True))
     return [q for q in Q if q], fp
 def candle_state(t):
     if t < T_LIGHT + 0.15: return 0.0, 0.0
     if t < T_COUT - 0.55: return seg01(t, T_LIGHT + 0.15, T_LIGHT + 0.5), 0.0
     if t < T_COUT:
-        u = seg01(t, T_COUT - 0.55, T_COUT); return (1 - u * 0.6) * (0.55 + 0.45 * abs(math.sin(t * 23))), 0.0
+        u = seg01(t, T_COUT - 0.55, T_COUT); return (1 - u) ** 0.6 * (0.6 + 0.4 * abs(math.sin(t * 23))), 0.0
     return 0.0, max(0.0, 1.0 - seg01(t, T_COUT + 0.1, T_COUT + 3.5))
 def puff(c, t, t0, d=1.2, n=10, r=0.6, col=(120, 116, 112), s0=0.06):
     if not (t0 < t < t0 + d): return []
@@ -313,6 +318,7 @@ def debris_out(t):
             if t > t0 + 0.6: Q += puff(land, t, t0 + 0.6, 0.8, 6, 0.3, s0=0.03)
     return Q
 DEBRIS_MEM = [(T_MEM + 0.4 + 1.3 * k + 0.5 * hsh(k, 9), k) for k in range(12)]
+DEBRIS_BR = [(T_MEM + 0.2 + 0.85 * k + 0.3 * hsh(k, 19), k) for k in range(16)]
 def debris_mem(t):
     Q = []
     for t0, k in DEBRIS_MEM:
@@ -321,6 +327,18 @@ def debris_mem(t):
             Q += falling(t, t0, p + V((0, 3.2, 0)), p + V((0, 0.08, 0)), 0.05 + 0.04 * hsh(k, 3), 0.6, k, (130, 110, 90))
             if t > t0 + 0.6: Q += puff(p, t, t0 + 0.6, 0.7, 6, 0.3, (200, 160, 120), 0.03)
     return Q
+def debris_br(t):
+    Q = []
+    for t0, k in DEBRIS_BR:
+        if t0 - 0.05 < t < t0 + 1.2:
+            p = BR + hd.Ry(YAWB) @ V(((hsh(k, 1) - 0.5) * 1.2, 0.0, 0.1 + 0.5 * hsh(k, 2)))
+            land = p + V((0, 0.45, 0))
+            Q += falling(t, t0, p + V((0, 2.8, 0)), land, 0.04 + 0.03 * hsh(k, 3), 0.5, k + 200, (132, 112, 92))
+            if t > t0 + 0.5: Q += puff(land, t, t0 + 0.5, 0.7, 7, 0.3, (210, 170, 130), 0.035)
+    for i in range(14):                                                             # a dust stream trickling onto him
+        u = (t * 1.6 + i / 14) % 1.0; c = BR + hd.Ry(YAWB) @ V((0.1, 0.0, 0.2)) + V((0.02 * math.sin(i), 2.6 - 2.0 * u, 0)); s_ = 0.008
+        Q.append(hd.face([c + V((-s_, 0, 0)), c + V((0, s_ * 2, 0)), c + V((s_, 0, 0)), c + V((0, -s_, 0))], (220, 186, 140), emit=True))
+    return [q for q in Q if q]
 def dust_faces(t, centre, n=40, col=(255, 214, 150)):
     Q = []
     for i in range(n):
@@ -434,21 +452,21 @@ def aren(t):
         if u > 0.98: where = 'rock'
         return P, where
     where = 'rock'
-    if t < T_EXIT:                                                                  # crawls into the passage
-        u = seg01(t, *T_CRAWL); a = CROUCH; m = PASS_OUT + OUTD * 0.85; b = PASS_IN + DIRM * 0.25
-        pth = lerp3(a, m, min(1, u * 2.5)) if u < 0.4 else lerp3(m, b, (u - 0.4) / 0.6)
-        P['base'] = tuple(pth); P['yaw'] = ang_to(PASS_OUT, PASS_IN); crawl(P, u * 18, min(1.0, u * 4))
-        P['brow'] = 0.3; P['eyes'] = 'open'
+    kneel(P, 'l', 0.43); P['lean'] = 0.15; P['lh'] = (-0.2, 0.6, 0.3); P['lgrip'] = 0.3
+    if t < PULLW[1] + 0.5:                                                          # reaches into the mouth, takes the forearm, pulls
+        rch = sm(seg01(t, T_CRAWL[0] + 0.2, T_CRAWL[0] + 0.9))
+        P['lean'] = 0.3 + 0.3 * rch; P['brow'] = 0.5; P['mouth'] = 'grit'
+        if t < T_TAKE:
+            P['rh_w'] = tuple(lerp3(wpt(P, (0.2, 0.9, 0.2)), PASS_OUT - OUTD * 0.12 + V((0, 0.3, 0)), rch)); P['rgrip'] = 0.15; P['rpalm'] = (0, 0.3, 1.0)
+        else:
+            C = child_res(t); hd.human(CHILD, C); fa = C['_lwrist'] - C['_ldir'] * 0.08
+            P['rh_w'] = tuple(fa + V((0, 0.035, 0))); P['rgrip'] = 0.6; P['rpalm'] = (0, -1.0, 0)
+            P['lean'] = lerp(0.6, 0.05, sm(seg01(t, *PULLW)))
         return P, where
-    u = sm(seg01(t, T_OUTP[0], T_OUTP[0] + 1.0)); a = PASS_OUT - OUTD * 0.05; b = AEND       # backs out with the child
-    P['base'] = lerp3(a, b, u); P['yaw'] = ang_to(PASS_OUT, PASS_IN)
-    if u < 1: crawl(P, u * 12, 1.0 - 0.6 * u)
-    else: kneel(P, 'l', 0.43); P['lean'] = 0.2
-    P['rh_w'] = tuple(child_hand(t) + V((0, 0.02, 0))); P['rgrip'] = 0.55; P['rpalm'] = (0, 1.0, 0)
-    P['lh'] = (-0.2, 0.75, 0.25)
+    b = AEND; P['rh'] = (0.22, 0.6, 0.25)
     rel = sm(seg01(t, T_RUNM[0] - 0.2, T_RUNM[0] + 0.2))
     if rel > 0:
-        P.pop('rh_w'); P['rh'] = (0.22, 0.6, 0.25); kneel(P, 'l', 0.43); P['lean'] = 0.2
+        P['lean'] = 0.2
         P['yaw'] = angl(ang_to(PASS_OUT, PASS_IN), ang_to(b, HUGP), sm(seg01(t, T_RUNM[0], T_RUNM[1])))
         P['eyes'] = 'half'; P['brow'] = -0.3; P['mouth'] = 'neutral'
     if t > T_HUG: P['mouth'] = 'soft'
@@ -493,7 +511,7 @@ def child_inside(t):
             if abs(t - (t0 + k * KN)) < 0.19: ph = max(ph, 1 - abs(t - (t0 + k * KN)) / 0.19)
     lift = 0.08 * (1 - ph)
     P['rh'] = (kn[0], kn[1] + 0.02 + 1.6 * lift, kn[2]); P['rgrip'] = 0.95; P['rpalm'] = (0, -1.0, 0); P['lh'] = (-0.14, 0.42, 0.18); P['lgrip'] = 0.4
-    if t > T_INSIDE:                                                                # crawls towards Aren, takes his hand
+    if False:
         r = sm(seg01(t, T_INSIDE + 0.3, T_TAKE))
         P['base'] = lerp3(CH, CH + tw * 0.2, r); crawl(P, r * 6, r * 0.8)
         P['crouch'] = 0.38; P['nod'] = -0.5 * r
@@ -501,29 +519,39 @@ def child_inside(t):
         if t > T_PULL[0]:
             b = sm(seg01(t, *T_PULL)); P['base'] = lerp3(CH + tw * 0.2, PASS_IN + DIRM * 0.7, b)
     return P
-def child_out(t):
-    if t < T_EXIT: return None
-    if t < T_RUNM[0] - 0.2:
-        u = sm(seg01(t, T_OUTP[0] + 0.15, T_OUTP[1])); a = PASS_IN + DIRM * 0.2; b = C_ST
-        P = dict(base=tuple(lerp3(a, b, u)), yaw=ang_to(PASS_IN, PASS_OUT), eyes='wide', mouth='o', brow=0.3)
-        cr = 1 - sm(seg01(t, T_OUTP[1] - 0.5, T_OUTP[1] + 0.1)); crawl(P, u * 10, cr)
-        P['crouch'] = 0.38 * cr; P['lean'] = 1.0 * cr + 0.05
-        if cr < 0.05:
-            for k_ in ('rf', 'lf', 'rh', 'lh', 'rkpole', 'lkpole'): P.pop(k_, None)
-            P['nod'] = 0.0
-        P['rh_w'] = tuple(child_hand(t)); P['rgrip'] = 0.55; P['rpalm'] = (0, -1.0, 0)
-        if t > T_COLLAPSE: P['head'] = (0.9 * win(t, T_COLLAPSE, T_RUNM[0], 0.15), 0.0, 0.0)
-        return P
-    r = seg01(t, *T_RUNM); ur = sm(r) * 0.5 + r * 0.5; end = HUGP
-    P = dict(base=tuple(lerp3(C_ST, end, ur)), yaw=ang_to(C_ST, M0), eyes='open', mouth='open', brow=0.2, lean=0.15)
-    if r < 1: P['walk'] = ur * 16; P['stride'] = 0.3; P['lift'] = 0.12
-    if t > T_HUG - 0.2:
-        P['base'] = tuple(end); M = mother(t); hd.human(MOTHER, M)
-        sh_l = M['_chest'] + M['_RW'] @ V((-0.15, 0.06, 0.02)); sh_r = M['_chest'] + M['_RW'] @ V((0.15, 0.06, 0.02))
-        P['lh_w'] = tuple(sh_r + V((0, 0.03, 0))); P['rh_w'] = tuple(sh_l + V((0, 0.03, 0))); P['lgrip'] = P['rgrip'] = 0.35
-        P['eyes'] = 'closed'; P['mouth'] = 'neutral'; P['lean'] = 0.1; P.pop('walk', None)
+PULLW = (T_TAKE + 0.1, T_TAKE + 1.4)
+HP0 = PASS_OUT - OUTD * 0.12 + V((0, 0.28, 0)); HP1 = PASS_OUT + OUTD * 0.1 + V((0, 0.3, 0)); HP2 = PASS_OUT + OUTD * 0.72 + PERP * 0.12 + V((0, 0.5, 0))
+def child_hp(t):
+    if t < T_TAKE: return V(lerp3(HP0 - OUTD * 0.3, HP1, sm(seg01(t, T_TAKE - 0.9, T_TAKE))))
+    return V(lerp3(HP1, HP2, sm(seg01(t, *PULLW))))
+def child_res(t):
+    """crawls to the mouth, reaches out; Aren takes the forearm and pulls; up on the feet"""
+    hp = child_hp(t); pl = sm(seg01(t, *PULLW)); up = sm(seg01(t, PULLW[1] - 0.1, PULLW[1] + 0.5))
+    b = V(lerp3(V((hp[0], 0, hp[2])) - OUTD * 0.5, C_ST, up))
+    P = dict(base=tuple(b), yaw=ang_to(PASS_IN, PASS_OUT), eyes='wide', mouth='o', brow=0.4)
+    crawl(P, pl * 8, 1 - up); P['crouch'] = 0.38 * (1 - up); P['lean'] = (1 - up) * 1.0 + 0.05
+    if up > 0.5:
+        for k_ in ('rf', 'lf', 'rh', 'lh', 'rkpole', 'lkpole', 'rfdir', 'lfdir'): P.pop(k_, None)
+        P['nod'] = 0.0
+    if t < PULLW[1] + 0.5: P['lh_w'] = tuple(hp if up < 0.5 else lerp3(hp, b + V((0, 0.62, 0)) + OUTD * 0.0 + PERP * 0.0, 0.0)); P['lgrip'] = 0.5; P['lpalm'] = (0, -1.0, 0)
+    if t > T_COLLAPSE: P['head'] = (0.9 * win(t, T_COLLAPSE, T_RUNM[0], 0.15), 0.0, 0.0); P['eyes'] = 'wide'
     return P
-MKNEEL = M0 + flat(C_ST - M0) * 0.12
+def child_out(t):
+    if t < T_TAKE - 0.9: return None
+    if t < T_RUNM[0] - 0.2: return child_res(t)
+    r = seg01(t, *T_RUNM); ur = sm(r) * 0.5 + r * 0.5; end = HUGP
+    P = dict(base=tuple(lerp3(C_ST, end, ur)), yaw=ang_to(C_ST, M0), eyes='open', mouth='open', brow=-0.3, lean=0.15)
+    if r < 1:
+        P['walk'] = ur * 16; P['stride'] = 0.3; P['lift'] = 0.12
+        ra = sm(seg01(r, 0.45, 1.0)); P['rh'] = lerp3((0.16, 0.5, 0.05), (0.12, 0.85, 0.32), ra); P['lh'] = lerp3((-0.16, 0.5, 0.05), (-0.12, 0.85, 0.32), ra)   # arms out to her
+    if t > T_HUG - 0.15:                                                            # arms round her neck, cheek by her cheek
+        P['base'] = tuple(end); P.pop('walk', None); M = mother(t); hd.human(MOTHER, M)
+        hc = V(M['_head']); mf = flat(M['_RW'] @ V((0, 0, 1.0))); cx = hd.Ry(P['yaw']) @ V((1.0, 0, 0))
+        neck = hc - V((0, 0.1, 0)) - mf * 0.07
+        P['rh_w'] = tuple(neck + cx * 0.1); P['lh_w'] = tuple(neck - cx * 0.1); P['rgrip'] = P['lgrip'] = 0.4
+        P['head'] = (0.55, 0.05, 0.1); P['eyes'] = 'closed'; P['mouth'] = 'neutral'; P['lean'] = 0.2
+    return P
+MKNEEL = M0 + flat(C_ST - M0) * 0.5
 def mother(t):
     P = dict(base=tuple(M0), yaw=ang_to(M0, TC), eyes='open', mouth='neutral', brow=-0.7, lean=0.0)
     P['rh'] = (0.06, 1.1, 0.22); P['lh'] = (-0.06, 1.08, 0.22); P['rgrip'] = P['lgrip'] = 0.5
@@ -532,42 +560,47 @@ def mother(t):
     if t >= T_RUNM[0]:
         r = sm(seg01(t, T_RUNM[0], T_HUG)); P['base'] = lerp3(M0, MKNEEL, r)
         P['eyes'] = 'open'; P['mouth'] = 'open'; P['brow'] = -0.4
-        P['rh'] = lerp3((0.06, 1.1, 0.22), (0.3, 1.0, 0.45), r); P['lh'] = lerp3((-0.06, 1.08, 0.22), (-0.3, 1.0, 0.45), r); P['rgrip'] = P['lgrip'] = 0.15
+        if t < T_HUG - 0.3: P['walk'] = r * 8; P['stride'] = 0.32; P['lean'] = 0.15
+        P['rh'] = lerp3((0.06, 1.1, 0.22), (0.4, 0.95, 0.4), r); P['lh'] = lerp3((-0.06, 1.08, 0.22), (-0.4, 0.95, 0.4), r); P['rgrip'] = P['lgrip'] = 0.15     # arms open
     if t >= T_HUG - 0.3:
-        kn = sm(seg01(t, T_HUG - 0.3, T_HUG + 0.15)); P['base'] = tuple(MKNEEL); kneel(P, 'r', 0.5 * kn); P['lean'] = 0.15
-        cb = HUGP + V((0, 0.62, 0)); away = flat(cb - MKNEEL); side = V((away[2], 0, -away[0]))
-        P['rh_w'] = tuple(cb + away * 0.14 + side * 0.17); P['lh_w'] = tuple(cb + away * 0.14 - side * 0.17); P['rgrip'] = P['lgrip'] = 0.3
+        kn = sm(seg01(t, T_HUG - 0.3, T_HUG + 0.15)); P['base'] = tuple(MKNEEL); P.pop('walk', None); kneel(P, 'r', 0.5 * kn); P['lean'] = 0.12
+        cb = HUGP + V((0, 0.66, 0)); away = flat(cb - MKNEEL); side = V((away[2], 0, -away[0]))
+        P['rh_w'] = tuple(cb + away * 0.15 + side * 0.15); P['lh_w'] = tuple(cb + away * 0.15 - side * 0.15); P['rgrip'] = P['lgrip'] = 0.3
+        P['head'] = (-0.45, 0.05, -0.08)
         P['eyes'] = 'closed'; P['mouth'] = 'smile' if t > T_HUG + 0.6 else 'o'; P['brow'] = -0.5; P['nod'] = 0.15
     return P
 
 # ======================= memory people =======================
 MEM_PT = T_POINT + 0.6                                            # the reference moment of the pointing composition (flash insert)
 def bro(t):
-    P = dict(base=tuple(BR), yaw=ang_to(BR, PASS_IN), eyes='open', mouth='neutral', brow=-0.3, lean=0.15)
-    kneel(P, 'r', 0.5)
-    sl = loc(BR, P['yaw'], SLAB + V((0, 0.12, 0)))
+    """pinned under the beam across his legs, propped on one arm, straining; knocks, then points"""
+    P = dict(base=tuple(BR), yaw=YAWB, eyes='open', mouth='grit', brow=0.8, lean=-0.12, crouch=0.6)
+    P['rf'] = (0.13, 0.07, 0.62); P['lf'] = (-0.13, 0.07, 0.58); P['rkpole'] = (0.1, 1.0, 0.4); P['lkpole'] = (-0.1, 1.0, 0.4)
+    P['lh'] = (-0.27, 0.1, -0.1); P['lpalm'] = (0, -1.0, 0); P['lgrip'] = 0.3
+    P['side'] = 0.035 * math.sin(t * 29) + 0.02 * math.sin(t * 13); P['twist'] = 0.03 * math.sin(t * 17)      # trembling with the strain
+    sl = loc(BR, YAWB, SLAB + V((0, 0.06, 0)))
     if t < T_POINT:
         ph = 0.0
         for k in range(3):
             tk = T_MK + k * KN
             if abs(t - tk) < 0.19: ph = max(ph, 1 - abs(t - tk) / 0.19)
-        lift = 0.09 * (1 - ph) if t < T_MK + 2 * KN + 0.1 else 0.09
-        P['rh'] = (sl[0], sl[1] + 0.06 + lift, sl[2]); P['rgrip'] = 0.95; P['rpalm'] = (0.0, -1.0, 0.0)
-        P['head'] = (-0.25, 0.25, 0.0); P['brow'] = 0.1; P['mouth'] = 'grit'
-        if t > T_RUSH[0]: P['head'] = (0.0, 0.0, 0.0); P['eyes'] = 'wide'
+        lift = 0.12 * (1 - ph) if t < T_MK + 2 * KN + 0.1 else 0.12
+        P['rh'] = (sl[0], sl[1] + lift, sl[2]); P['rgrip'] = 0.95; P['rpalm'] = (0.0, -1.0, 0.0)
+        P['head'] = (0.1, 0.15, 0.0); P['eyes'] = 'half' if (t * 0.7) % 1.0 < 0.2 else 'open'
+        if t > T_RUSH[0]: P['head'] = (0.0, -0.05, 0.0); P['eyes'] = 'wide'
         return P
     pt = sm(seg01(t, T_POINT, T_POINT + 0.3))
-    aim = V(loc(BR, P['yaw'], PASS_IN + V((0, 0.45, 0)))); sh_ = V((0.18, 1.0, 0.0))
-    d = (aim - sh_) / np.linalg.norm(aim - sh_); tip = sh_ + d * 0.55
-    P['rh'] = lerp3(V(sl) + V((0, 0.15, 0)), tip, pt); P['rgrip'] = 0.8; P['rpalm'] = (-1.0, 0.0, 0.0)
+    aim = V(loc(BR, YAWB, PASS_IN + V((0, 0.45, 0)))); sh_ = V((0.18, 0.84, 0.0))
+    d = (aim - sh_) / np.linalg.norm(aim - sh_); tip = sh_ + d * 0.52
+    P['rh'] = lerp3(V(sl) + V((0, 0.12, 0)), tip, pt); P['rgrip'] = 0.8; P['rpalm'] = (-1.0, 0.0, 0.0)
     shk = win(t, T0['03'], T0['03'] + 0.9, 0.15)
-    P['head'] = (0.3 * math.sin((t - T0['03']) * 2 * PI * 2.2) * shk, 0.0, 0.0); P['brow'] = -0.7; P['eyes'] = 'open'
+    P['head'] = (0.3 * math.sin((t - T0['03']) * 2 * PI * 2.2) * shk, -0.05, 0.0); P['brow'] = 0.5; P['eyes'] = 'open'
     mt = talking(t, '03', 6.5)
     if mt: P['mouth'] = mt
-    if t > tend('03') + 0.2: P['mouth'] = 'soft'; P['brow'] = -0.5
-    if t > T_LEAVE[0] + 0.5: P['mouth'] = 'smile'; P['eyes'] = 'half'
+    if t > tend('03') + 0.2: P['mouth'] = 'grit'; P['brow'] = 0.3
+    if t > T_LEAVE[0] + 0.5: P['mouth'] = 'soft'; P['brow'] = -0.5; P['eyes'] = 'half'
     return P
-_bp = bro(MEM_PT + 0.4); hd.human(BRO, _bp); HANDW = _bp['_rwrist'] + _bp['_rdir'] * 0.08
+_bp = bro(MEM_PT + 0.4); hd.human(BRO, _bp); HANDW = _bp['_rwrist'] + _bp['_rdir'] * 0.08; BRHEAD = V(_bp['_head'])
 def young(t):
     P = dict(base=tuple(YA0), yaw=ang_to(YA0, BR), eyes='wide', mouth='o', brow=0.2, lean=0.06, cape_sway=0.1 * math.sin(t * 2))
     P['rh'] = (0.2, 0.95, 0.25); P['rgrip'] = 0.4; P['lh'] = (-0.2, 0.95, 0.15); P['lgrip'] = 0.4
@@ -633,23 +666,23 @@ def cam_for(sh, t):
     if sh == 'm_est':
         return keyed(t, [(T_MEM, YA0 - DIRM * 0.4 - PERPM * 1.1 + V((0, 2.0, 0)), BEAM_C + V((0, 0.6, 0)), 52.0), (T_MK - 0.25, YA0 - DIRM * 0.2 - PERPM * 1.0 + V((0, 1.8, 0)), BEAM_C + DIRM * 0.4 + V((0, 0.6, 0)), 48.0)])
     if sh == 'm_knock':
-        return keyed(t, [(T_MK - 0.25, BR - DIRM * 1.5 + PERPM * 0.55 + V((0, 1.25, 0)), lerp3(SLAB, BR, 0.5) + V((0, 0.55, 0)), 38.0), (T_RUSH[0], BR - DIRM * 1.3 + PERPM * 0.5 + V((0, 1.2, 0)), lerp3(SLAB, BR, 0.5) + V((0, 0.55, 0)), 34.0)])
+        tg = V(lerp3(SLAB, BR, 0.5)) + V((0, 0.25, 0))
+        return keyed(t, [(T_MK - 0.25, BR - DIRM * 1.55 + PERPM * 0.75 + V((0, 1.15, 0)), tg, 44.0), (T_RUSH[0], BR - DIRM * 1.35 + PERPM * 0.7 + V((0, 1.1, 0)), tg, 40.0)])
     if sh == 'm_point':
         tt = t
         K = [(T_RUSH[0], BR + DIRM * 1.0 + PERPM * 0.75 + V((0, 1.35, 0)), lerp3(BR, PASS_IN, 0.6) + V((0, 0.6, 0)), 48.0), (T0['03'] + 0.15, BR + DIRM * 0.85 + PERPM * 0.65 + V((0, 1.3, 0)), lerp3(BR, PASS_IN, 0.62) + V((0, 0.55, 0)), 46.0)]
         return keyed(tt, K)
     if sh == 'm_face':
-        f = BR + V((0, 1.12, 0))
-        return keyed(t, [(T0['03'] + 0.15, BR - DIRM * 1.25 + PERPM * 0.35 + V((0, 1.22, 0)), f, 30.0), (tend('03') + 0.05, BR - DIRM * 1.05 + PERPM * 0.32 + V((0, 1.2, 0)), f, 27.0)])
+        f = BRHEAD - V((0, 0.12, 0))
+        return keyed(t, [(T0['03'] + 0.15, f - DIRM * 1.3 + PERPM * 0.45 + V((0, 0.12, 0)), f, 36.0), (tend('03') + 0.05, f - DIRM * 1.15 + PERPM * 0.4 + V((0, 0.1, 0)), f, 34.0)])
     if sh == 'm_hes':                                                               # young Aren between: passage behind him, brother in front
         f = YA1 + V((0, 1.56, 0)); dl = flat(BR - YA1)
         return keyed(t, [(tend('03') + 0.05, f + dl * 0.95 + PERPM * 0.25 + V((0, -0.05, 0)), f - dl * 0.3, 36.0), (T_LEAVE[0], f + dl * 0.85 + PERPM * 0.22 + V((0, -0.05, 0)), f - dl * 0.3, 34.0)])
     if sh == 'm_leave':
         return keyed(t, [(T_LEAVE[0], BR + DIRM * 0.6 + PERPM * 1.0 + V((0, 1.5, 0)), lerp3(BR, PASS_IN, 0.65) + V((0, 0.6, 0)), 50.0), (T_PTCU, BR + DIRM * 0.45 + PERPM * 0.9 + V((0, 1.45, 0)), lerp3(BR, PASS_IN, 0.75) + V((0, 0.5, 0)), 46.0)])
-    if sh in ('m_hand', 'p_match', 'flash'):                                        # behind his pointing hand, to the passage (and the same view today)
-        w = HANDW; d = flat(PASS_IN - w); sd = V((d[2], 0, -d[0]))
-        t0 = T_PTCU if sh != 'flash' else T_FLASH[0]
-        K = [(t0, w - d * 0.55 + sd * 0.14 + V((0, 0.14, 0)), PASS_IN + V((0, 0.42, 0)), 36.0), (t0 + 3.5, w - d * 0.45 + sd * 0.12 + V((0, 0.12, 0)), PASS_IN + V((0, 0.4, 0)), 33.0)]
+    if sh in ('m_hand', 'p_match', 'flash'):                                        # high side angle: his upper body pointing, the passage beyond (same view today)
+        t0 = T_PTCU if sh != 'flash' else T_FLASH[0]; tg = V(lerp3(BR, PASS_IN, 0.5)) + V((0, 0.25, 0))
+        K = [(t0, BR + DIRM * 0.9 + PERPM * 0.75 + V((0, 2.0, 0)), tg, 50.0), (t0 + 3.5, BR + DIRM * 0.8 + PERPM * 0.7 + V((0, 1.9, 0)), tg - DIRM * 0.1, 48.0)]
         return keyed(t, K)
     if sh == 'p_knock': return cam_for('hook', 0.5 + (t - T_CK) * 0.3)
     if sh == 'p_see':                                                               # behind Aren: the passage his brother pointed to
@@ -660,6 +693,9 @@ def cam_for(sh, t):
         side = PASS_OUT + OUTD * 2.2 - PERP * 0.6; midp = V(lerp3(CROUCH, PASS_OUT, 0.5))
         return keyed(t, [(T_RUNP[0] + 0.9, side + OUTD * 0.6 + V((0, 1.4, 0)), midp + V((0, 0.6, 0)), 50.0), (T_SET[1], side + OUTD * 0.1 + V((0, 1.05, 0)), midp + V((0, 0.4, 0)), 42.0),
                          (T_INSIDE, side - OUTD * 0.3 + V((0, 0.9, 0)), PASS_OUT + V((0, 0.35, 0)), 38.0)])
+    if sh == 'p_rescue':                                                           # a clear side view of the mouth: kneel, forearm, pull
+        c = PASS_OUT + OUTD * 0.5 + PERP * 0.1
+        return keyed(t, [(T_CRAWL[0], c - PERP * 2.3 + V((0, 0.95, 0)), c + V((0, 0.42, 0)), 44.0), (T_RUNM[0], c - PERP * 2.1 + OUTD * 0.2 + V((0, 1.0, 0)), c + OUTD * 0.2 + V((0, 0.5, 0)), 46.0)])
     if sh == 'p_inside':
         tw = flat(PASS_IN - CH); sd = V((tw[2], 0, -tw[0])); mid = V(lerp3(PASS_IN, CH, 0.5))
         return keyed(t, [(T_INSIDE, mid + sd * 1.45 + V((0, 1.0, 0)), mid + V((0, 0.35, 0)), 46.0), (T_EXIT, mid + sd * 1.25 + V((0, 0.85, 0)), mid + V((0, 0.3, 0)), 42.0)])
@@ -667,11 +703,12 @@ def cam_for(sh, t):
         side = PASS_OUT + OUTD * 2.4 - PERP * 0.8
         return keyed(t, [(T_EXIT, side + V((0, 1.1, 0)), PASS_OUT + OUTD * 0.5 + V((0, 0.4, 0)), 46.0), (T_RUNM[0], side + OUTD * 0.3 + V((0, 1.3, 0)), PASS_OUT + OUTD * 0.7 + V((0, 0.6, 0)), 52.0)])
     if sh == 'h_run':
-        mid = (C_ST + M0) / 2
-        return keyed(t, [(T_RUNM[0], mid + V((2.2, 1.45, -2.4)), mid + V((0, 0.8, 0)), 48.0), (T_COUT - 0.75, mid + V((1.9, 1.35, -2.0)), mid + V((-0.2, 0.75, 0)), 44.0)])
+        mid = V(lerp3(C_ST, MKNEEL, 0.55)); dl = flat(MKNEEL - C_ST); pp = V((dl[2], 0, -dl[0]))
+        if pp[2] > 0: pp = -pp
+        return keyed(t, [(T_RUNM[0], mid + pp * 3.2 - dl * 0.2 + V((0, 1.1, 0)), mid - dl * 0.15 + V((0, 0.65, 0)), 54.0), (T_HUG, V(lerp3(HUGP, MKNEEL, 0.5)) + pp * 2.0 + V((0, 1.0, 0)), V(lerp3(HUGP, MKNEEL, 0.5)) + V((0, 0.72, 0)), 42.0), (T_COUT - 0.7, V(lerp3(HUGP, MKNEEL, 0.5)) + pp * 1.7 + V((0, 0.95, 0)), V(lerp3(HUGP, MKNEEL, 0.5)) + V((0, 0.72, 0)), 38.0)])
     if sh == 'h_candle':                                                            # the candle on the rock; the reunion beyond
-        c = CANDLE_ON_ROCK + V((0, 0.1, 0)); d = flat(HUGP - c)
-        return keyed(t, [(T_COUT - 0.75, c - d * 0.42 + V((0, 0.08, 0)), V(HUGP) + V((0, 0.7, 0)), 38.0), (T_COUT + 0.45, c - d * 0.34 + V((0, 0.05, 0)), c + d * 0.3 + V((0, 0.03, 0)), 32.0)])
+        c = CANDLE_ON_ROCK + V((0, 0.12, 0)); d = flat(OUTD - PERP * 0.3)
+        return keyed(t, [(T_COUT - 0.75, c + d * 0.42 + V((0, 0.08, 0)), c + V((0, 0.03, 0)), 30.0), (T_COUT + 0.45, c + d * 0.34 + V((0, 0.06, 0)), c + V((0, 0.06, 0)), 28.0)])
     if sh == 'h_turn':
         P, _ = aren(t); f = V(P['base']) + V((0, 1.18, 0)); fw = V((math.sin(P['yaw']), 0, math.cos(P['yaw']))); pd = flat(PASS_OUT - V(P['base']))
         return keyed(t, [(T_COUT + 0.45, f + pd * 0.75 + fw * 0.45 + V((0, 0.02, 0)), f, 34.0), (T0['07'] + 0.2, f + pd * 0.68 + fw * 0.4, f, 32.0)])
@@ -696,7 +733,7 @@ def world(t, sh, pos, tgt):
     L = []; layers = []; e = era(sh)
     if e == 'mem':
         tt = T_PTCU + 1.0 if sh == 'flash' else t
-        layers += [get_set('tower'), get_set('mem'), dust_faces(tt, BEAM_C), debris_mem(tt), outer_light((120, 140, 186)), lintel(tt, False)]
+        layers += [get_set('tower'), get_set('mem'), dust_faces(tt, BEAM_C), debris_mem(tt), debris_br(tt), outer_light((120, 140, 186)), lintel(tt, False)]
         cq, fp = candle(MEMC, 1.0, tt, seed=3); layers.append(cq)
         fl = 1 + 0.08 * math.sin(tt * 11) + 0.05 * math.sin(tt * 29)
         L += [(tuple(fp + V((0, 0.1, 0))), (255, 186, 120), 1.5 * fl), (tuple(BR + V((0.4, 2.6, 0.3))), (240, 200, 160), 0.7), (tuple(PASS_IN + V((0, 0.5, 0)) + DIRM * 0.3), (190, 205, 235), 0.45),
@@ -708,6 +745,8 @@ def world(t, sh, pos, tgt):
         layers += [get_set('tower'), get_set('innow'), outer_light((96, 112, 150)), lintel(t), dust_faces(t, CH, 25, (150, 160, 190))]
         L += [((0.0, 7.0, 6.0), (110, 126, 180), 1.4), (tuple(PASS_IN + V((0, 0.5, 0)) + DIRM * 0.4), (120, 140, 190), 0.8)]
         layers.append(hd.human(CHILD, child_inside(t)))
+        for t0 in (T_K0, T_CK):
+            for k in range(3): layers.append(puff(KNOCKST + V((0, 0.03, 0)), t, t0 + k * KN, 0.45, 7, 0.14, (150, 150, 160), 0.012))
         if sh == 'p_inside':
             layers.append(hd.human(AREN, aren_inside(t)))
             for k in range(5):                                                      # stones crash down where the child was
@@ -723,7 +762,7 @@ def world(t, sh, pos, tgt):
     cf = V(pos, float); fw_ = V(tgt, float) - cf; fw_ = fw_ / (np.linalg.norm(fw_) + 1e-9); L.append((tuple(cf - fw_ * 1.6 + V((0.3, 1.0, 0))), (120, 134, 180), 0.45))
     fog = mixc((18, 22, 36), (120, 104, 104), dawn); amb = lerp(0.36, 0.42, dawn)
     P, where = aren(t)
-    hidden = T_CRAWL[1] - 0.05 < t < T_EXIT                                         # he is inside the tower
+    hidden = False
     if not hidden: layers.append(hd.human(AREN, P))
     lit, smoke = candle_state(t)
     cb = hold_base(P) if (where == 'hand' and not hidden) else CANDLE_ON_ROCK
@@ -898,6 +937,8 @@ def build_audio(path):
         a = a * (0.12 / np.sqrt((a[act] ** 2).mean())) * 10 ** (LVL.get(k_, 0.0) / 20)
         put(NB, a, t0); wins.append((t0, t0 + len(a) / sr))
     g = duck_envelope(n, sr, wins, -7.0, 0.05, 0.25)
+    hush = 1 - 0.85 * mask(T_COUT, T_COUT + 1.7, 0.12)                                            # the world goes quiet as the flame dies
+    BED = BED * hush; MUS = MUS * hush
     endf = np.clip((DUR - 0.05 - t) / 0.9, 0, 1)
     bed = (BED * g + MUS * (0.65 + 0.35 * g)) * endf; fx = FX * (0.6 + 0.4 * g) * endf
     L_ = bed + fx + KNK; R_ = np.roll(bed, 700) + np.roll(fx, 200) + KNK
