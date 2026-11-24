@@ -127,3 +127,53 @@ Top 3 fixes this round:
 2. 
 3. 
 
+## Round 6 - 2026-11-24 - what_if_the_boss_health_bar_was_the_villages_v4_20s.mp4
+
+- duration 19.62 s, 471 frames, 21 cuts at 0.33, 0.38, 0.42, 1.17, 2.79, 3.04, 4.71, 5.12, 5.21, 5.33, 6.00, 7.08, 7.92, 9.42, 11.00, 11.96, 12.96, 13.58, 14.42, 14.79, 16.42
+- opening motion (first 1 s): 6.71
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 0.5 s
+- sheet: out\qa\boss_health_bar\critique_r6.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3. 
+
+## Round 7 - 2026-11-24 - what_if_the_boss_health_bar_was_the_villages_v4_20s.mp4
+
+- duration 19.62 s, 471 frames, 21 cuts at 0.33, 0.38, 0.42, 1.17, 2.79, 3.04, 4.71, 5.12, 5.21, 5.33, 6.00, 7.08, 7.92, 9.42, 11.00, 11.96, 12.96, 13.58, 14.42, 14.79, 16.42
+- opening motion (first 1 s): 6.71
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 0.5 s
+- sheet: out\qa\boss_health_bar\critique_r7.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3. 
+
