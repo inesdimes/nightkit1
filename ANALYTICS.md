@@ -287,3 +287,6 @@ At most 3 changes for the next videos (all already in the day-3 briefs):
 3. "Why Do <trope>?" titles only, no trend hashtag.
 
 Still missing: 48 h screenshots of day 1 (skip_speech posted 21 Nov 22:00 -> due 23 Nov 22:00; enemies_queue 22 Nov 02:00 -> due 24 Nov 02:00) and day 2 (npc_well, mimic).
+
+## 24 Nov 2026 (evening)
+No new numbers today. New Turkish channel **İkinci Diski Takınız** (ikincidiskitakiniz) opened on YouTube / TikTok / Instagram. It gets the Turkish-voiced shorts (Boss Health Bar 20.3 s, The Last Echo 62.2 s) and Enes posts gradually during the warm-up. Track it separately from the English channel once it has 48 h numbers.
