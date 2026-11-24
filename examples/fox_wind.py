@@ -247,12 +247,14 @@ def build_face():
     # 5) the wink on the accent (the beat in the phrase gap): left eye shuts, cheek up, brow down; the other brow lifts
     wk = up(T_WINK - 0.1, T_WINK - 0.02) * (1 - up(T_WINK + 0.16, T_WINK + 0.3))
     pose(dict(browL=-0.6, innerL=-0.3, squintL=1.0, smL=0.5, browR=1.05, smR=0.9, tilt=0.16, nod=-0.03, open=0.0, jaw=0.0), wk)
+    grin = up(T_WINK + 0.18, T_WINK + 0.32) * (1 - up((GAP[1] if GAP else T_WINK + 0.5) - 0.12, (GAP[1] if GAP else T_WINK + 0.5) + 0.04))
+    pose(dict(smR=0.95, smL=0.8, press=0.3), grin)
     # final: smug smile straight into the lens, lips closed
     fk = up(FINAL - 0.08, FINAL + 0.12)
     pose(POSE_SMUG, fk)
     shut = up(FINAL + 0.04, FINAL + 0.2); C['open'] *= (1 - shut); C['jaw'] *= (1 - shut)
     C['browR'] += 0.2 * win(T_CLANK + 0.05, T_CLANK + 0.1, 0.06, 0.25)             # the clank: a tiny brow twitch, eyes stay on camera
-    C['smR'] = np.clip(C['smR'], 0, 0.95); C['smL'] = np.clip(C['smL'], 0, 0.55)
+    C['smR'] = np.clip(C['smR'], 0, 0.95); C['smL'] = np.clip(C['smL'], 0, 0.8)
     C['open'] = np.clip(C['open'], 0, 1.25); C['jaw'] = np.clip(C['jaw'], 0, 1.2)
     speed = dict(browR=17, browL=17, innerR=17, innerL=17, furrow=14, eyesR=24, eyesL=24, squintR=16, squintL=16, smR=13, smL=13, press=18,
                  open=38, round=26, wide=26, teeth=30, jaw=32, lookx=26, looky=22, tilt=7, nod=8)
@@ -316,11 +318,35 @@ def expr_def(p, E):
         w = np.clip((-y - 0.058) / 0.022, 0, 1); w = w * w * (3 - 2 * w) * np.clip((z + 0.04) / 0.05, 0, 1)
         a = 0.2 * jaw * w; py, pz = y + 0.01, z + 0.02
         y = -0.01 + py * np.cos(a) - pz * np.sin(a); z = -0.02 + py * np.sin(a) + pz * np.cos(a)
-    for sd, key in ((1, 'cheekR'), (-1, 'cheekL')):
-        s_ = E.get(key, 0.0)
-        if s_:
-            g = np.exp(-(((x - sd * 0.047) / 0.022) ** 2 + ((y + 0.026) / 0.02) ** 2)) * s_ * (z > 0)
-            z = z + 0.008 * g; y = y + 0.0075 * g
+    fr = np.clip((z + 0.01) / 0.03, 0, 1)                       # front-of-face weight (soft, no seam)
+    x0, y0 = x.copy(), y.copy()
+    for sd, side in ((1, 'R'), (-1, 'L')):
+        ck = E.get('cheek' + side, 0.0); hol = E.get('hollow' + side, 0.0); sm_ = E.get('sm' + side, 0.0)
+        if ck:
+            # cheek apple: rises toward the lower lid, pushes forward and out
+            g = np.exp(-(((x0 - sd * 0.046) / 0.024) ** 2 + ((y0 + 0.024) / 0.022) ** 2)) * fr
+            eyeguard = np.clip((-0.004 - y0) / 0.014, 0, 1) ** 1.5               # no forward bulge under the eye decals (no poke-through)
+            z = z + 0.014 * ck * g * eyeguard; y = y + 0.012 * ck * g * np.clip((0.006 - y0) / 0.01, 0, 1); x = x + sd * 0.004 * ck * g
+            # the face outline widens at cheek height (silhouette)
+            gs = np.exp(-((y0 + 0.022) / 0.024) ** 2) * np.clip((sd * x0 - 0.05) / 0.03, 0, 1) * np.clip((z + 0.05) / 0.05, 0, 1)
+            x = x + sd * 0.007 * ck * gs; y = y + 0.004 * ck * gs
+            # nasolabial fold: a groove from the nose wing down past the mouth corner
+            ax, ay, bx_, by_ = sd * 0.015, -0.018, sd * 0.032, -0.066
+            dx, dy = bx_ - ax, by_ - ay; L2 = dx * dx + dy * dy
+            tpar = np.clip(((x0 - ax) * dx + (y0 - ay) * dy) / L2, 0, 1)
+            dist = np.hypot(x0 - (ax + tpar * dx), y0 - (ay + tpar * dy))
+            fold = np.exp(-(dist / 0.0075) ** 2) * np.sin(np.pi * tpar) * fr
+            z = z - 0.006 * ck * fold
+        if sm_:
+            # skin at the mouth corner follows the corner up and out
+            gc = np.exp(-(((x0 - sd * 0.024) / 0.013) ** 2 + ((y0 + 0.05) / 0.013) ** 2)) * fr
+            y = y + 0.005 * sm_ * gc; x = x + sd * 0.004 * sm_ * gc
+        if hol:
+            # pursed lips: the cheek pulls in below the cheekbone
+            gh = np.exp(-(((x0 - sd * 0.052) / 0.02) ** 2 + ((y0 + 0.052) / 0.02) ** 2)) * fr
+            z = z - 0.009 * hol * gh; x = x - sd * 0.006 * hol * gh
+            gl = np.exp(-(((x0 - sd * 0.018) / 0.012) ** 2 + ((y0 + 0.05) / 0.012) ** 2)) * fr
+            x = x - sd * 0.004 * hol * gl                              # mouth corners drawn in with the pucker
     return np.stack([x, y, z], -1)
 def sph(u, v): return np.stack([RX * np.sin(v) * np.sin(u), RY * np.cos(v), RZ * np.sin(v) * np.cos(u)], -1)
 def surf(u, v, E): return expr_def(base_def(sph(u, v)), E)
@@ -352,8 +378,9 @@ class Mesh:
 
 _HEADGRID = {}
 def head_mesh(M, E, hair_on=True):
-    nu, nv = 40, 28
-    uu = np.linspace(0, 2 * PI, nu, endpoint=False); vv = np.linspace(0, PI, nv + 1)
+    uu = np.r_[np.linspace(-1.25, 1.25, 31)[:-1], np.linspace(1.25, 2 * PI - 1.25, 19)[:-1]] % (2 * PI)
+    vv = np.r_[np.linspace(0, 0.95, 7)[:-1], np.linspace(0.95, 2.55, 21)[:-1], np.linspace(2.55, PI, 6)]
+    nu, nv = len(uu), len(vv) - 1
     U, Vv = np.meshgrid(uu, vv); G = surf(U, Vv, E)
     sk = SKIN; skd = shade(sk, 0.9); stub = mixc(sk, (120, 86, 64), 0.22); blush = mixc(sk, (226, 130, 116), 0.12)
     hcW = M.hc
@@ -385,7 +412,7 @@ def eyes_geo(M, E):
         lo_full = cy + tilt - KL * (1 - s ** 2) ** 0.8
         lid = lo_full + 0.0006 + (up_full - lo_full) * np.clip(op / 1.3, 0, 1.0) * (1 - 0.5 * sq)
         lid = np.maximum(lid, lo_full + 0.0004)
-        llo = lo_full + (lid - lo_full) * np.clip(0.55 * sq + 0.35 * ck, 0, 0.88)
+        llo = lo_full + (lid - lo_full) * np.clip(0.55 * sq + 0.5 * ck, 0, 0.9)
         llo = np.minimum(llo, lid - 0.0002)
         P2 = lambda xs, ys, lift: on(np.stack([xs, ys], -1), lift, E)
         # sclera
@@ -630,11 +657,16 @@ def head_tilt(t):
         yaw += k * 0.045 * math.sin(2 * PI * (t - DROP) / (8 * BP))
     return yaw, nod, tilt
 
+OVERRIDE = None                              # preview: fixed face values
 def expression(t):
     E = {k: face_at(k, t) for k in CH if k not in ('lookx', 'looky', 'tilt', 'nod')}
     yaw, nod, _ = head_tilt(t)
     E['look'] = (face_at('lookx', t) - yaw * 3.5, face_at('looky', t) - nod * 2.5)     # eyes stay on the camera while the head moves
-    E['cheekR'] = min(1.0, 0.85 * E['smR'] + 0.35 * E['squintR']); E['cheekL'] = min(1.0, 0.85 * E['smL'] + 0.35 * E['squintL'])
+    sing = min(1.0, E['jaw']) * (0.45 + 0.55 * max(0.0, E['wide'])) * (1 - max(0.0, E['round']))
+    for sd in ('R', 'L'):
+        E['cheek' + sd] = min(1.0, 0.95 * E['sm' + sd] + 0.25 * E['squint' + sd] + 0.55 * sing)
+        E['hollow' + sd] = max(0.0, E['round']) * (0.5 + 0.5 * min(1.0, E['open'] * 2))
+    if OVERRIDE: E.update(OVERRIDE)
     return E
 
 def pose(t):
@@ -872,6 +904,32 @@ QA = dict(fps=FPS, dur=DUR, W=W, frame=frame, chars={}, geom=lambda t, name, st,
                   dict(id='sing', t0=VOX, t1=FINAL, action='lip-sync to the song, brow flash in the gap'),
                   dict(id='button', t0=FINAL, t1=DUR, action='final beat: confident look, off-screen clank, glance, back to camera')],
           texts=lambda: [])
+
+CHEEKS = os.environ.get('CHEEKS')
+if CHEEKS and __name__ == '__main__':
+    t_ = float(os.environ.get('CHEEK_T', '5.9'))
+    _ht = head_tilt
+    head_tilt = lambda t: (0.0, 0.0, 0.0)
+    base = dict(browR=0.0, browL=0.0, innerR=0.0, innerL=0.0, furrow=0.0, eyesR=1.0, eyesL=1.0, squintR=0.0, squintL=0.0,
+                open=0.0, round=0.0, wide=0.0, teeth=0.0, jaw=0.0, press=0.3, look=(0.0, 0.0))
+    poses = [('1 NEUTRAL', dict(smR=0.0, smL=0.0)),
+             ('2 SMILE (both cheeks)', dict(smR=0.95, smL=0.95)),
+             ('3 SMIRK (one cheek)', dict(smR=0.95, smL=0.0)),
+             ('4 WIDE VOWEL', dict(smR=0.2, smL=0.0, open=1.0, jaw=1.0, wide=0.8, press=0.0)),
+             ('5 ROUNDED / POUT', dict(smR=0.0, smL=0.0, open=0.35, jaw=0.3, round=1.0, press=0.0))][:int(os.environ.get('NPOSE', '3'))]
+    tiles = []
+    for name, pz in poses:
+        e = dict(base); e.update(pz)
+        sing = min(1.0, e['jaw']) * (0.45 + 0.55 * e['wide']) * (1 - e['round'])
+        for sd in ('R', 'L'):
+            e['cheek' + sd] = min(1.0, 0.95 * e['sm' + sd] + 0.55 * sing); e['hollow' + sd] = e['round'] * (0.5 + 0.5 * min(1.0, e['open'] * 2))
+        OVERRIDE = e
+        im = Image.fromarray(np.clip(frame_final(t_), 0, 255).astype(np.uint8)).crop((140, 300, 940, 1300))
+        d = ImageDraw.Draw(im); d.rectangle((0, 0, 800, 44), fill=(0, 0, 0)); d.text((12, 12), name, fill=(255, 255, 0))
+        tiles.append(im)
+    sheet = Image.new('RGB', (800 * len(tiles) + 8 * (len(tiles) - 1), 1000), (30, 30, 30))
+    for i, im in enumerate(tiles): sheet.paste(im, (i * 808, 0))
+    sheet.save(os.environ.get('TEST_OUT', os.path.join(ROOT, 'cheeks.png'))); print('cheeks written'); sys.exit()
 
 TEST = os.environ.get('TEST')
 if TEST and __name__ == '__main__':
