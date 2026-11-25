@@ -1,14 +1,15 @@
 """THE FIRST TO EVER RAGEBAIT - visual adaptation of a source reel (Insert Disc 2, 25 Nov 2026). 57.57 s, 30 fps, 9:16, nightkit HD + face rig.
 Brief: pasted GPT brief (visual adaptation; original audio unchanged). Source: voice/snapgram.io_fv3w5zze9dpz.mp4 (copy + analysis in
 voice/sorceress_src/: mesh.json = MediaPipe FaceMesh per source frame, words.json = Whisper word times, src48k.wav = the untouched audio).
-The source has TWO voices: the on-screen speaker (6-28.6 s, 34-42.6 s, 55.45-57.3 s) and an off-screen voice (the rant). Enes (25 Nov):
-the sorceress plays the on-screen speaker (mouth / eyes / brows / head from the tracked face), the knight plays the off-screen voice
-(mouth from the audio envelope). Gags on measured beats: helmet tremble on the first rise (10.67 s), helmet pops on the loudest speaker
-word (13.30 s), fire in the real 0.4 s pause after the knight's 'up!' (44.00-44.40 s) while he ducks.
+The source has TWO voices. v2 (Enes, 25 Nov evening): the SORCERESS is the angry voice (0-5.95, 28.62-33.85, 42.6-55.45 s: mouth from the
+audio: loudness + vowel colour), the KNIGHT is the calm ragebaiter (on-screen speaker 5.95-28.62, 33.85-42.6, 55.45-57.35 s: mouth + head
+from the tracked face). They face each other (a real exchange), simple readable faces: smug troll vs. annoyed -> furious.
+Gags on her measured beats: helmet trembles on her first rise (4.97 s), pops on 'Alright' (33.43 s) -> he talks on with a crooked helmet,
+fire at her strongest word ('UP', 43.57 s) inside the real 0.37 s pause 44.03-44.40 s while he ducks; he straightens the helmet at the end.
 
 Frames:  TEST=0,13.3,... python examples/sorceress_rage.py -> test_sr.png
-Render:  python tools/render_parts.py examples/sorceress_rage.py --prefix sr --audio sorceress_rage.wav --out ../renders/sorceress_rage/x.mp4 --parts 8
-         (render_parts' loudnorm must NOT be used for the final: mux the untouched source audio with tools in the docstring of build_audio)"""
+Render:  python tools/render_parts.py examples/sorceress_rage.py --prefix sr --audio sorceress_rage.wav --out <scratch> --parts 8, then mux
+         out/sr_video.mp4 + voice/sorceress_src/src48k.wav + out/sr_sfx.wav with amix normalize=0 (never loudnorm: the audio stays untouched)"""
 import os, sys, math, json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 import numpy as np
@@ -16,7 +17,7 @@ from PIL import Image, ImageDraw
 from nightkit.engine import Renderer, Camera
 from nightkit.zraster import zrender
 from nightkit import post, look, hd, motion, font, facerig
-import dragon_taxes as dtx                      # locked: the series knight (HD, open helmet, blue cape + plume), torch flames
+import dragon_taxes as dtx                      # locked: the series knight (HD body, open helmet, blue cape + plume), torch flames
 
 W, H, S = 270, 480, 4
 PI = math.pi
@@ -33,10 +34,9 @@ def nz(v): v = V(v, float); n = np.linalg.norm(v); return v / n if n > 1e-9 else
 # ======================= source analysis -> performance tracks =======================
 MESH = json.load(open(os.path.join(SRC, 'mesh.json')))
 DUR = round(MESH['N'] / MESH['fps'], 4); N = int(round(DUR * FPS))
-SPK = [(5.95, 28.62), (33.85, 42.6), (55.45, 57.35)]          # on-screen speaker -> the sorceress talks
-KNV = [(0.0, 5.95), (28.62, 33.85), (42.6, 55.45)]             # off-screen voice -> the knight talks
-T_TREMBLE = 10.667; T_POP = 13.30; T_FIRE = (44.0, 44.4)       # measured beats (see the docstring)
-T_LAND = 13.95; T_FIX = (15.75, 16.6); T_FIX2 = (29.0, 30.0)
+KN_TALK = [(5.95, 28.62), (33.85, 42.6), (55.45, 57.35)]       # on-screen speaker -> the KNIGHT (tracked mouth)
+SO_TALK = [(0.0, 5.95), (28.62, 33.85), (42.6, 55.45)]         # off-screen voice -> the SORCERESS (audio-driven mouth)
+T_TREMBLE = 4.97; T_POP = 33.43; T_LAND = 34.02; T_FIX = (34.15, 34.75); T_FIRE = (44.03, 44.4); T_FIX2 = (53.4, 54.15)
 def in_w(t, ws, pad=0.0): return any(a - pad <= t < b + pad for a, b in ws)
 def _tracks():
     from scipy.ndimage import median_filter, uniform_filter1d
@@ -46,58 +46,69 @@ def _tracks():
     def ser(k):
         v = np.array([r[k] if r else np.nan for r in R], float); i = np.arange(n); m = ~np.isnan(v); return np.interp(i, i[m], v[m])
     T = np.arange(n) / fps
-    op = median_filter(ser('open'), 3); iw = ser('inner_w'); eR = ser('eyeR'); eL = ser('eyeL'); bR = ser('browR'); bL = ser('browL')
-    roll = uniform_filter1d(ser('roll'), 5); yaw = uniform_filter1d(ser('yaw'), 7); pitch = uniform_filter1d(ser('pitch'), 7)
-    spk = np.array([in_w(t, SPK) for t in T], float); spk = uniform_filter1d(spk, 5)
+    op = median_filter(ser('open'), 3); iw = ser('inner_w')
+    roll = uniform_filter1d(ser('roll'), 7); pitch = uniform_filter1d(ser('pitch'), 9)
+    kt = uniform_filter1d(np.array([in_w(t, KN_TALK) for t in T], float), 5)
     C = {}
-    C['open'] = np.clip((op - 0.014) / 0.19, 0, 1.15) * spk
-    C['jaw'] = C['open'] * 0.95
-    iwm = np.median(iw[spk > 0.5]); C['wide'] = np.clip((iw - iwm) / 0.06, 0, 1) * spk * 0.8
-    C['round'] = np.clip((iwm - iw) / 0.05, 0, 1) * np.clip(C['open'] * 2.5, 0, 1) * spk
-    em = np.median(np.r_[eR, eL])
-    C['eyesR'] = np.clip(eR / em, 0.0, 1.3); C['eyesL'] = np.clip(eL / em, 0.0, 1.3)
-    bm = np.median(np.r_[bR, bL])
-    C['browR'] = np.clip((bR - bm) / 0.016, -1, 1.2); C['browL'] = np.clip((bL - bm) / 0.016, -1, 1.2)
-    rm = np.median(roll); ym = np.median(yaw); pm = np.median(pitch)
-    C['tilt'] = -np.radians(roll - rm) * 0.55; C['hyaw'] = -(yaw - ym) * 0.28; C['nod'] = -(pitch - pm) * 2.2
-    # knight: off-screen voice envelope (200-3000 Hz), attack 15 ms / release 60 ms, only in his windows
+    # knight: the tracked mouth of the on-screen speaker
+    C['kopen'] = np.clip((op - 0.014) / 0.19, 0, 1.15) * kt; C['kjaw'] = C['kopen'] * 0.95
+    iwm = np.median(iw[kt > 0.5]); C['kwide'] = np.clip((iw - iwm) / 0.06, 0, 1) * kt * 0.7
+    C['kround'] = np.clip((iwm - iw) / 0.05, 0, 1) * np.clip(C['kopen'] * 2.5, 0, 1) * kt
+    rm = np.median(roll); pm = np.median(pitch)
+    C['ktilt'] = -np.radians(roll - rm) * 0.4 * kt; C['knod'] = -(pitch - pm) * 1.4 * kt
+    # sorceress: the off-screen voice -> loudness (attack 1 frame, release ~3 frames) + vowel colour (spectral centroid) + sibilants
     a, sr = sf.read(os.path.join(SRC, 'src48k.wav')); a = a.mean(1) if a.ndim > 1 else a
     sos = butter(4, [200, 3000], btype='band', fs=sr, output='sos'); e = np.abs(sosfiltfilt(sos, a)); hop = sr / fps
     env = np.array([e[int(k * hop):int((k + 1) * hop)].mean() for k in range(n)]); edb = 20 * np.log10(env + 1e-6)
-    kn = np.array([in_w(t, KNV) for t in T], float)
-    lv = np.clip((edb - (-40.0)) / 24.0, 0, 1) * kn
+    st = np.array([in_w(t, SO_TALK) for t in T], float)
+    lv = np.clip((edb + 42.0) / 24.0, 0, 1) * st
     out = np.zeros(n); x = 0.0
-    for i, v in enumerate(lv): x = x + (v - x) * (0.75 if v > x else 0.45); out[i] = x
-    C['kmouth'] = out; C['edb'] = edb; C['T'] = T
+    for i, v in enumerate(lv): x = x + (v - x) * (0.8 if v > x else 0.42); out[i] = x
+    cen = np.zeros(n); sib = np.zeros(n); fr = np.fft.rfftfreq(int(hop * 2), 1 / sr)
+    for k in range(n):
+        seg = a[int(k * hop):int(k * hop) + int(hop * 2)]
+        if len(seg) < int(hop * 2): break
+        sp = np.abs(np.fft.rfft(seg * np.hanning(len(seg))))
+        band = (fr > 300) & (fr < 3500); cen[k] = (sp[band] * fr[band]).sum() / (sp[band].sum() + 1e-9)
+        sib[k] = sp[(fr > 4500) & (fr < 9000)].sum() / (sp[(fr > 200) & (fr < 9000)].sum() + 1e-9)
+    cs = st > 0.5; c0, c1 = np.percentile(cen[cs], 15), np.percentile(cen[cs], 85)
+    C['sopen'] = out * 1.1; C['sjaw'] = out
+    cw = np.clip((uniform_filter1d(cen, 3) - c0) / (c1 - c0 + 1e-9), 0, 1)
+    C['swide'] = out * cw * 0.9; C['sround'] = out * (1 - cw) * 0.7
+    C['steeth'] = np.clip((sib - np.percentile(sib[cs], 70)) / (np.percentile(sib[cs], 97) - np.percentile(sib[cs], 70) + 1e-9), 0, 1) * st * (1 - np.clip(out * 2, 0, 1))
+    C['slv'] = lv; C['edb'] = edb; C['T'] = T
     return C
 TR_ = _tracks()
 def tr(k, t): return float(np.interp(t, TR_['T'], TR_[k]))
 
-# ======================= cast =======================
+# ======================= cast (both get the face rig) =======================
 SOR = hd.spec(h=1.7, build=0.9, fem=1.0, skin=(230, 188, 158), hair=(118, 46, 30), hair_style='long', eye=(84, 120, 70), brow=(96, 40, 26),
               lip=(190, 96, 96), tunic=(46, 108, 66), tunic2=(36, 88, 54), skirt=0.95, sleeves='long', pants=(36, 88, 54), boots=(60, 40, 30),
               belt=(196, 162, 70), buckle=(236, 200, 90), collar=(204, 170, 76), cloak=(30, 72, 46), cloak_len=1.0)
 GOLD = (226, 190, 84)
-SOR_STYLE = dict(skin=SOR['skin'], eye=SOR['eye'], brow=SOR['brow'], lip=(186, 92, 96), mouth_in=(70, 20, 30), teeth=(240, 234, 222),
-                 tongue=(186, 84, 92), stubble=False, scar=False)
+STYLE = {'sor': dict(skin=SOR['skin'], eye=SOR['eye'], brow=SOR['brow'], lip=(186, 92, 96), mouth_in=(70, 20, 30), teeth=(240, 234, 222),
+                     tongue=(186, 84, 92), stubble=False, scar=False),
+         'kn': dict(skin=dtx.KNIGHT['skin'], eye=dtx.KNIGHT['eye'], brow=(56, 40, 30), lip=(176, 112, 100), mouth_in=(60, 20, 24), teeth=(236, 230, 214),
+                    tongue=(178, 78, 86), stubble=True, scar=False)}
 _orig_head = hd.head
 def rig_head(hc, RH, S_, P, k):
-    """the sorceress gets the high-density face rig (facerig) + long auburn hair + a gold circlet; everyone else the stock HD head"""
+    """both characters get the high-density face rig; the sorceress adds long auburn hair + a gold circlet, the knight short hair"""
     if 'E' not in P: return _orig_head(hc, RH, S_, P, k)
-    facerig.set_style(**SOR_STYLE)
+    who = P['_who']; facerig.set_style(**STYLE[who])
     E = P['E']; M = facerig.Mesh(hc, RH)
     facerig.head_mesh(M, E); facerig.eyes_geo(M, E); facerig.brows_geo(M, E); facerig.nose_geo(M, E); facerig.mouth_geo(M, E)
     rx, ry, rz = facerig.RX, facerig.RY, facerig.RZ
     Q = M.Q + hd.hair(hc, RH, S_, P, 1.0, (rx, ry, rz), lambda p: facerig.base_def(V(p, float)[None])[0])
-    def L(x, y, z): return hc + RH @ V((x, y, z))
-    Q += hd.limb(L(0, 0.058, -0.004), L(0, 0.07, -0.008), rz * 1.08, rz * 1.06, GOLD, n=16, m=1, ref=RH @ V((0, 0, 1.0)), flat=0.92)   # circlet
-    Q += hd.bx(L(0, 0.066, rz * 1.06), RH, (0.009, 0.009, 0.004), (60, 200, 120), emit=True)                                       # its green gem
+    if who == 'sor':
+        def L(x, y, z): return hc + RH @ V((x, y, z))
+        Q += hd.limb(L(0, 0.058, -0.004), L(0, 0.07, -0.008), rz * 1.08, rz * 1.06, GOLD, n=16, m=1, ref=RH @ V((0, 0, 1.0)), flat=0.92)   # circlet
+        Q += hd.bx(L(0, 0.066, rz * 1.06), RH, (0.009, 0.009, 0.004), (60, 200, 120), emit=True)                                       # green gem
     return Q
 hd.head = rig_head
-
+KSPEC = dict(dtx.KNIGHT); KSPEC['helmet'] = None
 def knight_body(P):
     """the series knight without his helmet (dtx.knight minus knight_helmet): the helmet is animated separately"""
-    Q = hd.human(dtx.KNIGHT, P); RW = P['_RW']; ch = P['_chest']; st = (178, 186, 200); dk = (128, 136, 152)
+    Q = hd.human(KSPEC, P); RW = P['_RW']; ch = P['_chest']; st = (178, 186, 200); dk = (128, 136, 152)
     for sd in (1, -1):
         c = ch + RW @ V((sd * 0.19, 0.075, -0.01))
         Q += hd.ellip(c, RW @ hd.Rz(-sd * 0.35), (0.1, 0.07, 0.1), 10, 5, st, v1=PI * 0.6, colfn=lambda i, j, cl: dk if i == 2 else st)
@@ -144,114 +155,127 @@ def torches(t, boost=0.0):
         Q += dtx.torch_faces(p, t, k=1.0 + boost, seed=i * 3)
     return Q
 
-# ======================= poses =======================
-SOR0 = (-0.12, 0.0, 0.0); KN0 = (0.17, 0.0, -0.6); KYAW0 = -0.38
-def fire_u(t): return seg01(t, T_FIRE[0], T_FIRE[1])
+# ======================= poses + faces (a two-shot: they face each other) =======================
+KN0 = (0.25, 0.0, -0.2); SOR0 = (-0.21, 0.0, 0.05); KYAW0 = -0.42; SYAW0 = 0.4
+def E0():
+    return dict(open=0.0, jaw=0.0, wide=0.0, round=0.0, teeth=0.0, press=0.0, eyesR=1.0, eyesL=1.0, browR=0.0, browL=0.0, innerR=0.0, innerL=0.0,
+                furrow=0.0, squintR=0.0, squintL=0.0, smR=0.0, smL=0.0, cheekR=0.0, cheekL=0.0, look=(0.0, 0.0))
+def mix_into(E, P, u):
+    for k, v in P.items():
+        if k == 'look': E['look'] = (lerp(E['look'][0], v[0], u), lerp(E['look'][1], v[1], u))
+        else: E[k] = lerp(E[k], v, u)
+def blink(E, t, times, d=0.07):
+    for b in times:
+        bk = max(0.0, 1 - abs(t - b) / d); E['eyesR'] *= 1 - bk; E['eyesL'] *= 1 - bk
+ANNOYED = dict(furrow=0.45, browR=-0.4, browL=-0.4, innerR=-0.35, innerL=-0.35, squintR=0.2, squintL=0.2, press=0.5)
+FUMING = dict(furrow=0.9, browR=-0.85, browL=-0.85, innerR=-0.7, innerL=-0.7, squintR=0.55, squintL=0.55, press=1.0, eyesR=0.95, eyesL=0.95)
+RAGE = dict(furrow=1.0, browR=-1.0, browL=-1.0, innerR=-0.85, innerL=-0.85, squintR=0.15, squintL=0.15, eyesR=1.12, eyesL=1.12, press=0.0)
+EXASP = dict(furrow=0.35, browR=0.1, browL=0.1, innerR=0.45, innerL=0.45, squintR=0.1, squintL=0.1, eyesR=0.8, eyesL=0.8)
 def sor_expr(t):
-    """face-rig expression from the tracked source face (speaker windows) + the listening / irritation layer"""
-    talk = in_w(t, SPK, 0.05)
-    E = dict(open=tr('open', t), jaw=tr('jaw', t), wide=tr('wide', t), round=tr('round', t), teeth=0.0, press=0.0,
-             eyesR=tr('eyesR', t), eyesL=tr('eyesL', t), browR=0.0, browL=0.0, innerR=0.0, innerL=0.0, furrow=0.0,
-             squintR=0.0, squintL=0.0, smR=0.0, smL=0.0, look=(0.0, 0.0))
-    br = 0.7 * tr('browR', t); bl = 0.7 * tr('browL', t)
-    # irritation builds across her performance (the brief): furrow + squint ramp, inner brows pull down
-    irr = 0.15 + 0.55 * seg01(t, 6.0, 42.0)
-    E['browR'] = br - 0.25 * irr; E['browL'] = bl - 0.25 * irr; E['furrow'] = irr; E['innerR'] = -0.4 * irr; E['innerL'] = -0.4 * irr
-    E['squintR'] = 0.25 * irr; E['squintL'] = 0.25 * irr
-    if not talk:
-        E['press'] = 0.6; E['open'] = 0.0; E['jaw'] = 0.0
-        # listening to the knight: the opening (unimpressed half-smirk), the second rant (eye-roll), the big rant (furious -> fire -> calm smirk)
-        if t < 6.0: E['smR'] = 0.35; E['eyesR'] = min(E['eyesR'], 0.85); E['eyesL'] = min(E['eyesL'], 0.85)
-        if 28.6 <= t < 33.85: E['look'] = (0.0, 0.7 * win(t, 30.2, 31.2, 0.3)); E['smR'] = 0.25
-        if 42.6 <= t < T_FIRE[0]:
-            k = seg01(t, 42.6, 43.6); E['furrow'] = 0.7 + 0.3 * k; E['squintR'] = 0.4 + 0.4 * k; E['squintL'] = 0.4 + 0.4 * k
-            E['browR'] = -0.6 - 0.3 * k; E['browL'] = -0.6 - 0.3 * k; E['look'] = (0.85 * k, 0.1)
-        if T_FIRE[1] <= t < 55.45:
-            c = sm(seg01(t, T_FIRE[1] + 0.2, T_FIRE[1] + 1.2)); E['furrow'] = 0.9 * (1 - c) + 0.35 * c; E['smR'] = 0.55 * c; E['smL'] = 0.2 * c
-            E['squintR'] = 0.3; E['squintL'] = 0.3; E['look'] = (0.6 * (1 - c), 0.0); E['browR'] = -0.2 + 0.5 * c; E['browL'] = -0.4
-    fu = fire_u(t)
-    if 0 < fu < 1 or (T_FIRE[0] - 0.12 <= t < T_FIRE[1] + 0.12):                  # breathes fire: jaw wide, brows down hard
-        f = win(t, T_FIRE[0], T_FIRE[1], 0.1)
-        E['open'] = lerp(E['open'], 1.1, f); E['jaw'] = lerp(E['jaw'], 1.1, f); E['wide'] = lerp(E['wide'], 0.6, f); E['furrow'] = 1.0
-        E['browR'] = -1.0; E['browL'] = -1.0; E['eyesR'] = 0.8; E['eyesL'] = 0.8; E['press'] = 0.0; E['look'] = (1.0, 0.0)
-    # natural blinks while listening (the tracked eyes carry the blinks while she talks)
-    if not talk:
-        for b in (2.3, 4.9, 31.0, 47.6, 51.8, 54.0):
-            bk = max(0.0, 1 - abs(t - b) / 0.07)
-            E['eyesR'] *= 1 - bk; E['eyesL'] *= 1 - bk
+    """the sorceress: annoyed -> fuming while he trolls -> rage (fire) -> a cold glare at his last line"""
+    E = E0(); mix_into(E, ANNOYED, 1.0)
+    talk = in_w(t, SO_TALK)
+    if talk:
+        E['open'] = tr('sopen', t); E['jaw'] = tr('sjaw', t); E['wide'] = tr('swide', t); E['round'] = tr('sround', t); E['teeth'] = tr('steeth', t); E['press'] = 0.0
+    if 5.95 <= t < 28.62:                                       # listening to his 'mad mad / name name': it gets to her
+        mix_into(E, FUMING, 0.25 + 0.6 * seg01(t, 6.5, 27.0))
+        r = win(t, 21.9, 22.7, 0.15); E['look'] = (0.0, 0.95 * r); E['eyesR'] *= 1 - 0.3 * r; E['eyesL'] *= 1 - 0.3 * r     # eye-roll ('no butter')
+    if 28.62 <= t < 33.85: mix_into(E, EXASP, 0.85 * win(t, 28.7, 33.2, 0.3))         # 'Alright...' exasperated
+    if 33.85 <= t < 42.6:
+        mix_into(E, FUMING, 1.0)
+        g = win(t, 34.6, 35.6, 0.12); E['eyesR'] += 0.2 * g; E['eyesL'] += 0.2 * g; E['browR'] -= 0.15 * g; E['browL'] -= 0.15 * g   # the glare that freezes him
+    if 42.6 <= t < 55.45:
+        mix_into(E, RAGE, sm(seg01(t, 42.55, 42.75)))
+        lv = tr('slv', t); E['eyesR'] += 0.12 * lv; E['eyesL'] += 0.12 * lv; E['cheekR'] = 0.3 * lv; E['cheekL'] = 0.3 * lv
+        if t >= 50.0: mix_into(E, dict(squintR=0.35, squintL=0.35), 0.6)
+    if t >= 55.45: mix_into(E, FUMING, 1.0); mix_into(E, dict(squintR=0.7, squintL=0.7, eyesR=0.75, eyesL=0.75), 0.6)   # cold glare
+    f = win(t, T_FIRE[0], T_FIRE[1], 0.07)                    # breathes fire
+    if f > 0: mix_into(E, dict(open=1.15, jaw=1.15, wide=0.7, round=0.0, teeth=0.0, furrow=1.0, browR=-1.0, browL=-1.0, eyesR=0.8, eyesL=0.8), f)
+    blink(E, t, (2.75, 9.2, 14.6, 19.1, 25.3, 30.3, 37.4, 40.8, 49.6, 56.3))
+    return E
+SMUG = dict(browR=0.75, browL=-0.1, innerR=0.2, innerL=0.0, squintR=0.3, squintL=0.18, eyesR=0.88, eyesL=0.9, smR=0.7, smL=0.3, press=0.3, cheekR=0.3)
+def kn_expr(t):
+    """the knight: a smug troll (one brow up, crooked grin) - surprised at the pop, alarmed at her rant, scared under the fire, smug again"""
+    E = E0(); mix_into(E, SMUG, 1.0)
+    talk = in_w(t, KN_TALK)
+    if talk:
+        E['open'] = tr('kopen', t); E['jaw'] = tr('kjaw', t); E['wide'] = tr('kwide', t); E['round'] = tr('kround', t); E['press'] = 0.0
+        E['smR'] = 0.55; E['smL'] = 0.2
+        E['browR'] += 0.25 * min(1.0, tr('kopen', t) * 2)                                  # brow bounces on his stressed syllables
+    if t < 5.95: mix_into(E, dict(smR=0.35, smL=0.1, browR=0.4), 1.0)                       # waits for his turn, a little smirk
+    e = win(t, T_TREMBLE - 0.05, T_TREMBLE + 0.55, 0.1); E['look'] = (0.0, 0.7 * e); E['browR'] += 0.3 * e; E['browL'] += 0.4 * e
+    sp = win(t, T_POP - 0.03, 33.83, 0.08)                                                    # the pop: eyes up, brows up, 'o'
+    if sp > 0: mix_into(E, dict(eyesR=1.3, eyesL=1.3, browR=1.0, browL=1.0, innerR=0.4, innerL=0.4, smR=0.0, smL=0.0, open=0.45, jaw=0.45, round=0.9, look=(0.0, 1.0), squintR=0.0, squintL=0.0), sp)
+    fr = win(t, 34.6, 35.0, 0.08)                                                             # freezes under her glare
+    if fr > 0: mix_into(E, dict(eyesR=1.25, eyesL=1.25, browR=0.9, browL=0.8, smR=0.1, smL=0.0, squintR=0.0, squintL=0.0), fr)
+    al = sm(seg01(t, 42.65, 43.1)) * (1 - sm(seg01(t, 45.6, 46.8)))                          # her rant: the grin drops
+    if al > 0: mix_into(E, dict(eyesR=1.2, eyesL=1.2, browR=0.9, browL=0.9, innerR=0.5, innerL=0.5, smR=0.0, smL=0.0, squintR=0.0, squintL=0.0), al)
+    dk = win(t, T_FIRE[0] - 0.08, T_FIRE[1] + 0.25, 0.08)                                     # under the fire: eyes shut tight, teeth gritted
+    if dk > 0: mix_into(E, dict(eyesR=0.0, eyesL=0.0, squintR=1.0, squintL=1.0, furrow=0.8, browR=-0.6, browL=-0.6, wide=0.8, teeth=1.0, open=0.15, smR=0.0, smL=0.0), dk)
+    if not talk and t >= 46.8: mix_into(E, dict(smR=0.85, smL=0.45, cheekR=0.5, cheekL=0.3), sm(seg01(t, 46.8, 47.6)))   # enjoys her rage
+    blink(E, t, (1.4, 8.3, 12.7, 17.9, 23.4, 27.6, 31.1, 39.2, 48.9, 52.6))
     return E
 def sor_pose(t):
-    talk = in_w(t, SPK, 0.05)
-    hy = tr('hyaw', t) if talk else 0.0; nod = tr('nod', t) if talk else 0.0; tilt = tr('tilt', t) if talk else 0.0
-    if 42.6 <= t < 45.2: hy = lerp(hy, -0.45, win(t, 43.3, 44.6, 0.35)); tilt = lerp(tilt, -0.08, win(t, 43.3, 44.6, 0.35))   # turns to the knight to breathe fire
-    if 28.6 <= t < 33.85: tilt = 0.08 * win(t, 29.0, 33.4, 0.4)
-    br = 0.012 * math.sin(t * 2 * PI / 3.6)                                            # breathing
-    P = dict(base=SOR0, yaw=0.0, lean=0.02 + br * 0.5, head=(hy, nod, tilt), pel=(0, br, 0), cape_sway=0.05 * math.sin(t * 0.9))
-    gst = win(t, 17.0, 19.5, 0.5) + win(t, 36.4, 38.6, 0.5)                              # restrained hand movement on long phrases
-    P['rh'] = lerp3((0.2, 0.92, 0.2), (0.24, 1.08, 0.3), gst); P['lh'] = (-0.2, 0.9, 0.18); P['rgrip'] = 0.35; P['lgrip'] = 0.4
-    P['E'] = sor_expr(t)
+    talk = in_w(t, SO_TALK); lv = tr('slv', t) if talk else 0.0
+    br = 0.012 * math.sin(t * 2 * PI / 3.6)
+    nod = -0.06 * lv + 0.03 * math.sin(t * 1.1)
+    rant = sm(seg01(t, 42.55, 42.9)) * (1 - sm(seg01(t, 55.3, 55.9)))
+    hy = 0.32 + 0.05 * math.sin(t * 0.7)
+    if 21.9 <= t < 22.8: hy -= 0.1 * win(t, 22.0, 22.7, 0.2)
+    P = dict(base=SOR0, yaw=SYAW0, lean=0.02 + 0.08 * rant + br * 0.5, head=(hy, nod - 0.04 * rant, 0.05 * math.sin(t * 0.9)), pel=(0, br, 0), cape_sway=0.05 * math.sin(t * 0.9))
+    P['rh'] = (0.2, 0.92, 0.2); P['lh'] = (-0.2, 0.9, 0.18); P['rgrip'] = 0.35; P['lgrip'] = 0.4
+    pt = win(t, 42.75, 43.85, 0.15) + win(t, 45.9, 47.3, 0.2) + 0.8 * win(t, 49.8, 50.9, 0.2)           # points at him while she yells
+    if pt > 0: P['rh'] = lerp3(P['rh'], (0.12, 1.36, 0.52), min(1.0, pt)); P['rgrip'] = 0.75
+    cr = 0.9 * win(t, 5.9, 28.4, 0.5) + 0.9 * win(t, 34.0, 42.4, 0.5)                                 # hands on her hips while he trolls
+    if cr > 0:
+        P['lh'] = lerp3(P['lh'], (-0.21, 1.0, 0.0), cr); P['rh'] = lerp3(P['rh'], (0.21, 1.0, 0.0), cr * (1 - min(1.0, pt)))
+        P['lpole'] = (-1.0, -0.2, -0.3); P['rpole'] = (1.0, -0.2, -0.3)
+    P['E'] = sor_expr(t); P['_who'] = 'sor'
     return P
-
-def k_talk(t): return tr('kmouth', t)
 def knight_pose(t):
-    """reactions: glance, uneasy, follows the helmet with his eyes, freezes mid-fix, ducks under the fire, recovers"""
-    P = dict(base=KN0, yaw=KYAW0, eyes='open', mouth='neutral', brow=0.2, lean=0.04, cape_sway=0.1 * math.sin(t * 1.2), look=(-0.4, 0.0), head=(-0.15, 0.05, 0.0))
-    P['rh'] = (0.24, 0.98, 0.14); P['lh'] = (-0.22, 0.96, 0.16); P['rgrip'] = 0.5; P['lgrip'] = 0.5
-    kt = k_talk(t)
-    if in_w(t, KNV):                                  # he talks (off-screen voice): turns to her, brow up
-        P['head'] = (-0.35, 0.02, 0.0); P['look'] = (-0.6, 0.0); P['brow'] = 0.5 if t > 42 else -0.1
-        P['mouth'] = 'open' if kt > 0.5 else ('o' if kt > 0.18 else 'neutral')
-        if t > 42.6: P['brow'] = 0.9; P['eyes'] = 'wide' if kt > 0.6 else 'open'
-    else:                                              # listening: eyes on her, uneasy
-        P['look'] = (-0.8, 0.0); P['brow'] = -0.25
-    if 8.6 <= t < 9.6: P['head'] = (-0.15, 0.05, 0.06 * win(t, 8.7, 9.4, 0.2)); P['brow'] = -0.5          # one restrained uneasy reaction
-    # the helmet pop: eyes up, mouth 'o'
-    if T_POP - 0.05 <= t < T_LAND + 0.4:
-        P['look'] = (0.0, 1.0); P['eyes'] = 'wide'; P['mouth'] = 'o'; P['head'] = (-0.1, 0.25 * win(t, T_POP, T_LAND, 0.15), 0.0)
-    # tries to straighten the helmet, then freezes when her expression intensifies
-    fx = win(t, T_FIX[0], T_FIX[1], 0.25)
-    if fx > 0:
-        P['rh'] = lerp3(P['rh'], (0.2, 1.66, 0.06), fx); P['lh'] = lerp3(P['lh'], (-0.2, 1.66, 0.06), fx); P['rgrip'] = 0.3; P['lgrip'] = 0.3
-        P['rpalm'] = (-1.0, 0.0, 0.0); P['lpalm'] = (1.0, 0.0, 0.0)
-    fx2 = win(t, T_FIX2[0], T_FIX2[1], 0.3)
-    if fx2 > 0:
-        P['rh'] = lerp3(P['rh'], (0.2, 1.66, 0.06), fx2); P['lh'] = lerp3(P['lh'], (-0.2, 1.66, 0.06), fx2); P['rpalm'] = (-1.0, 0.0, 0.0); P['lpalm'] = (1.0, 0.0, 0.0)
-    if T_FIX[1] <= t < T_FIX[1] + 1.0: P['eyes'] = 'wide'; P['brow'] = -0.6; P['look'] = (-0.9, 0.0)
-    # duck under the fire (anticipates by a few frames), keeps yelling from down there, recovers
-    dk = sm(seg01(t, T_FIRE[0] - 0.1, T_FIRE[0] + 0.12)) * (1 - sm(seg01(t, T_FIRE[1] + 0.35, T_FIRE[1] + 0.9)))
+    talk = in_w(t, KN_TALK)
+    tilt = tr('ktilt', t) if talk else 0.06; nod = tr('knod', t) if talk else 0.0
+    P = dict(base=KN0, yaw=KYAW0, lean=0.03, head=(-0.32, nod, tilt), cape_sway=0.1 * math.sin(t * 1.2))
+    P['rh'] = (0.25, 0.9, 0.05); P['lh'] = (-0.25, 0.9, 0.05); P['rgrip'] = 0.5; P['lgrip'] = 0.5
+    if talk: P['rh'] = lerp3(P['rh'], (0.22, 1.1, 0.3), 0.6 * win(t, 9.5, 12.5, 0.4) + 0.6 * win(t, 36.0, 38.5, 0.4))   # a lazy hand while trolling
+    if T_POP - 0.05 <= t < T_LAND + 0.3: P['head'] = (-0.2, 0.22 * win(t, T_POP, T_LAND, 0.12), 0.0)                       # watches the helmet
+    for (a, b) in (T_FIX, T_FIX2):                                                                                          # hands to the helmet
+        fx = win(t, a, b, 0.22)
+        if fx > 0:
+            P['rh'] = lerp3(P['rh'], (0.2, 1.68, 0.06), fx); P['lh'] = lerp3(P['lh'], (-0.2, 1.68, 0.06), fx); P['rgrip'] = 0.3; P['lgrip'] = 0.3
+            P['rpalm'] = (-1.0, 0.0, 0.0); P['lpalm'] = (1.0, 0.0, 0.0)
+    rec = win(t, 42.65, 44.0, 0.2)                                                                                          # leans away from her rant
+    P['lean'] -= 0.06 * rec
+    dk = sm(seg01(t, T_FIRE[0] - 0.1, T_FIRE[0] + 0.1)) * (1 - sm(seg01(t, T_FIRE[1] + 0.3, T_FIRE[1] + 0.85)))
     if dk > 0:
-        P['crouch'] = 0.3 * dk; P['lean'] = 0.04 + 0.3 * dk; P['head'] = (-0.35, 0.25 * dk, 0.0); P['eyes'] = 'wide'; P['look'] = (-0.3, 1.0)
-        P['rh'] = lerp3(P['rh'], (0.22, 1.25, 0.32), dk); P['lh'] = lerp3(P['lh'], (-0.24, 1.28, 0.3), dk)
+        P['crouch'] = 0.32 * dk; P['lean'] = 0.03 + 0.32 * dk; P['head'] = (-0.3, 0.2 * dk, 0.0)
+        P['rh'] = lerp3(P['rh'], (0.22, 1.3, 0.3), dk); P['lh'] = lerp3(P['lh'], (-0.24, 1.32, 0.28), dk)
         P['rf'] = (0.14, 0.07, 0.12); P['lf'] = (-0.14, 0.07, -0.08)
+    P['E'] = kn_expr(t); P['_who'] = 'kn'
     return P
 
 # ======================= the helmet gag =======================
 def helmet_state(t, KP):
-    """(head centre, rotation) for the helmet: trembles at T_TREMBLE, pops at T_POP (arc + spin, stays in frame), lands crooked,
-    half-fixed at T_FIX (freezes), fully straightened at T_FIX2"""
-    hc = V(KP['_head'], float); RH = KP['_RH']
-    up = RH @ V((0, 1.0, 0))
-    tr_ = win(t, T_TREMBLE - 0.05, T_TREMBLE + 0.7, 0.08) + 0.6 * win(t, T_POP - 0.35, T_POP - 0.02, 0.05)
+    """trembles at T_TREMBLE, pops at T_POP (arc + spin, stays in frame), lands crooked (T_LAND), half-fixed at T_FIX then he freezes,
+    fully straightened at T_FIX2"""
+    hc = V(KP['_head'], float); RH = KP['_RH']; up = RH @ V((0, 1.0, 0))
+    tr_ = win(t, T_TREMBLE - 0.05, T_TREMBLE + 0.6, 0.08) + 0.6 * win(t, T_POP - 0.35, T_POP - 0.02, 0.05)
     if tr_ > 0 and t < T_POP:
-        j = tr_ * 0.012 * math.sin(t * 95) ; return hc + up * (abs(j) * 0.6), RH @ hd.Rz(j * 2.2)
-    crook = 0.0; off = V((0, 0, 0.0))
-    if t >= T_POP:
-        u = t - T_POP; fl = T_LAND - T_POP
-        if u < fl:
-            s = u / fl; h = 0.2 * 4 * s * (1 - s)                          # parabola, apex 0.3 m above the head (stays in frame, under the caption)
-            pos = hc + up * (h + 0.01) + (RH @ V((0.06, 0, 0.04))) * s
-            return pos, RH @ hd.Rx(-2 * PI * s * 1.0) @ hd.Rz(0.6 * s)
-        crook = 0.38; off = RH @ V((0.03, 0.012, 0.0))
-        b = max(0.0, 1 - (u - fl) / 0.18); off = off + up * 0.025 * b * abs(math.sin((u - fl) * 40))   # a small bounce on landing
-        crook *= 1 - 0.55 * sm(seg01(t, T_FIX[0] + 0.15, T_FIX[0] + 0.55))                            # half straightened ... then he freezes
-        crook = crook * (1 - sm(seg01(t, T_FIX2[0] + 0.2, T_FIX2[1] - 0.15))) + 0.0
-        if t > T_FIX2[1]: crook = 0.0; off = V((0, 0, 0.0))
-        else: off = off * (1 - sm(seg01(t, T_FIX2[0] + 0.2, T_FIX2[1] - 0.15)))
-    return hc + off, RH @ hd.Rz(-crook)
+        j = tr_ * 0.012 * math.sin(t * 95); return hc + up * (abs(j) * 0.6), RH @ hd.Rz(j * 2.2)
+    if t < T_POP: return hc, RH
+    u = t - T_POP; fl = T_LAND - T_POP
+    if u < fl:
+        s = u / fl; h = 0.22 * 4 * s * (1 - s)
+        return hc + up * (h + 0.01) + (RH @ V((0.05, 0, 0.03))) * s, RH @ hd.Rx(-2 * PI * s) @ hd.Rz(0.6 * s)
+    crook = 0.38; off = RH @ V((0.03, 0.012, 0.0))
+    b = max(0.0, 1 - (u - fl) / 0.18); off = off + up * 0.025 * b * abs(math.sin((u - fl) * 40))
+    k1 = 0.5 * sm(seg01(t, T_FIX[0] + 0.12, T_FIX[1] - 0.05)); k2 = sm(seg01(t, T_FIX2[0] + 0.15, T_FIX2[1] - 0.12))
+    keep = (1 - k1) * (1 - k2)
+    return hc + off * keep, RH @ hd.Rz(-crook * keep)
 def helmet_geo(t, KP):
     pos, R = helmet_state(t, KP)
     Q = dtx.knight_helmet(dict(_head=pos, _RH=R, cape_sway=KP.get('cape_sway', 0.0)))
-    g = win(t, T_POP + 0.12, T_POP + 0.24, 0.04)                                  # a small metal glint in flight
+    g = win(t, T_POP + 0.12, T_POP + 0.24, 0.04)
     if g > 0.05:
         c = pos + R @ V((0.05, 0.1, 0.06)); n = nz(V((0.2, 0.3, 1.0)))
         for a in (0.0, PI / 2):
@@ -259,26 +283,26 @@ def helmet_geo(t, KP):
     return [q for q in Q if q]
 
 # ======================= the fire =======================
-def fire_geo(t, SP):
-    """one short stylised burst from her mouth towards the knight's (now ducked) head height; above him, onto the wall"""
+def fire_geo(t, SP, KP0):
+    """one short stylised burst from her mouth at the knight's (standing) head height: he ducks, it passes over him onto the wall"""
     if not (T_FIRE[0] - 0.02 <= t < T_FIRE[1] + 0.25): return [], None
     hc = V(SP['_head'], float); RH = SP['_RH']; mo = hc + RH @ V((0.0, -0.055, 0.1))
-    tgt = V((1.05, 1.8, WALLZ + 0.25)); d = nz(tgt - mo); L = float(np.linalg.norm(tgt - mo))
+    tgt = V(KP0, float) + V((0.75, 1.78, -0.5)); d = nz(tgt - mo); L = float(np.linalg.norm(tgt - mo))
     u = (t - T_FIRE[0]) / (T_FIRE[1] - T_FIRE[0]); reach = min(1.0, u / 0.35) * L; tail = max(0.0, (u - 0.85) / 0.4) * L
     side = nz(np.cross(d, V((0, 1.0, 0)))); upv = np.cross(side, d); Q = []
     for i in range(46):
         s = tail + (reach - tail) * hsh(i, 7) if reach > tail else reach
-        if s < 0.04: continue
-        r = 0.03 + 0.22 * (s / L) ** 0.8
+        if s < 0.05: continue
+        r = 0.025 + 0.16 * (s / L) ** 0.8
         a = 2 * PI * hsh(i, 9) + t * 9; c = mo + d * s + (side * math.cos(a) + upv * math.sin(a)) * r * hsh(i, 11) * 0.9
-        sz = 0.035 + 0.06 * (s / L); col = [(255, 238, 150), (255, 176, 60), (255, 112, 30), (230, 70, 20)][min(3, int(4 * s / L + hsh(i, 13)))]
+        sz = 0.03 + 0.05 * (s / L); col = [(255, 238, 150), (255, 176, 60), (255, 112, 30), (230, 70, 20)][min(3, int(4 * s / L + hsh(i, 13)))]
         q = hd.face([c - side * sz, c + upv * sz * 1.2 + d * 0.02, c + side * sz, c - upv * sz * 0.6], col, emit=True)
         if q: Q.append(q)
-    light = (tuple(mo + d * min(reach, L * 0.92)), (255, 140, 50), 0.55 * win(t, T_FIRE[0], T_FIRE[1], 0.06))
+    light = (tuple(mo + d * min(reach, L * 0.9)), (255, 140, 50), 0.55 * win(t, T_FIRE[0], T_FIRE[1], 0.06))
     return Q, light
 
 # ======================= camera, lights, frame =======================
-CAM_P = V((0.03, 1.64, 1.95)); CAM_T = V((0.03, 1.6, -0.2)); FOV = 18.0
+CAM_P = V((0.02, 1.66, 2.1)); CAM_T = V((0.02, 1.64, -0.1)); FOV = 20.5
 def camera(t):
     sh = 0.0
     for t0, amp in ((T_POP, 0.004), (T_FIRE[0], 0.006)):
@@ -288,9 +312,9 @@ def world(t):
     SP = sor_pose(t); KP = knight_pose(t)
     layers = [SET, torches(t, 0.6 * win(t, T_FIRE[0], T_FIRE[1], 0.05))]
     layers.append(hd.human(SOR, SP)); layers.append(knight_body(KP)); layers.append(helmet_geo(t, KP))
-    fq, fl = fire_geo(t, SP); layers.append(fq)
-    L = [((-0.9, 2.3, 1.4), (255, 226, 196), 0.72), ((0.9, 1.9, 1.2), (180, 192, 236), 0.26)]
-    for i, p in enumerate(TORCH): L.append((tuple(p + V((0.15 * (1 if i else -1), 0.2, 0.3))), (255, 150, 70), 0.65 * (1 + 0.08 * math.sin(t * 13 + i))))
+    fq, fl = fire_geo(t, SP, KN0); layers.append(fq)
+    L = [((0.0, 2.3, 1.6), (255, 226, 196), 0.72), ((-0.9, 1.9, 1.2), (180, 192, 236), 0.24), ((0.9, 1.9, 1.2), (180, 192, 236), 0.24)]
+    for i, p in enumerate(TORCH): L.append((tuple(p + V((0.15 * (1 if i else -1), 0.2, 0.3))), (255, 150, 70), 0.6 * (1 + 0.08 * math.sin(t * 13 + i))))
     if fl is not None: L.append(fl)
     return layers, L, SP, KP
 def frame_low(t):
