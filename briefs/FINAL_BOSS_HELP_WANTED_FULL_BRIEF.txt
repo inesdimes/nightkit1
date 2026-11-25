@@ -1,0 +1,196 @@
+INSERT DISC 2 — FULL STORY / RENDER BRIEF
+Title: WHY DOES THE FINAL BOSS HAVE A HELP WANTED SIGN?
+Updated: 25 November 2026
+
+1. TITLE, YOUTUBE TITLE, FINAL LENGTH, WORD COUNT
+Title: Why Does the Final Boss Have a Help Wanted Sign?
+YouTube Shorts title: Why Does the Final Boss Have a Help Wanted Sign?
+Final length: 40 seconds, vertical 9:16, 1080x1920, 24 fps.
+Total spoken English words: 92. This count includes all spoken character dialogue and narration; it excludes the wordless beat and on-screen UI.
+Record calmly and speed up the finished audio/video to 1.2x.
+Tone: dry humor, familiar RPG trope, quick visual punchline. Playful, not sentimental.
+Retention aim: make the contradiction readable from frame 0 and begin narration immediately. This is an experiment toward a higher “stayed to watch” rate, not a guaranteed metric.
+
+2. COVER TEXT
+Burn into the first 1.5–2 seconds in large pixel lettering:
+BOSS
+WANTED
+Keep it clear of the boss’s face, the knight’s sword, and subtitles.
+
+3. STORY RULE + LOGIC CHECK
+Rule: The final boss is trying to escape the endless fight-and-respawn loop by hiring the knight to replace him.
+Logic: Frame 0 shows the knight charging while the boss raises a hiring sign instead of fighting. The boss points to a FIGHTS: 9999 counter, then offers the job. The knight signs; the boss bar changes to KNIGHT. The old boss leaves, an identical knight arrives, and the cycle continues.
+
+4. CAST
+FINAL BOSS — ALREADY BUILT
+- Reuse the existing cloaked final boss model.
+- About 1.25 times the knight’s height and width.
+- Palette: dark plum cloak, near-black body, muted red and pale-gold details.
+- Keep the eyes visible; hood or horns must not cover them. Use simple low-poly eyes, brows, and mouth.
+- Readable from a distance through the broad shoulder silhouette, cloak, and raised arm.
+- Expressions stay simple: tired brows while offering the job; one small shoulder shrug on “No breaks.”
+- No close facial acting is required.
+
+KNIGHT — ALREADY BUILT
+- Reuse the blue-caped knight with light metal armor and sword.
+- Smaller than the boss; blue cape and sword should read clearly at a distance.
+- Starts leaning forward with sword raised; stops the swing before touching the sign.
+- After seeing the sign, turn head from sign to boss; lower sword slightly when the contract appears.
+- Select YES through the UI. Do not require a close hand-to-paper interaction.
+
+NEW CHALLENGER — ALREADY BUILT / REUSE KNIGHT MODEL
+- Duplicate the same blue-caped knight model and outfit.
+- The identical silhouette is the final visual joke and makes the loop legible.
+- No new character model is needed.
+
+5. PLACE
+DARK BOSS ARENA — ALREADY BUILT
+- Existing checkerboard stone floor, dark stone walls, red boss lighting.
+- One location only. No new room or complex background action.
+- When the boss role transfers to the knight, flicker the red light for 2–3 frames, then stabilize.
+- Keep the background darker and lower contrast than the characters.
+
+6. SHOT TABLE — FINAL VIDEO TIMECODES
+Camera stays character-focused with gentle movement. Avoid an establishing wide shot. Actions begin about 0.2 seconds before their lines. Hold no static wide shot.
+
+| Time | Picture, camera, action | Exact line and speaker | On-screen UI |
+| 0:00–0:03 | First frame: tight, low 3/4 angle on the boss, who fills at least half the frame height. Knight rushes in behind him, sword stopping short as the boss snaps up a blank sign. Small push-in toward the sign. | Narrator: “The boss wasn’t attacking. He was hiring.” | Large cover: BOSS / WANTED. Boss bar visible. |
+| 0:03–0:05 | Medium two-shot. Boss lowers the sign just enough to indicate the contract UI, not his weapon. | Boss: “Want my job?” | Keep BOSS / WANTED briefly visible. |
+| 0:05–0:08 | Over the boss’s shoulder toward the knight. Knight stays guarded; turn his head from the sign to the boss. | Knight: “I came to defeat you.” | Boss bar flashes once. |
+| 0:08–0:11 | Short pan from the boss’s pointing hand to the counter beside his health bar. | Narrator: “His health bar now showed nearly ten thousand failed fights.” | FIGHTS: 9999 |
+| 0:11–0:14 | Side medium shot. Boss sweeps one arm around the arena, then lowers his weapon and shoulders. Arena light pulses twice in the same rhythm. | Boss: “Same arena. Same speech. Every single respawn.” | PHASE 3 briefly appears, then the boss bar returns to normal. |
+| 0:14–0:18 | Slight low-angle two-shot. Boss offers his sword, then indicates the contract UI. Leave clear space between hands and props; no close contact shot. | Narrator: “Then he handed the knight his sword and a contract.” | BOSS POSITION / OPEN |
+| 0:18–0:20 | Medium close-up of the knight. A small eyebrow lift; he lowers the sword tip and gestures toward the contract. | Knight: “What’s the pay?” | Large UI options: YES / NO |
+| 0:20–0:23 | Over the knight’s shoulder toward the boss. Boss taps his health bar, then points to himself. | Boss: “One health bar. Infinite respawns.” | HP: 100 / RESPAWNS: INFINITE |
+| 0:23–0:27 | Camera on knight and UI. YES highlights automatically; a retro stamp confirms. Fine print rises as large readable UI text. | Narrator: “The knight signed without reading the tiny print.” | SIGNED / NO DAYS OFF. Keep the automatic reminder toast’s safe area clear at about 0:26. |
+| 0:27–0:29 | Short deadpan close-medium on boss. He indicates the final contract line and gives one small shoulder shrug. | Boss: “No breaks.” | NO BREAKS |
+| 0:29–0:30 | WORDLESS BEAT: Boss lets the sword drop to the stone. Knight’s eyes shift toward it. Music continues. | No speech. | No new text. |
+| 0:30–0:32 | Track the old boss as he walks toward the exit. Knight steps into the boss’s former position. | Narrator: “The old boss finally left smiling.” | Boss-bar name transitions to KNIGHT. |
+| 0:32–0:35 | Pan toward the arena entrance as an identical blue-caped knight runs in. | Narrator: “His first challenger arrived before the ink dried.” | Boss bar: KNIGHT |
+| 0:35–0:36 | The promoted knight snaps up the same sign as the opening boss. Match the opening angle. | New Boss (Knight): “Boss wanted.” | BOSS / WANTED |
+| 0:36–0:38 | The new challenger approaches. Return to the opening low 3/4 close framing; both knights’ matching silhouettes are clear. | Narrator: “The new knight looked exactly like him.” | FIGHTS: 1 |
+| 0:38–0:40 | New boss holds the sign as the challenger runs closer. Match the opening composition, movement direction, and sound level for a seamless loop. | Narrator: “The loop had found its next boss.” | BOSS / WANTED |
+
+7. VOICE SHEET
+Read at a calm, clear pace, then speed the finished audio to 1.2x. Start the first line at frame 0; no intro, breath, or pause before it. Keep line delivery dry and concise. No female lines.
+| # | Speaker | Exact line | Delivery / final duration |
+| 1 | Narrator | The boss wasn’t attacking. He was hiring. | Immediate, crisp, dry humor / 3 s |
+| 2 | Boss | Want my job? | Tired, matter-of-fact / 2 s |
+| 3 | Knight | I came to defeat you. | Confident / 3 s |
+| 4 | Narrator | His health bar now showed nearly ten thousand failed fights. | Informative; stress “failed fights” / 3 s |
+| 5 | Boss | Same arena. Same speech. Every single respawn. | Bored, clipped phrases / 3 s |
+| 6 | Narrator | Then he handed the knight his sword and a contract. | Slightly quicker / 4 s |
+| 7 | Knight | What’s the pay? | Suspicious / 2 s |
+| 8 | Boss | One health bar. Infinite respawns. | Flat, as if reading benefits / 3 s |
+| 9 | Narrator | The knight signed without reading the tiny print. | Dry setup / 4 s |
+| 10 | Boss | No breaks. | Deadpan / 2 s |
+| 11 | Narrator | The old boss finally left smiling. | Lightly amused / 2 s |
+| 12 | Narrator | His first challenger arrived before the ink dried. | Build pace / 3 s |
+| 13 | New Boss (Knight) | Boss wanted. | Mimic the old boss / 1 s |
+| 14 | Narrator | The new knight looked exactly like him. | Slight emphasis on “exactly” / 2 s |
+| 15 | Narrator | The loop had found its next boss. | Crisp punchline / 2 s |
+Total spoken words: 92.
+
+8. SOUND AND EFFECTS
+- 0:00: Narration and arena ambience begin on frame 0. Fast knight footsteps approach; the blank sign snaps open with a short wooden clack and soft whoosh.
+- 0:03: Subtle armor creak under the boss line.
+- 0:05: Short sword whoosh; no impact sound because the sword stops before contact.
+- 0:08: Retro UI click when the counter is pointed out.
+- 0:11: Start an original, slow two-bar boss-music loop; its repetition supports the repeated-fight joke.
+- 0:14: Soft metal sound as the sword is offered; brief paper sound as contract UI appears.
+- 0:18: Two short UI tones for YES / NO.
+- 0:23–0:27: Confirmation tone on SIGNED, then a dry stamp sound on NO DAYS OFF.
+- 0:26: Keep the automatic 0.5-second reminder toast’s safe area clear. Do not add another CTA.
+- 0:27: Lower music slightly under “No breaks.”
+- 0:29–0:30: Sword clinks on stone. Music continues; no full second of dead silence.
+- 0:30: Music relaxes slightly as old boss exits.
+- 0:32: New knight’s footsteps enter the boss rhythm.
+- 0:35–0:40: Return sign sound and arena ambience to the opening level; align the final music beat with the opening beat.
+Use original audio only; no third-party music.
+
+9. STORY DETAILS
+Planted detail: FIGHTS: 9999 beside the boss health bar (0:08–0:11).
+Wordless beat: Boss drops his sword; knight glances at it (0:29–0:30).
+Loop ending: Knight takes the boss position and raises the same sign; an identical knight enters. Match the first frame’s composition and motion (0:35–0:40 to 0:00).
+
+10. MUST / NICE-TO-HAVE
+MUST
+- Vertical 9:16, 1080x1920, 24 fps; final runtime exactly 40 seconds.
+- First frame already shows the contradiction: charging knight, hiring sign, close boss. Narration starts at frame 0; no fade or setup.
+- Cover text BOSS / WANTED appears in the first 1.5–2 seconds.
+- Reuse the knight model for the new challenger.
+- Camera remains close and character-focused; add a new action or piece of information every 2–3 seconds.
+- Burned-in subtitles match the spoken lines exactly; highlight key words by color only.
+- On-screen text may use only A-Z, 0-9, Turkish Ç Ğ İ Ö Ş Ü, and . , : ! ? / - _ ' # % + = and spaces. No quotation marks, parentheses, ampersands, emojis, or lowercase-only styling.
+- No end card, logo, watermark, extra CTA, realistic face close-up, helmet covering the eyes, crowds, or close hand-to-face / hand-inside-object action.
+- Match final image and loop-point audio to the opening.
+NICE-TO-HAVE
+- Subtle tired eyebrow movement when boss offers the contract.
+- Brief retro transition from FINAL BOSS to KNIGHT on the boss bar.
+- Tiny red-light flicker when the job changes hands.
+- Match the music loop precisely at the ending.
+- Renderer’s automatic 0.5-second reminder toast appears around 65% of runtime; leave its UI area clear.
+
+11. ENGLISH CHANNEL CAPTIONS
+YouTube Shorts title:
+Why Does the Final Boss Have a Help Wanted Sign?
+
+YouTube description:
+The boss wasn’t attacking. He was hiring. After 9,999 fights, would you take the job?
+
+Instagram caption:
+The boss fight has an opening. The contract has fine print. Would you sign it?
+
+TikTok caption:
+POV: The final boss hires you mid-fight. Would you take the job?
+
+Hashtags:
+#ps1 #retrogaming #pleaseinsertdisc2 #rpg #fantasygaming #gamingstory
+
+Pinned comment:
+You’re the new final boss. What’s your first rule?
+
+12. TURKISH CHANNEL — İKİNCİ DİSKİ TAKINIZ
+Turkish voice/subtitle table; one line for each English spoken line. Use ALL CAPS and preserve Turkish dotted/dotless I.
+| # | Speaker | Turkish line |
+| 1 | Anlatıcı | BOSS SALDIRMIYORDU. İŞE ALIM YAPIYORDU. |
+| 2 | Boss | İŞİMİ İSTER MİSİN? |
+| 3 | Şövalye | SENİ YENMEYE GELDİM. |
+| 4 | Anlatıcı | CAN ÇUBUĞUNDA NEREDEYSE ON BİN BAŞARISIZ DÖVÜŞ YAZIYORDU. |
+| 5 | Boss | AYNI ARENA. AYNI KONUŞMA. HER SEFERİNDE YENİDEN DOĞUŞ. |
+| 6 | Anlatıcı | KILICINI VE BİR SÖZLEŞMEYİ ŞÖVALYEYE UZATTI. |
+| 7 | Şövalye | ÜCRETİ NE? |
+| 8 | Boss | BİR CAN ÇUBUĞU. SINIRSIZ YENİDEN DOĞUŞ. |
+| 9 | Anlatıcı | ŞÖVALYE KÜÇÜK YAZILARI OKUMADAN İMZALADI. |
+| 10 | Boss | MOLA YOK. |
+| 11 | Anlatıcı | ESKİ BOSS SONUNDA GÜLÜMSEYEREK ÇIKTI. |
+| 12 | Anlatıcı | MÜREKKEP KURUMADAN İLK RAKİBİ GELDİ. |
+| 13 | Yeni Boss — Şövalye | BOSS ARANIYOR. |
+| 14 | Anlatıcı | YENİ ŞÖVALYE TIPKI ONA BENZİYORDU. |
+| 15 | Anlatıcı | DÖNGÜ SIRADAKİ BOSSUNU BULMUŞTU. |
+
+Turkish YouTube title:
+Son Boss Neden İşe Alım Tabelası Taşıyor?
+
+Turkish YouTube description:
+Boss saldırmıyordu. Yerine birini arıyordu. 9.999 dövüşten sonra bu işi kabul eder miydin?
+
+Turkish Instagram caption:
+Boss dövüşünde açık pozisyon var. Sözleşmede ince yazılar saklı. İmzalar mıydın?
+
+Turkish TikTok caption:
+Son boss seni tam dövüşün ortasında işe alıyor. Kabul eder miydin?
+
+Hashtags:
+#ikincidiskitakiniz #ps1 #retrogaming #rpg #fantasygaming #oyunhikayesi
+
+Pinned comment:
+Yeni son boss sensin. İlk kuralın ne olurdu?
+
+SELF-CHECK
+[x] Fantasy/RPG trope; the title’s question and the story rule match.
+[x] Frame 0 is close, moving, and immediately shows the hiring contradiction.
+[x] Runtime is 40 seconds; verified narration count is 92 English words.
+[x] Counter planted detail, 1-second wordless beat, and loop ending are specified.
+[x] Uses feasible built assets and allowed UI text; no prohibited close-contact action.
+[x] Descriptions and pinned comments include a viewer question.
