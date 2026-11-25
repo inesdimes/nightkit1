@@ -38,10 +38,12 @@ These override any older camera / voice rule above (the "hard cuts every 2.5-4 s
 Target audience: Europe and America. YouTube is the main platform (it reaches abroad: US 24 %, TR 15 %); Instagram and TikTok
 get the same videos but are not used for decisions (TikTok is 82 % Türkiye; Instagram shows no country split yet).
 - TWO videos a day, scheduled (YouTube Studio "Schedule", Instagram/Meta scheduling, TikTok Studio on the computer):
-  - **1st video, ~60 s story: 22:30-23:30 TR** (Europe 19:30-21:30, US East 14:30-15:30).
-  - **2nd video, ~30 s: ~01:00 TR** (US East 17:00, US West 14:00; 02:00 TR is at the edge of the active band).
+  - **Updated 25 Nov (ANALYTICS 21, agreed with Enes): YouTube English uploads at 01:00 TR.** All three 01:00 posts reached YouTube's
+    normal band (US top region); the three 22:00 posts did not (first shown in Turkey). Instagram: the slot does not seem to matter.
+  - (old rule, replaced) 1st video 22:30-23:30 TR, 2nd ~01:00 TR.
   - **Best videos on Saturday and Sunday evenings** (the brightest cells in YouTube's "when your viewers are on YouTube").
-  Length follows the topic, not the slot: never pad a story to reach 60 s.
+  Length follows the topic, not the slot: never pad a story; since 25 Nov keep videos at 40 s or under, fantasy/RPG tropes only,
+  the cover title burned into the first 1.5-2 s, end with a question that invites comments, like-nudge toast via nightkit/cta.py.
 - Everything in English (titles, captions, hashtags, voice). No trend hashtags. Never delete or re-upload.
 - Success is measured on **YouTube**: stayed-to-watch % first (target >= 60 %), then views. Instagram KPI kept as a side note:
   skip rate (< 30 %) and average watch %.
