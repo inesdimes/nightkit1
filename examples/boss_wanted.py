@@ -38,14 +38,23 @@ TRL = SUB_LANG == 'tr'
 TTS_DIR = os.environ.get('TTS_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tts'))
 SCR = json.load(open(os.path.join(TTS_DIR, 'bw', 'script.json')))
 KEYS = ['%02d' % i for i in range(1, 16)]
-SLOT = {k: F(x) for k, x in zip(KEYS, (0.05, 3.0, 5.15, 8.05, 11.05, 14.05, 18.05, 20.1, 23.05, 27.1, 30.1, 32.05, 35.25, 36.1, 37.95))}
+SLOT_F = (0.05, 3.0, 5.15, 8.05, 11.05, 14.05, 18.05, 20.1, 23.05, 27.1, 30.1, 32.05, 35.25, 36.1, 37.95)      # the brief's line starts (final s)
+SLOT = {k: F(x) for k, x in zip(KEYS, SLOT_F)}
 def _lines():
     out = []; prev = -1.0
     for k in KEYS: t0 = max(SLOT[k], prev + 0.2); out.append((k, round(t0, 3))); prev = t0 + SCR['dur'][k]
     return out
 LINES = _lines(); T0 = dict(LINES)
 def tend(k): return T0[k] + SCR['dur'][k]
-DUR = round(max(F(40.0), tend('15') + 0.25), 3); N = int(round(DUR * FPS))
+# Enes's takes run longer than planned (25 Nov): the picture follows the voice. Every beat is written in the brief's final seconds;
+# F() now warps them through (planned line start -> actual line start), so each action stays with its line. Nothing is sped up.
+_WA = [0.0] + list(SLOT_F); _WB = [0.0] + [T0[k] / 1.2 for k in KEYS]
+def F(x):
+    if x >= _WA[-1]: return round(1.2 * (x + _WB[-1] - _WA[-1]), 4)
+    return round(1.2 * float(np.interp(x, _WA, _WB)), 4)
+DUR = round(max(F(40.0), tend('15') + 0.25), 3)
+DUR = float(math.ceil(DUR / 4.0 - 1e-6) * 4.0)       # whole two-bar music loops (4 s build) -> the loop point lands on beat 1
+N = int(round(DUR * FPS))
 TEND = DUR                                          # loop point (= frame 0)
 CUTS = [('open', 0.0), ('two', F(3.0)), ('ots', F(5.0)), ('counter', F(8.0)), ('sweep', F(11.0)), ('offer', F(14.0)), ('kmcu', F(18.0)),
         ('benefit', F(20.0)), ('signed', F(23.0)), ('nobreak', F(27.0)), ('drop', F(29.0)), ('exit', F(30.0)), ('enter', F(32.0)),
@@ -673,7 +682,7 @@ def build_audio(path):
     fi = np.clip(t / 0.008, 0, 1); s_.L = s_.L * fi; s_.R = s_.R * fi          # no click on the very first sample
     return s_.save(path, peak=0.9)
 if __name__ == '__main__' and os.environ.get('PART') == 'audio':
-    print(build_audio(os.path.join(OUT, 'boss_wanted.wav'))); sys.exit()
+    print(build_audio(os.path.join(OUT, os.environ.get('AUDIO_NAME', 'boss_wanted.wav')))); sys.exit()
 if __name__ == '__main__' and os.environ.get('PART'):
     a, b = map(int, os.environ['PART'].split(':'))
     import subprocess

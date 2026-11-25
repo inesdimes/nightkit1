@@ -62,3 +62,15 @@ if __name__=='__main__' and len(sys.argv)>1 and sys.argv[1]=='voiced':
     make_v('boss_health_bar',2.0,[('HER DARBE',1360,WHT,17),('BİR KÖYLÜYÜ',1500,YEL,15),('ÖLDÜRÜYOR',1650,RED,19)],os.path.join(B,'thumbnail_tr.png'),'tr','hud_overlay')
     make_v('the_last_echo',18.0,[('3 KNOCKS',150,YEL,24),('HIS BROTHER',1490,WHT,15),('WAS DYING',1650,RED,18)],os.path.join(L,'thumbnail_en.png'),'en')
     make_v('the_last_echo',18.0,[('3 VURUŞ',150,YEL,24),('KARDEŞİ',1490,WHT,18),('ÖLÜYORDU',1650,RED,18)],os.path.join(L,'thumbnail_tr.png'),'tr')
+
+# 25 Nov 2026: generic thumbnail for any script with frame_low(t) (Enes: a thumbnail + caption package after EVERY render)
+#   SUB_LANG=tr TTS_DIR=... python tools/thumb.py frame <module> <t_build> <out.png> "TEXT|y|R,G,B|scale" ...
+if __name__=='__main__' and len(sys.argv)>1 and sys.argv[1]=='frame':
+    name,t,out=sys.argv[2],float(sys.argv[3]),sys.argv[4]
+    mod=load(name); img=mod.frame_low(t)
+    if isinstance(img,tuple): img=img[0]
+    img=img if isinstance(img,Image.Image) else Image.fromarray(np.clip(img,0,255).astype(np.uint8))
+    im=Image.fromarray(np.clip(post.upscale(img,mod.S),0,255).astype(np.uint8)).resize((1080,1920),Image.LANCZOS); d=ImageDraw.Draw(im)
+    for spec_ in sys.argv[5:]:
+        s,y,col,sc=spec_.split('|'); big(d,s,int(y),tuple(int(c) for c in col.split(',')),int(sc))
+    os.makedirs(os.path.dirname(os.path.abspath(out)),exist_ok=True); im.save(out); print(out)

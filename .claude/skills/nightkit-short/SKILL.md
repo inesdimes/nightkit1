@@ -17,7 +17,9 @@ Stop at every gate marked STOP, show the result in a few lines and wait for Enes
 5. **Critique** - `python tools/qa/critique.py <draft.mp4> --name <script> --round N`, look at the sheet, fill the
    scores in `reviews/<script>.md`. Fix the top 3, re-render, next round. All scores >= 8, at most 3 rounds. STOP.
 6. **Final check** - `python tools/qa/check.py <final.mp4> --script examples/<script>.py` must pass; read its frame-scan WARN lines (black, frozen, pops) by eye.
-7. **Deliver** - send the MP4 (videos are not committed), commit the script + tools + review log, update the video
+7. **Deliver** - send the MP4 (videos are not committed). ALWAYS (Enes, 25 Nov 2026), unasked, after every render: EN + TR thumbnails
+   (`python tools/thumb.py frame <script> <t_build> <out> "TEXT|y|R,G,B|scale" ...`; avoid İ Ş Ç Ğ Ö Ü in thumbnail text, they shrink in the
+   pixel font) and `captions/<name>.md` (YouTube title + description, TikTok, Instagram, hashtags, pinned comment; English channel + İkinci Diski Takınız), commit the script + tools + review log, update the video
    table in `CONTINUE.md`. If a shared model changed: `python tools/qa/regress.py compare`, report what changed.
 
 Rules: rendering is procedural only (no AI video or image generation); UI and subtitles are 2D overlays; subtitles
