@@ -85,6 +85,7 @@ Hedefler: YT izleyen oranı ≥ %60; TT 3. saniyede kalan ≥ %50, sonuna kadar 
 |---|---|---|---|---|
 | 16 Nov 2026 | 20:30 | Guard Forgets — A (30 s) | ? | ~300 views, "viewed" rate 15 % (early, same evening) |
 | 16 Nov 2026 | 21:21 | Final Boss — B (60 s) | ? | — |
+| 25 Nov 2026 | 20:40 | The First To Ever Ragebait — sorceress adaptation (58 s, source reel audio), EN channel | YT (+IG/TT) | **off-schedule experiment** (Enes): 4 h 20 min before Boss Wanted EN; 48 h check: 27 Nov 20:40 |
 | 25 Nov 2026 | 22:00 | Boss Wanted — TR voice (43 s), İkinci Diski Takınız | YT (+IG/TT) | 48 h check: 27 Nov 22:00 |
 | 26 Nov 2026 | 01:00 | Boss Wanted — EN voice (43 s) | YT (+IG/TT) | 48 h check: 28 Nov 01:00 |
 
