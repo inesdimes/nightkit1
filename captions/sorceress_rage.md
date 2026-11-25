@@ -1,5 +1,5 @@
 # Captions - The First To Ever Ragebait (sorceress + knight adaptation, 25 Nov 2026)
-Video (`renders/sorceress_rage/`): `the_first_to_ever_ragebait_sorceress_v2_58s.mp4` (57.6 s, original English audio from the source reel)
+Video to post (`renders/sorceress_rage/`): **`ragebait_vertical_17s.mp4`** (16.6 s, Enes's cut = 40.93 s -> end of the 58 s master, recut from the 1080x1920 master; -14.7 LUFS). Full version: `the_first_to_ever_ragebait_sorceress_v2_58s.mp4`
 Thumbnails: EN `renders/sorceress_rage/thumbnail_en.png` (RAGEBAIT / LVL 99), TR `renders/sorceress_rage/thumbnail_tr.png` (TROLL / LVL 99), both on the fire frame (44.17 s)
 
 ⚠️ Before posting: the audio has strong profanity (age / monetisation limits possible) and it is someone else's reel (copyright or "reused content" claim possible). The same file goes to both channels (the voice stays English).
@@ -12,7 +12,7 @@ Thumbnails: EN `renders/sorceress_rage/thumbnail_en.png` (RAGEBAIT / LVL 99), TR
 **Description:**
 He said everything twice. She said it once, with fire. 🔥
 
-A knight who repeats every word, a sorceress with zero patience, and one helmet that keeps leaving his head.
+A knight who repeats every word, and a sorceress with zero patience left.
 
 Who won this argument: the knight or the sorceress? 👇
 
@@ -30,7 +30,7 @@ Who won this one? 👇
 ## Instagram Reels
 Never say "mad mad" to a sorceress. 🔥🪖
 
-He lost his helmet, then almost his eyebrows. Still grinning.
+He almost lost his eyebrows. Still grinning.
 
 Knight or sorceress, who wins? 👇
 
@@ -47,7 +47,7 @@ Rate the knight's ragebait from 1 to 10 🔥👇
 **Açıklama:**
 O her şeyi iki kez söyledi. Büyücü ise bir kez söyledi, ateşle. 🔥
 
-Her kelimeyi tekrarlayan bir şövalye, sabrı kalmamış bir büyücü ve kafasından uçup duran bir miğfer.
+Her kelimeyi tekrarlayan bir şövalye ve sabrı tükenmiş bir büyücü.
 
 Bu tartışmayı kim kazandı: şövalye mi, büyücü mü? 👇
 
@@ -65,7 +65,7 @@ Kim kazandı? 👇
 ## Instagram Reels
 Bir büyücüye asla "mad mad" deme. 🔥🪖
 
-Önce miğferini kaybetti, sonra neredeyse kaşlarını. Hâlâ sırıtıyor.
+Neredeyse kaşlarını kaybediyordu. Hâlâ sırıtıyor.
 
 Şövalye mi büyücü mü, kim kazanır? 👇
 
