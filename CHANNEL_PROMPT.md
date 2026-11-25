@@ -1,3 +1,5 @@
+> **25 Nov 2026:** for story writing with GPT use `briefs/GPT_STORY_RULES.txt` (newer rules: 25 Nov data, HD figures, loop endings, Turkish table). This file is older.
+
 # Briefing prompt for other AI assistants (ChatGPT, DeepSeek, ...)
 
 Paste everything below the line at the start of a new chat.
