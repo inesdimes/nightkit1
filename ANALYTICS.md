@@ -318,4 +318,4 @@ Changes agreed with Enes (25 Nov):
 2. Keep it to 40 s or under; stay with fantasy/RPG game tropes.
 3. End with a question that invites comments.
 4. YouTube (English): upload at 01:00 TR. Instagram: the slot does not seem to matter.
-5. A small like nudge as an in-game toast: `nightkit/cta.py` ("ACHIEVEMENT UNLOCKED / LIKE = +1 XP", TR "BAŞARIM AÇILDI / BEĞEN = +1 XP"). Placed at 65 % of the video, top of the frame, 2.0 s final. First used in boss_health_bar.py.
+5. A small like nudge as an in-game toast: `nightkit/cta.py` ("ACHIEVEMENT UNLOCKED / LIKE = +1 XP", TR "BAŞARIM AÇILDI / BEĞEN = +1 XP"). Placed at 65 % of the video, top of the frame, 0.5 s final (Enes: it must not stay on screen). First used in boss_health_bar.py.

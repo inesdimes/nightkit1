@@ -945,7 +945,7 @@ def _sub_scr():
 SUBS = look.Subtitles(_sub_scr(), LINES, W, H, S, COL, title_key='none', card_y=0.70, card_sc=8.0, card_n=15,
                       hil=({'DARBE', 'KÖYLÜYÜ', 'ÖLDÜRÜYORSA'} if SUB_LANG == 'tr' else {'HIT', 'KILLED', 'VILLAGER'}))
 from nightkit import cta                                                  # 25 Nov: small 'ACHIEVEMENT UNLOCKED / LIKE = +1 XP' toast (CTA=0 turns it off)
-CTA = cta.Achievement(t0=cta.default_time(DUR), lang=SUB_LANG)
+CTA = cta.Achievement(t0=cta.default_time(DUR, dur_on=F(0.5)), lang=SUB_LANG, dur=F(0.5))   # 0.5 s in the final video
 def frame_final(t):
     img, vi = frame_low(t); arr = post.upscale(img, S)
     im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)); hud_overlay(im, t)

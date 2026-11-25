@@ -21,7 +21,7 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 
 ## Newest (25 Nov 2026)
 - 48 h analytics of 6 shorts, YouTube + Instagram -> ANALYTICS.md section 21. YouTube: 01:00 TR beats 22:00. New rules: title burned into the first 2 s, <= 40 s, fantasy/RPG tropes, end on a question.
-- New `nightkit/cta.py`: like nudge as an 'ACHIEVEMENT UNLOCKED / LIKE = +1 XP' toast plus a chime (`CTA=0` turns it off; SUB_LANG=tr gives the Turkish text). Font gained `+` and `=`. It is in examples/boss_health_bar.py at 15.8 s build (13.2 s final), and audio was rebuilt with the chime. Stills: `test_cta_en.png`, `test_cta_tr.png` (not committed). The full video has not been re-rendered yet: waiting for Enes's OK on the look.
+- New `nightkit/cta.py`: like nudge as an 'ACHIEVEMENT UNLOCKED / LIKE = +1 XP' toast plus a chime (`CTA=0` turns it off; SUB_LANG=tr gives the Turkish text). Font gained `+` and `=`. It is in examples/boss_health_bar.py at 15.8 s build (13.2 s final), on screen 0.5 s final (Enes), and audio was rebuilt with the chime. Stills: `test_cta_en.png`, `test_cta_tr.png` (not committed). The full video has not been re-rendered yet: waiting for Enes's OK on the look.
 
 ## Videos
 | Video | Script | Status |

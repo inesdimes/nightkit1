@@ -3,7 +3,7 @@
 Rules (see ANALYTICS.md, 25 Nov):
   - never in the first 5 s (hook) and never in the last ~2 s (loop endings); default = 65 % of the video
   - top of the frame (y ~ 280 px, below a HUD counter): the bottom 20 % is covered by the caption, the right side by the like / comment buttons
-  - small (about 620 x 150 px at 1080x1920), semi-transparent, 2.4 s on screen (2.0 s after the 1.2x speed-up)
+  - small (about 620 x 150 px at 1080x1920), semi-transparent, 0.5 s on screen in the FINAL video (Enes, 25 Nov: it must not stay; pass dur=F(0.5) in sped-up builds)
   - text works on both YouTube and Instagram ('LIKE = +1 XP', no 'subscribe'); SUB_LANG=tr gives the Turkish one
 
 Usage in an example script (times in BUILD seconds):
@@ -33,13 +33,13 @@ GOLD = (255, 206, 72); GOLD_HI = (255, 240, 170); WHITE = (246, 242, 230); GREEN
 BOX = (14, 12, 26)
 
 def enabled(): return os.environ.get('CTA', '1') != '0'
-def default_time(dur, frac=0.65, dur_on=2.4):
+def default_time(dur, frac=0.65, dur_on=0.5):
     """65 % into the video, but never before 5 s and always ending >= 2 s before the end"""
     return float(min(max(5.0, dur * frac), dur - dur_on - 2.0))
 def _ease(u): u = min(1.0, max(0.0, u)); return 1 - (1 - u) ** 3
 
 class Achievement:
-    def __init__(self, t0, lang='en', dur=2.4, y=280, x=None, W=1080, slide=0.22, alpha=0.84, on=None):
+    def __init__(self, t0, lang='en', dur=0.5, y=280, x=None, W=1080, slide=0.08, alpha=0.84, on=None):
         self.t0, self.dur, self.y, self.W, self.slide, self.alpha = t0, dur, y, W, slide, alpha
         self.on = enabled() if on is None else on
         h1, w_a, w_b = TEXT.get(lang, TEXT['en'])
@@ -91,8 +91,8 @@ class Achievement:
         if y1 <= y0: return arr
         c = np.asarray(im, np.float32)[y0 - y:y1 - y]; a = np.asarray(m, np.float32)[y0 - y:y1 - y, :, None] / 255.0
         u = t - self.t0
-        if u < self.slide + 0.18:                                  # a short gold flash on the border as it lands
-            fl = max(0.0, 1 - abs(u - self.slide) / 0.18) * 0.5; c = c + (255 - c) * fl * (a > 0.9)
+        if u < self.slide + 0.1:                                  # a short gold flash on the border as it lands
+            fl = max(0.0, 1 - abs(u - self.slide) / 0.1) * 0.5; c = c + (255 - c) * fl * (a > 0.9)
         reg = arr[y0:y1, self.x:self.x + w]; arr[y0:y1, self.x:self.x + w] = reg * (1 - a) + c * a
         return arr
 
