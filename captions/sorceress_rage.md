@@ -16,7 +16,7 @@ A knight who repeats every word, and a sorceress with zero patience left.
 
 Who won this argument: the knight or the sorceress? 👇
 
-#ps1 #retrogaming #pleaseinsertdisc2 #ragebait #rpg #funny #gamingshorts #memes #retrogames #sorceress
+#pleaseinsertdisc2 #ps1 #retrogaming #ragebait
 
 ## TikTok
 POV: you ragebait a sorceress. 🔥
@@ -25,7 +25,7 @@ POV: you ragebait a sorceress. 🔥
 
 Who won this one? 👇
 
-#ps1 #retrogaming #pleaseinsertdisc2 #ragebait #rpg #funny #memes #gamingshorts
+#pleaseinsertdisc2 #ps1 #retrogaming #ragebait
 
 ## Instagram Reels
 Never say "mad mad" to a sorceress. 🔥🪖
@@ -34,7 +34,7 @@ He almost lost his eyebrows. Still grinning.
 
 Knight or sorceress, who wins? 👇
 
-#ps1 #retrogaming #pleaseinsertdisc2 #ragebait #rpg #funny #memes #reels #retrogames
+#pleaseinsertdisc2 #ps1 #retrogaming #ragebait
 
 ## Pinned comment (all platforms)
 Rate the knight's ragebait from 1 to 10 🔥👇
@@ -51,7 +51,7 @@ Her kelimeyi tekrarlayan bir şövalye ve sabrı tükenmiş bir büyücü.
 
 Bu tartışmayı kim kazandı: şövalye mi, büyücü mü? 👇
 
-#ikincidiskitakiniz #ps1 #retrogaming #rpg #komik #sinirbozucu #oyunhikayesi #retrooyun #shorts
+#ikincidiskitakiniz #ps1 #retrooyun #sinirbozucu
 
 ## TikTok
 Büyücüyü sinir etmeyi denedin. 🔥
@@ -60,7 +60,7 @@ Büyücüyü sinir etmeyi denedin. 🔥
 
 Kim kazandı? 👇
 
-#ikincidiskitakiniz #ps1 #retrogaming #rpg #komik #sinirbozucu #retrooyun
+#ikincidiskitakiniz #ps1 #retrooyun #sinirbozucu
 
 ## Instagram Reels
 Bir büyücüye asla "mad mad" deme. 🔥🪖
@@ -69,7 +69,7 @@ Neredeyse kaşlarını kaybediyordu. Hâlâ sırıtıyor.
 
 Şövalye mi büyücü mü, kim kazanır? 👇
 
-#ikincidiskitakiniz #ps1 #retrogaming #rpg #komik #sinirbozucu #retrooyun #reels
+#ikincidiskitakiniz #ps1 #retrooyun #sinirbozucu
 
 ## Sabit yorum (tüm platformlar)
 Şövalyenin sinir bozuculuğuna 1'den 10'a kaç verirsin? 🔥👇

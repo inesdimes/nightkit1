@@ -20,7 +20,7 @@ The boss wasn't attacking. He was hiring. 📜
 
 A tiny story from a retro game that never existed. After 9,999 fights, would you take the job? 👇
 
-#ps1 #retrogaming #pleaseinsertdisc2 #rpg #finalboss #fantasygaming #gamingstory #retrogames #gamingshorts #bossfight
+#pleaseinsertdisc2 #ps1 #retrogaming #finalboss
 
 ## TikTok
 POV: the final boss hires you mid-fight. 📜
@@ -29,7 +29,7 @@ One health bar. Infinite respawns. No breaks.
 
 Would you take the job? 👇
 
-#ps1 #retrogaming #pleaseinsertdisc2 #rpg #finalboss #bossfight #gamingstory #retrogames
+#pleaseinsertdisc2 #ps1 #retrogaming #finalboss
 
 ## Instagram Reels
 The boss fight has an opening. 🗡️
@@ -38,7 +38,7 @@ The contract has fine print: one health bar, infinite respawns, no days off. The
 
 Would you sign it? 👇
 
-#ps1 #retrogaming #pleaseinsertdisc2 #rpg #finalboss #fantasygaming #gamingstory #retrogames #reels
+#pleaseinsertdisc2 #ps1 #retrogaming #finalboss
 
 ## Pinned comment (all platforms)
 You're the new final boss. What's your first rule? 👇
@@ -55,7 +55,7 @@ Aynı arena, aynı konuşma, 9.999 dövüş. Şövalye kılıcını kaldırdığ
 
 Hiç var olmamış bir retro oyundan minik bir hikâye. 9.999 dövüşten sonra bu işi kabul eder miydin? 👇
 
-#ikincidiskitakiniz #ps1 #retrogaming #rpg #sonboss #oyunhikayesi #retrooyun #fantastik #shorts
+#ikincidiskitakiniz #ps1 #retrooyun #sonboss
 
 ## TikTok
 Son boss seni dövüşün ortasında işe alıyor. 📜
@@ -64,7 +64,7 @@ Bir can çubuğu. Sınırsız yeniden doğuş. Mola yok.
 
 Kabul eder miydin? 👇
 
-#ikincidiskitakiniz #ps1 #retrogaming #rpg #sonboss #oyunhikayesi #retrooyun
+#ikincidiskitakiniz #ps1 #retrooyun #sonboss
 
 ## Instagram Reels
 Boss dövüşünde açık pozisyon var. 🗡️
@@ -73,7 +73,7 @@ Sözleşmenin ince yazıları: tek can çubuğu, sınırsız yeniden doğuş, iz
 
 Sen imzalar mıydın? 👇
 
-#ikincidiskitakiniz #ps1 #retrogaming #rpg #sonboss #oyunhikayesi #retrooyun #reels
+#ikincidiskitakiniz #ps1 #retrooyun #sonboss
 
 ## Sabit yorum (tüm platformlar)
 Yeni son boss sensin. İlk kuralın ne olurdu? 👇

@@ -19,7 +19,7 @@ Stop at every gate marked STOP, show the result in a few lines and wait for Enes
 6. **Final check** - `python tools/qa/check.py <final.mp4> --script examples/<script>.py` must pass; read its frame-scan WARN lines (black, frozen, pops) by eye.
 7. **Deliver** - send the MP4 (videos are not committed). ALWAYS (Enes, 25 Nov 2026), unasked, after every render: EN + TR thumbnails
    (`python tools/thumb.py frame <script> <t_build> <out> "TEXT|y|R,G,B|scale" ...`; avoid İ Ş Ç Ğ Ö Ü in thumbnail text, they shrink in the
-   pixel font) and `captions/<name>.md` (YouTube title + description, TikTok, Instagram, hashtags, pinned comment; English channel + İkinci Diski Takınız), commit the script + tools + review log, update the video
+   pixel font) and `captions/<name>.md` (YouTube title + description, TikTok, Instagram, hashtags, pinned comment; English channel + İkinci Diski Takınız; hashtags: 3-5 only = brand #pleaseinsertdisc2 / #ikincidiskitakiniz first, 2 niche (#ps1 #retrogaming / #retrooyun), 1-2 topic; no generic #shorts #funny #memes), commit the script + tools + review log, update the video
    table in `CONTINUE.md`. If a shared model changed: `python tools/qa/regress.py compare`, report what changed.
 
 Rules: rendering is procedural only (no AI video or image generation); UI and subtitles are 2D overlays; subtitles
