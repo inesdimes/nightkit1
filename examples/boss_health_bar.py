@@ -944,10 +944,12 @@ def _sub_scr():
     return out
 SUBS = look.Subtitles(_sub_scr(), LINES, W, H, S, COL, title_key='none', card_y=0.70, card_sc=8.0, card_n=15,
                       hil=({'DARBE', 'KÖYLÜYÜ', 'ÖLDÜRÜYORSA'} if SUB_LANG == 'tr' else {'HIT', 'KILLED', 'VILLAGER'}))
+from nightkit import cta                                                  # 25 Nov: small 'ACHIEVEMENT UNLOCKED / LIKE = +1 XP' toast (CTA=0 turns it off)
+CTA = cta.Achievement(t0=cta.default_time(DUR), lang=SUB_LANG)
 def frame_final(t):
     img, vi = frame_low(t); arr = post.upscale(img, S)
     im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)); hud_overlay(im, t)
-    return SUBS.apply(np.asarray(im).astype(np.float32), t)
+    return CTA.apply(SUBS.apply(np.asarray(im).astype(np.float32), t), t)
 
 ASSET = os.environ.get('ASSET')
 if ASSET and __name__ == '__main__':
@@ -1062,6 +1064,7 @@ def build_audio(path):
     for k in range(2): thud(T_STAND + 1.8 + 0.5 * k, 45, 0.25, 0.5)
     # ---- quest updated + the knight turns to the castle
     for m, dl in ((62, 0.0), (66, 0.1), (69, 0.2), (74, 0.32), (78, 0.45)): tone(T_QUEST + dl, m, 1.8, 0.03, dec=1.4, att=0.01, harm=(1.0, 0.5, 0.25))
+    if CTA.on: put(FX, cta.chime(sr), CTA.t0, 1.0)                                          # the achievement ding
     # ---- voices (Enes's takes, when present): RMS-levelled, the guardian gets a stone-hall echo
     NB = np.zeros(n); wins = []
     ir_t = np.arange(int(0.9 * sr)) / sr; IR = s_.rng.normal(0, 1, len(ir_t)) * np.exp(-ir_t * 5.0); IR[0] = 0; IR = IR / np.sqrt((IR ** 2).sum())

@@ -290,3 +290,32 @@ Still missing: 48 h screenshots of day 1 (skip_speech posted 21 Nov 22:00 -> due
 
 ## 24 Nov 2026 (evening)
 No new numbers today. New Turkish channel **İkinci Diski Takınız** (ikincidiskitakiniz) opened on YouTube / TikTok / Instagram. It gets the Turkish-voiced shorts (Boss Health Bar 20.3 s, The Last Echo 62.2 s) and Enes posts gradually during the warm-up. Track it separately from the English channel once it has 48 h numbers.
+
+## 21. Six shorts at 48 h+, YouTube vs Instagram (Enes's screenshots, 25 Nov 2026 ~07:00; folder `analysis 48 hours/`)
+Slots as Enes labelled them in Turkish time: `22` = 22:00, `01` = 01:00. Studio's graph axes show the same posts one hour later (02:00 / 23:00), which looks like a time-zone offset.
+
+| Video | Slot | YT views | YT stayed | YT likes | YT top region | IG views | IG skip | IG avg watch | IG likes / saves |
+|---|---|---|---|---|---|---|---|---|---|
+| enemies_queue (goblins all in) | 01 | 1.2 K (normal) | 53.3 % | 11 | US 35 % | 1,949 | 21.4 % (lower) | 17 s / 37 | 20 / 1 |
+| four_phases | 01 | 1.1 K (normal) | 34.2 % | 13 | US 38 % | 1,044 | 43.5 % (lower) | 15 s / 30 | 10 / 1 |
+| npc_well (40 years) | 01 | 912 (normal, still growing) | 45.3 % | 10, +1 sub | US 46 % | 391 | 37.5 % (higher) | 15 s / 52 | 2 / 0 |
+| mimic | 22 | 795 (below) | 30.8 % | 3, +1 sub | TR 13 %, KR 12 %, US 10 % | 1,690 | 24.7 % (lower) | 13 s / 26 | 18 / 4 |
+| skip_speech (boss skipped) | 22 | 120 (far below) | 13.6 % | 0 | TR only | 1,820 | 26.8 % (lower) | 18 s / 40 | 46 / 5, 1 repost, +1 follow |
+| stolen_car | 22 | 74 (far below) | 6.4 % | 0 | TR only | 205 | 58.2 % (higher) | 6 s / 32 | 0 / 0 |
+
+Comments and shares: 0 on every video, on both platforms. Instagram views come about 95 % from the Reels tab.
+
+Reading (observations, not rules):
+- YouTube: all three 01:00 posts reached the normal band; the three 22:00 posts did not, and the two dead ones were first shown in Turkey. 22:00 TR = early afternoon in the US, so the English video seems to be tested on the wrong audience first.
+- Skip Speech is the best video on Instagram (most likes, saves, the only repost and follow) but dead on YouTube. The content works, so its YouTube result points to the slot and the first test, not to the video.
+- Instagram did not punish 22:00 (mimic and skip_speech were 2nd and 3rd there).
+- Stolen Car failed on both platforms, so the cause is the video: the only non-fantasy topic, and the opening frame (sunset car park, tiny character) does not read.
+- npc_well is good on YouTube but weak on Instagram: it is the longest (52 s) and its opening frame is a dark screen with an empty dialogue box.
+- The opening frames of the winners show the trope at once (boss + PRESS X TO SKIP, knight + goblin queue). The cover's title text is not in the opening frame of any video.
+
+Changes agreed with Enes (25 Nov):
+1. Burn the cover title into the first 1.5–2 s; frame 1 shows the trope close up, action already started.
+2. Keep it to 40 s or under; stay with fantasy/RPG game tropes.
+3. End with a question that invites comments.
+4. YouTube (English): upload at 01:00 TR. Instagram: the slot does not seem to matter.
+5. A small like nudge as an in-game toast: `nightkit/cta.py` ("ACHIEVEMENT UNLOCKED / LIKE = +1 XP", TR "BAŞARIM AÇILDI / BEĞEN = +1 XP"). Placed at 65 % of the video, top of the frame, 2.0 s final. First used in boss_health_bar.py.
