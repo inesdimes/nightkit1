@@ -20,6 +20,7 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 (For Final Boss B also run A's `PART=audio` first; same for Guard Forgets B.)
 
 ## Newest (25 Nov 2026)
+- **Evening session (25 Nov):** Boss Wanted (new HD boss, no-voice EN/TR 40 s, then Enes's EN + TR takes -> 43.3 s voiced, picture warped to the takes); the ragebait reel adaptation `examples/sorceress_rage.py` (v2: sorceress = angry voice, knight = ragebaiter; Enes posts a 16.6 s cut `ragebait_vertical_17s.mp4`); shared `nightkit/facerig.py`; `tools/thumb.py frame` mode. New standing rules: thumbnails + caption package after EVERY render, 3-5 hashtags only. Test week until 2 Dec: EN 01:00 + 18:00, TR 22:00 (ANALYTICS section 8). Posted tonight: ragebait 20:40 (off-schedule), Boss Wanted TR 22:00, EN 01:00 -> 48 h checks 27/28 Nov.
 - 48 h analytics of 6 shorts, YouTube + Instagram -> ANALYTICS.md section 21. YouTube: 01:00 TR beats 22:00. New rules: title burned into the first 2 s, <= 40 s, fantasy/RPG tropes, end on a question.
 - New `nightkit/cta.py`: like nudge as an 'ACHIEVEMENT UNLOCKED / LIKE = +1 XP' toast plus a chime (`CTA=0` turns it off; SUB_LANG=tr gives the Turkish text). Font gained `+` and `=`. It is in examples/boss_health_bar.py at 15.8 s build (13.2 s final), on screen 0.5 s final (Enes), and audio was rebuilt with the chime. Stills: `test_cta_en.png`, `test_cta_tr.png` (not committed). The full video has not been re-rendered yet: waiting for Enes's OK on the look.
 
