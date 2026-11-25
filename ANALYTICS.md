@@ -85,8 +85,11 @@ Hedefler: YT izleyen oranı ≥ %60; TT 3. saniyede kalan ≥ %50, sonuna kadar 
 |---|---|---|---|---|
 | 16 Nov 2026 | 20:30 | Guard Forgets — A (30 s) | ? | ~300 views, "viewed" rate 15 % (early, same evening) |
 | 16 Nov 2026 | 21:21 | Final Boss — B (60 s) | ? | — |
+| 25 Nov 2026 | 22:00 | Boss Wanted — TR voice (43 s), İkinci Diski Takınız | YT (+IG/TT) | 48 h check: 27 Nov 22:00 |
+| 26 Nov 2026 | 01:00 | Boss Wanted — EN voice (43 s) | YT (+IG/TT) | 48 h check: 28 Nov 01:00 |
 
 Notes:
+- **1-week schedule test (25 Nov – 2 Dec 2026, Enes):** English channel at 01:00 TR, Turkish channel at 22:00 TR, one video per channel per day; compare the 48 h numbers per slot at the end of the week.
 - These are two different stories, not an A/B pair: each video's own A/B partner (Guard Forgets B, Final Boss A) is still unposted.
 - Guard Forgets A, first frame (0.0 s): the guard and the thief are small and far down the corridor, and the hook text covers the top half.
   This is one possible reason for the 15 % (hypothesis, to re-check with more data).
