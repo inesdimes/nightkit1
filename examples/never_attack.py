@@ -2,7 +2,7 @@
 Brief: briefs/never_attack.md. Voices: Enes's cloned voice, tools/tts/na.py (TR: his own takes).
 Turn-based rule: the hero moves first. The knight picks WAIT, every turn, so the boss can never act. TURNS WAITED climbs
 (x1 -> x10 -> x100 -> x1000): the boss shouts, taps his foot, gives up, sits down and offers tea. Centuries pass (candles melt,
-cobwebs, beards). "Every hero hit me in the first second. You stayed." The counter hits 9,999 -> MAX -> "Oh no... not again." ->
+cobwebs, beards). "Every hero hit me in the first second. You stayed." The counter hits 9,999 -> MAX -> "Oh no... the counter is full!" ->
 the game overflows and resets to frame 0: young boss, young knight, counter 0. "Kneel, mortal!" ... then a whisper: "Psst... tea again?"
 Reuses: final_boss arena (throne dais, torches, gate), dragon_taxes KNIGHT, boss_wanted's HD boss (copied: that module loads its own voice).
 New: battle menu + TURNS WAITED HUD, teacups + teapot, candles that melt, cobwebs, beards, overflow glitch.
@@ -408,20 +408,39 @@ TX = dict(boss='SON BOSS' if TRL else 'FINAL BOSS', turns='BEKLENEN TUR' if TRL 
 for _s in [TX['boss'], TX['turns'], *TX['rule'], *TX['cov'], *TX['q'], *TX['err'], *sum(TX['menu'], ())]: font.check(_s)
 GLD = (255, 214, 96); WHT = (246, 242, 230); RED = (230, 56, 50)
 def fmt(n): return f'{n:,}'.replace(',', '.') if TRL else f'{n:,}'
+T_X1000 = T_LAPSE[0] + 0.25 * (T_LAPSE[1] - T_LAPSE[0])
+_T05 = [T_LAPSE[1] + (k / 8.99) * (T_9999 - 0.1 - T_LAPSE[1]) for k in range(1, 9)]
+POPS = list(PRESS) + [T_RAMP[0], S3, T_X1000, T_LAPSE[1]] + _T05 + [T_9999, T_MAX]      # every jump of the counter
+def counter_sc(t):
+    """the counter grows with every jump (Enes, 26 Nov: bigger, punchier): 0 -> 10, each WAIT +1, x10 14, x100 16, x1000 18, 9,999 / MAX 20"""
+    if t < 0 or t >= S5: return 10
+    if t >= T_9999: return 20
+    if t >= S3: return 16 if t < T_X1000 else 18
+    if t >= T_RAMP[0]: return 14
+    return 10 + sum(1 for p in PRESS if t >= p)
+def pop(t):
+    """0..1 punch right after a jump (decays in 0.22 s)"""
+    if t < 0 or t >= S5: return 0.0
+    v = 0.0
+    for p in POPS:
+        if 0 <= t - p < 0.22: v = max(v, 1 - (t - p) / 0.22)
+    return v
 def hud(d, t):
-    """top: FINAL BOSS + full red bar (it never moves), TURNS WAITED counter + speed tag (kept above y 260: the like toast lives at 280+)"""
+    """top: FINAL BOSS + full red bar (it never moves); TURNS WAITED label + speed tag; the counter BIG under it, growing with each jump"""
     ctext(d, TX['boss'], 54, 6, (255, 226, 190), x=64)
     x0, x1, y0, y1 = 64, 1016, 112, 146
     d.rectangle([x0 - 8, y0 - 8, x1 + 8, y1 + 8], fill=(0, 0, 0)); d.rectangle([x0, y0, x1, y1], fill=(214, 40, 44)); d.rectangle([x0, y0, x1, y0 + 8], fill=(255, 150, 140))
-    n, tag = turns(t); s = f"{TX['turns']}: "
-    big = t >= T_9999 and t < S5
-    ctext(d, s, 186, 7, WHT, o=5, x=64); xn = 64 + tw(s, 7)
+    n, tag = turns(t); pp = pop(t)
+    ctext(d, TX['turns'], 180, 6, WHT, o=5, x=64)
+    sc = counter_sc(t) + int(round(4 * pp)); y = 240 - int(round(10 * pp))
     if t >= T_MAX and t < S5:
-        if int(t * 8) % 2 == 0: ctext(d, TX['maxs'], 176, 9, RED, o=5, x=xn)
+        if int(t * 8) % 2 == 0 or pp > 0: ctext(d, TX['maxs'], y, sc, RED, o=8, x=60)
     else:
-        ctext(d, fmt(n), 176, 9, GLD if not big else (255, 255, 255), o=5, x=xn)
+        col = (255, 255, 255) if (pp > 0.45 or (T_9999 <= t < S5)) else GLD
+        ctext(d, fmt(n), y, sc, col, o=8, x=60)
     if tag and t < T_MAX:
-        tg = ('HIZ ' if TRL else 'SPEED ') + tag.upper(); ctext(d, tg, 250, 4, (255, 110, 90) if tag != 'x1' else (180, 176, 170), o=4, x=int(1016 - tw(tg, 5)))
+        tsc = {'x1': 7, 'x10': 8, 'x100': 9, 'x1000': 10}[tag] + (2 if pp > 0.5 else 0)
+        tg = tag.upper(); ctext(d, tg, 252 - (tsc - 7) * 4, tsc, (255, 90, 70) if tag != 'x1' else (200, 196, 190), o=6, x=int(1016 - tw(tg, tsc)))
 def menu(d, t):
     """the battle menu (2 x 2): the cursor jumps ATTACK -> WAIT in frame 0; WAIT flashes on every press"""
     if t >= S2 and t < S5: return
@@ -491,7 +510,7 @@ def _sub_scr():
 SUBS = look.Subtitles(_sub_scr(), [x for x in LINES if x[0] != '00'], W, H, S, COL, title_key='none', n=17,
                       hil=({'BEKLE', 'ÇAY?', 'KALDIN.', 'YİNE'} if TRL else {'TURN.', 'TEA?', 'STAYED.', 'AGAIN.', 'AGAIN?', 'MOVE'}))
 from nightkit import cta
-CTA = cta.Achievement(t0=T_LAPSE[0] + 0.62 * (T_LAPSE[1] - T_LAPSE[0]) - F(0.75), lang=SUB_LANG, dur=F(1.5))      # Enes: 1.5 s on screen
+CTA = cta.Achievement(t0=T_LAPSE[0] + 0.62 * (T_LAPSE[1] - T_LAPSE[0]) - F(0.75), lang=SUB_LANG, dur=F(1.5), y=440)      # Enes: 1.5 s on screen
 def frame_final(t):
     if t >= DUR: t = t - DUR
     img, vi = frame_low(t); arr = post.upscale(img, S)
@@ -579,6 +598,8 @@ def build_audio(path):
         x = a
         while x < b:
             u = (x - a) / max(1e-6, b - a); r = r0 * (r1 / r0) ** u; tone(x, 100, 0.02, v, dec=80); x += 1.0 / r
+    for k, p in enumerate((T_RAMP[0], S3, T_X1000)):                                   # each speed jump: a punch (Enes: more impact)
+        thud(p, 70 - 8 * k, 0.09, 0.25); tone(p, 79 + 5 * k, 0.18, 0.018, dec=12, harm=(1.0, 0.5)); nb(p, 0.12, 1500, 7000, 0.02, 500 + k, 0.6)
     ticks(T_RAMP[0], T_RAMP[1], 6, 28, 0.008)
     ticks(S3, T_LAPSE[1], 18, 40, 0.005)
     tt = s.T(T_LAPSE[1] - S3); put(FX, np.sin(2 * np.pi * (300 + 600 * tt / tt[-1]) * tt) * 0.3 * np.sin(np.pi * tt / tt[-1]), S3, 0.012)   # whir

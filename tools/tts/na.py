@@ -18,18 +18,18 @@ D = [('00', 'N', [("What if you never attack the final boss?", 1.0, 0, 0, 0)]),
      ('03', 'B', [("Fine.", 1.0, 0, 0, 0), ("Would you like some tea?", 1.0, 0, 0, 0.6)]),
      ('04', 'B', [("Three hundred years.", 1.0, 0, 0, 0), ("Nobody ever stayed this long.", 1.0, 0, 0, 0.4)]),
      ('05', 'B', [("Every hero hit me in the first second.", 1.0, 0, 0, 0), ("You stayed.", 1.0, 0, 0, 0.5)]),
-     ('06', 'B', [("Oh no... not again.", 1.0, 0, 0, 0)]),
+     ('06', 'B', [("Oh no... the counter is full!", 1.0, 0, 0, 0)]),
      ('07', 'B', [("Kneel before me, mortal!", 1.0, 0, 0, 0)]),
      ('08', 'B', [("Hey... want some tea again?", 1.0, 0, 0, 0)])]
 TR = {'00': ['Final boss\'a hiç saldırmasan ne olur?'], '01': ['Diz çök, ölümlü!', 'Sıra sende. Saldır!'],
       '02': ['Hadi ama...', 'Sen oynamadan ben kıpırdayamam!'], '03': ['Peki.', 'Çay ister misin?'],
       '04': ['Üç yüz yıl.', 'Kimse bu kadar kalmamıştı.'], '05': ['Her kahraman ilk saniyede vurdu.', 'Sen kaldın.'],
-      '06': ['Eyvah... yine mi?'], '07': ['Diz çök, ölümlü!'], '08': ['Psst... yine çay ister misin?']}
+      '06': ['Eyvah... sayaç doldu!'], '07': ['Diz çök, ölümlü!'], '08': ['Psst... yine çay ister misin?']}
 def tr_upper(s): return s.replace('i', 'İ').replace('ı', 'I').replace('â', 'a').upper()
 TR_SUB = {k: [tr_upper(x) for x in v] for k, v in TR.items()}
 # delivery: the boss loud at first, then bored, then warm, old and quiet; the narrator calm and clear (Enes picked the calm hook)
 EXAG = {'00': 0.5, '01': 0.55, '02': 0.55, '03': 0.4, '04': 0.4, '05': 0.4, '06': 0.45, '07': 0.55, '08': 0.35}
-PLAN = {'00': [2.3], '01': [1.6, 1.9], '02': [1.1, 1.8], '03': [0.6, 1.4], '04': [1.4, 1.9], '05': [2.2, 0.9], '06': [1.7],
+PLAN = {'00': [2.3], '01': [1.6, 1.9], '02': [1.1, 1.8], '03': [0.6, 1.4], '04': [1.4, 1.9], '05': [2.2, 0.9], '06': [2.0],
         '07': [1.6], '08': [1.8]}
 BOSS_ST = -1.5
 def refs():

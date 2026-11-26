@@ -17,6 +17,6 @@ Recipe: copy into `renders/never_attack/tr_voice_tts/mix` -> `TTS_DIR=../renders
 | 4 | BOSS | Fine. Would you like some tea? | Peki. ... Çay ister misin? | gives up (sigh); after the pause suddenly polite |
 | 5 | BOSS | Three hundred years. Nobody ever stayed this long. | Üç yüz yıl. Kimse bu kadar kalmamıştı. | warm, old, a little laugh, touched |
 | 6 | BOSS | Every hero hit me in the first second. You stayed. | Her kahraman ilk saniyede vurdu. Sen kaldın. | quiet, honest; "Sen kaldın." soft, almost thankful |
-| 7 | BOSS | Oh no... not again. | Eyvah... yine mi? | looks up at the counter, he knows what is coming |
+| 7 | BOSS | Oh no... the counter is full! | Eyvah... sayaç doldu! | looks up at the counter, alarmed: something is about to break |
 | 8 | BOSS | Kneel before me, mortal! | Diz çök, ölümlü! | EXACTLY like line 2, big (the game restarted) |
 | 9 | BOSS | Hey... want some tea again? | Psst... yine çay ister misin? | WHISPER, conspiratorial, a smile in the voice |
