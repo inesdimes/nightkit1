@@ -347,20 +347,28 @@ def _knife_targets(t, P, lw, d_l, up):
         return g, tp
     k = sm(seg01(t, T0['04'] - 0.2, T0['04'] + 0.15))                         # carving -> rest
     return rest_g, rest_t
+KL = 0.14                                                             # grip -> blade tip
+def _fist(P):
+    """centre of the right fist and the forearm direction (the knife passes through the fist across the palm)"""
+    wr = V(P['_rwrist']); dfa = V(P['_rdir']); pn = V(P['_rpalm']); return wr + dfa * 0.05 + pn * 0.012, dfa
 def keeper(t):
     k = round(t * FPS * 4)
     if k not in _KC:
         _KC.clear(); P = keeper_pose(t); P.pop('rh', None)
         P['rh_w'] = tuple(V(P['base']) + hd.Ry(P['yaw']) @ V((0.2, 0.6, 0.3))); hd.human(KEEPER, P)
         lw, d_l, up = _ladle_geo(P)
-        for _ in range(2):                                                    # wrist target so the GRIP lands where the knife needs it
-            g_want, tip = knife_targets(t, P, lw, d_l, up)
-            g_now = fp.grip_pt(P, 'r', 0.06, 0.0); P['rh_w'] = tuple(V(P['rh_w']) + (g_want - g_now))
-            P['rpalm'] = tuple(hd.nz(tip - g_want)); P['rpalm_local'] = False
-            Q = hd.human(KEEPER, P); lw, d_l, up = _ladle_geo(P)
-        g_want, tip = knife_targets(t, P, lw, d_l, up)
-        rw = fp.grip_pt(P, 'r', 0.06, 0.0)
-        if np.linalg.norm(tip - rw) > 0.22 or np.linalg.norm(tip - rw) < 0.09: tip = rw + hd.nz(tip - rw) * 0.14
+        g0, tipw = knife_targets(t, P, lw, d_l, up)
+        g, dfa = _fist(P); P['rh_w'] = tuple(V(P['rh_w']) + (g0 - g))
+        for _ in range(4):                    # knife fix 26 Nov (Enes: odd grip at the end): blade leaves the THUMB side of the fist,
+            Q = hd.human(KEEPER, P); lw, d_l, up = _ladle_geo(P)          # square to the forearm, and the wrist is moved so the tip lands on target
+            _, tipw = knife_targets(t, P, lw, d_l, up); g, dfa = _fist(P)
+            bb = tipw - g; bb = bb - dfa * np.dot(bb, dfa)
+            bb = hd.nz(bb) if np.linalg.norm(bb) > 1e-4 else hd.nz(np.cross(dfa, V((0, 1.0, 0))))
+            P['rpalm'] = tuple(hd.nz(np.cross(dfa, bb))); P['rpalm_local'] = False    # right hand: thumb side = cross(palm, forearm) = bb
+            P['rh_w'] = tuple(V(P['rh_w']) + ((tipw - bb * KL) - g) * 0.85)
+        Q = hd.human(KEEPER, P); lw, d_l, up = _ladle_geo(P); g, dfa = _fist(P)
+        _, tipw = knife_targets(t, P, lw, d_l, up); bb = tipw - g; bb = hd.nz(bb - dfa * np.dot(bb, dfa))
+        rw = g; tip = g + bb * KL
         _KC[k] = (P, Q, lw, d_l, up, rw, tip)
     return _KC[k]
 def ladle_frame(t):
@@ -493,7 +501,7 @@ def counter_overlay(im, t):
     elif sc == 'end' and t >= T_SIGH[1]:
         v = 100 if t >= T_N100[1] else 99; pop = win(t, T_N100[1], T_N100[1] + 0.3, 0.12); box(LBL_D, v, pop, (255, 214, 60) if v == 99 else (255, 120, 80))
 from nightkit import cta
-CTA = cta.Achievement(t0=cta.default_time(DUR, dur_on=F(0.5)), lang=SUB_LANG, dur=F(0.5))
+CTA = cta.Achievement(t0=cta.default_time(DUR, dur_on=F(1.5)), lang=SUB_LANG, dur=F(1.5))      # Enes 26 Nov: 1.5 s on screen for this one
 def frame_final(t):
     if t >= T_LOOPF: t = t - DUR                                                         # loop tail = the frames just before frame 0
     img, vi = frame_low(t); arr = post.upscale(img, S)
