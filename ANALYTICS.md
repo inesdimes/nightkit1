@@ -323,3 +323,12 @@ Changes agreed with Enes (25 Nov):
 3. End with a question that invites comments.
 4. YouTube (English): upload at 01:00 TR. Instagram: the slot does not seem to matter.
 5. A small like nudge as an in-game toast: `nightkit/cta.py` ("ACHIEVEMENT UNLOCKED / LIKE = +1 XP", TR "BAŞARIM AÇILDI / BEĞEN = +1 XP"). Placed at 65 % of the video, top of the frame, 0.5 s final (Enes: it must not stay on screen). First used in boss_health_bar.py.
+
+## 22. Early readings, 26 Nov 2026 (Enes, in chat; YouTube, English channel)
+- Boss Wanted (voiced by Enes, posted 26 Nov 01:00 TR): **84 views at ~6 h, 9 % stayed** (swiped away by 91 %).
+- The short posted 25 Nov 01:00 TR: ~200 views (which one + whose voice not stated yet).
+- Read: a 9 % stay rate is decided in the first 1-2 s, before much of the voice is heard, so the frame-0 picture is the first suspect.
+  Boss Wanted frame 0 (checked on stills): very dark arena, the knight's back fills the left third, the boss small, title + sign both
+  say WANTED, the joke only lands at ~3 s ('He was hiring'). Asked Enes for the retention graph (drop at 0-1 s = picture; at the first
+  line = voice). 6 h is early; compare at 48 h.
+- Applied to Save Point Keeper: bright fire-lit close frame 0, cover text mid-frame next to the action (Enes), no POV line (Enes).
