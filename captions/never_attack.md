@@ -37,4 +37,4 @@ Sen 9.999 tur bekler miydin?
 
 **TikTok:** sen oynamadan boss kıpırdayamaz… 9.999 tur bekler miydin? #ikincidiskitakiniz #ps1 #retrooyun #finalboss
 
-(The TR version needs Enes's own TR takes first: `briefs/never_attack_voice_sheet.md`.)
+(TR video, 26 Nov: Enes's own Turkish takes + Claude's character voice FX `tools/tts/tr_fx.py`: `renders/never_attack/final_bossa_hic_saldirmasan_TR_seslendirme.mp4`; same picture with his clean voice: `..._TR_seslendirme_kuru.mp4`. Voice sheet `briefs/never_attack_voice_sheet.md`.)

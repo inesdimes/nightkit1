@@ -22,10 +22,10 @@ D = [('00', 'N', [("Why do shopkeepers buy your junk?", 1.0, 0, 0, 0)]),        
      ('07', 'S', [("There is no back room.", 1.0, 0, 0, 0)]),
      ('08', 'N', [("Mimics learned.", 1.0, 0, 0, 0), ("Heroes stopped opening chests.", 1.0, 0, 0, 0.3)]),
      ('09', 'N', [("But nobody ever skips the shop.", 1.0, 0, 0, 0)])]
-TR = {'00': ['Dükkâncılar neden hurdanı satın alır?'], '01': ['Paslı bir kılıç mı? Satıldı, dostum.'],
+TR = {'00': ['Tüccarlar neden hurdalarını satın alır?'], '01': ['Paslı bir kılıç mı? Satıldı, dostum.'],
       '02': ['Her şeyi alıyordu.', 'Her eğri kaşığı.', 'Her kırık kalkanı.'], '03': ['Bütün bu hurdayla ne yapıyorsun?'],
       '04': ['Ah... İyi besleniyorum.'], '05': ['Hiç göz kırpmıyordu.', 'Ve altınları hep ıslaktı.'], '06': ['Arka odayı görebilir miyim?'],
-      '07': ['Arka oda yok.'], '08': ['Mimikler öğrendi.', 'Kahramanlar sandık açmayı bıraktı.'], '09': ['Ama kimse dükkânı atlamaz.']}
+      '07': ['Arka oda yok.'], '08': ['Mimikler insan doğasını öğrendi.', 'Kahramanlar da sandık açmayı bıraktı.'], '09': ['Ama kimse hurdasını satacağı dükkânı atlamaz.']}
 def tr_upper(s): return s.replace('i', 'İ').replace('ı', 'I').replace('â', 'a').upper()      # the pixel font has no Â
 TR_SUB = {k: [tr_upper(x) for x in v] for k, v in TR.items()}
 # delivery: the shopkeeper warm and wrong; the hero casual, then uneasy; the narrator low and slow (scary)
@@ -93,5 +93,5 @@ if __name__ == '__main__':
     if sys.argv[1] == 'plan': plan()
     elif sys.argv[1] == 'refs': refs()
     else:
-        multi.main(D, VOICES, 'ms')
+        multi.main(D, VOICES, 'ms', TR)
         if len(sys.argv) > 2 and sys.argv[2] == 'own': shop_pitch(); tighten()

@@ -22,7 +22,7 @@ Which shop in your game was definitely a mimic?
 
 ## Turkish channel (İkinci Diski Takınız, @ikincidiskitakiniz)
 
-**YouTube başlık:** Dükkâncılar neden hurdanı satın alır?
+**YouTube başlık:** Tüccarlar neden hurdalarını satın alır?
 
 **Açıklama:**
 Her paslı kılıcı alıyor. Hiç göz kırpmıyor. Altınları hep ıslak.
@@ -37,4 +37,4 @@ Senin oyunundaki hangi dükkân kesin bir mimikti?
 
 **TikTok:** arka odayı görmek isteme… hangi dükkâncı mimikti? #ikincidiskitakiniz #ps1 #retrooyun #mimik
 
-(The TR version needs Enes's own TR takes first: `briefs/mimic_shop_voice_sheet.md`.)
+(TR video, 26 Nov: Enes's own Turkish takes + Claude's character voice FX `tools/tts/tr_fx.py`: `renders/mimic_shop/tuccarlar_neden_hurdalarini_satin_alir_TR_seslendirme.mp4`; same picture with his clean voice: `..._TR_seslendirme_kuru.mp4`. Voice sheet `briefs/mimic_shop_voice_sheet.md`.)

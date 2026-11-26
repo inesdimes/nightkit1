@@ -8,7 +8,7 @@ Recipe: copy into `renders/mimic_shop/tr_voice_tts/mix` -> `TTS_DIR=../renders/m
 
 | Kayıt | speaker | EN | TR (record this) | how to read |
 |---|---|---|---|---|
-| 1 | NARR | Why do shopkeepers buy your junk? | Dükkâncılar neden hurdanı satın alır? | HOOK: low, slow, a secret |
+| 1 | NARR | Why do shopkeepers buy your junk? | Tüccarlar neden hurdalarını satın alır? | HOOK: low, slow, a secret |
 | 2 | SHOPKEEPER | A rusty sword? Sold, my friend. | Paslı bir kılıç mı? Satıldı, dostum. | warm, too friendly, smiling the whole time |
 | 3 | NARR | He bought everything. Every bent spoon. Every broken shield. | Her şeyi alıyordu. Her eğri kaşığı. Her kırık kalkanı. | calm, a list, slight unease |
 | 4 | HERO | What do you even do with all this junk? | Bütün bu hurdayla ne yapıyorsun? | casual, joking |
@@ -16,5 +16,5 @@ Recipe: copy into `renders/mimic_shop/tr_voice_tts/mix` -> `TTS_DIR=../renders/m
 | 6 | NARR | He never blinked. And his gold was always wet. | Hiç göz kırpmıyordu. Ve altınları hep ıslaktı. | slower, the last word lands |
 | 7 | HERO | Can I see the back room? | Arka odayı görebilir miyim? | unsure, quiet |
 | 8 | SHOPKEEPER | There is no back room. | Arka oda yok. | flat, the smile stays |
-| 9 | NARR | Mimics learned. Heroes stopped opening chests. | Mimikler öğrendi. Kahramanlar sandık açmayı bıraktı. | low, matter of fact |
-| 10 | NARR | But nobody ever skips the shop. | Ama kimse dükkânı atlamaz. | almost a whisper |
+| 9 | NARR | Mimics learned. Heroes stopped opening chests. | Mimikler insan doğasını öğrendi. Kahramanlar da sandık açmayı bıraktı. | low, matter of fact |
+| 10 | NARR | But nobody ever skips the shop. | Ama kimse hurdasını satacağı dükkânı atlamaz. | almost a whisper |

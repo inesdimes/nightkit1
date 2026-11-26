@@ -15,14 +15,14 @@ Recipe (folder ready: `renders/bridge_troll/tr_voice_tts/` with `mix/` + fpo/dt 
 |---|---|---|---|---|
 | 1 | NARR | Why do bridge trolls want tolls? | Köprü trolleri neden geçiş parası ister? | HOOK: punchy, like a question you dare them to answer; weight on "tolls" / "parası" |
 | 2 | TROLL | One coin. To cross. | Bir sikke. Geçmek için. | deep, slow, bored, a small pause between |
-| 3 | KNIGHT | Or I cut you in half. | Yoksa seni ikiye bölerim. | cocky, a little smile |
+| 3 | KNIGHT | Or I cut you in half. | Yoksa ne olur? seni ikiye bölerim. | cocky, a little smile |
 | 4 | TROLL | Fine. Go ahead and cross. | Peki. Buyur, geç. | shrug, no anger at all |
-| 5 | NARR | The knight didn't pay. The bridge did. | Şövalye ödemedi. Köprü ödedi. | calm; small pause, weight on "köprü" |
-| 6 | NARR | Halfway over, the old arch cracked. | Yarı yolda eski kemer çatladı. | faster, tense on "çatladı" |
+| 5 | NARR | The knight didn't pay. The bridge did. | Şövalye ödemedi. Bedelini köprü ödedi. | calm; small pause, weight on "köprü" |
+| 6 | NARR | Halfway over, the old arch cracked. | Yarı yolda eski köprü çatladı. | faster, tense on "çatladı" |
 | 7 | TROLL | The king stopped paying for this bridge forty years ago. | Kral bu köprüye kırk yıl önce para vermeyi bıraktı. | strained, holding something heavy, through the teeth |
 | 8 | KNIGHT | Why didn't you just say so? | Neden baştan söylemedin? | shocked, guilty |
 | 9 | TROLL | You had a sword. | Elinde kılıç vardı. | quiet, tired, no blame |
 | 10 | NARR | The knight emptied his purse. | Şövalye kesesini boşalttı. | calm |
 | 11 | TROLL | Every coin is one stone. | Her sikke bir taş. | warm, slow |
-| 12 | NARR | By dawn, the crack was gone. | Şafakta çatlak kapanmıştı. | soft |
+| 12 | NARR | By dawn, the crack was gone. | Şafak sökerken çatlak kapanmıştı. | soft |
 | 13 | NARR | Trolls don't want your gold. Bridges do. | Troller altınını istemez. Köprüler ister. | short pause, last two words land |

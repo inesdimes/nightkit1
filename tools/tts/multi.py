@@ -83,6 +83,9 @@ def build(D,name,mode):
         dur[k]=round(len(y)/SR,2); txt[k]=' '.join(x[0].replace('*','') for x in ss); print(k,spk,dur[k],txt[k])
     print('TOTAL',round(sum(dur.values()),2),'words',sum(len(t.split()) for t in txt.values()))
     json.dump({'text':txt,'dur':dur,'sent':sent,'spk':spkmap},open(os.path.join(out,'script.json'),'w'),indent=1)
-def main(D,VOICES,name):
+def main(D,VOICES,name,TR=None):
     if sys.argv[1]=='src': src(D,VOICES,name)
-    else: build(D,name,sys.argv[2])
+    else:
+        if TR and os.environ.get('SUB_LANG')=='tr':                   # Turkish take: find the sentence breaks from the TURKISH sentence lengths (26 Nov)
+            D=[(k,spk,[(t,)+tuple(x[1:]) for t,x in zip(TR[k],ss)] if len(TR[k])==len(ss) else ss) for k,spk,ss in D]
+        build(D,name,sys.argv[2])

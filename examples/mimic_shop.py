@@ -446,7 +446,7 @@ def frame_low(t):
 
 # ======================= overlays =======================
 def text_w(s, sc): return len(s) * 6 * sc - sc
-COVER = ('DÜKKÂNCI NEDEN', 'HURDA ALIR?') if TRL else ('WHY DO SHOPS', 'BUY JUNK?')
+COVER = ('TÜCCAR NEDEN', 'HURDA ALIR?') if TRL else ('WHY DO SHOPS', 'BUY JUNK?')
 COVER = tuple(c.replace('Â', 'A') for c in COVER)
 COVER_Y = int(os.environ.get('COVER_Y', '1330'))
 T_PUNCH = T0['00'] + 0.7 * SCR['dur']['00']

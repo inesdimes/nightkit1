@@ -36,3 +36,5 @@ En zor boss'un kaç denemeni aldı?
 #ikincidiskitakiniz #ps1 #retrooyun #kayitnoktasi
 
 **TikTok:** kayıt noktasındaki bekçi sayıyor… en zor boss'un kaç denemeni aldı? #ikincidiskitakiniz #ps1 #retrooyun #kayitnoktasi
+
+(TR video, 26 Nov: Enes's own Turkish takes + Claude's character voice FX `tools/tts/tr_fx.py`: `renders/save_point/kayit_noktasindaki_bekci_neden_olumlerini_sayiyor_TR_seslendirme.mp4`; same picture with his clean voice: `..._TR_seslendirme_kuru.mp4`. Voice sheet `briefs/save_point_voice_sheet.md`.)

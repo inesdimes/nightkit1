@@ -28,10 +28,10 @@ D = [('00', 'N', [("Why do bridge trolls want tolls?", 1.0, 0, 0, 0)]),         
      ('10', 'T', [("Every coin is one stone.", 1.0, 0, 0, 0)]),
      ('11', 'N', [("By dawn, the crack was gone.", 1.0, 0, 0, 0)]),
      ('12', 'N', [("Trolls don't want your gold.", 1.0, 0, 0, 0), ("Bridges do.", 1.0, 0, 0, 0.3)])]
-TR = {'00': ['Köprü trolleri neden geçiş parası ister?'], '01': ['Bir sikke.', 'Geçmek için.'], '02': ['Yoksa seni ikiye bölerim.'], '03': ['Peki. Buyur, geç.'],
-      '04': ['Şövalye ödemedi.', 'Köprü ödedi.'], '05': ['Yarı yolda eski kemer çatladı.'],
+TR = {'00': ['Köprü trolleri neden geçiş parası ister?'], '01': ['Bir sikke.', 'Geçmek için.'], '02': ['Yoksa ne olur? Seni ikiye bölerim.'], '03': ['Peki. Buyur, geç.'],
+      '04': ['Şövalye ödemedi.', 'Bedelini köprü ödedi.'], '05': ['Yarı yolda eski köprü çatladı.'],
       '06': ['Kral bu köprüye kırk yıl önce para vermeyi bıraktı.'], '07': ['Neden baştan söylemedin?'], '08': ['Elinde kılıç vardı.'],
-      '09': ['Şövalye kesesini boşalttı.'], '10': ['Her sikke bir taş.'], '11': ['Şafakta çatlak kapanmıştı.'],
+      '09': ['Şövalye kesesini boşalttı.'], '10': ['Her sikke bir taş.'], '11': ['Şafak sökerken çatlak kapanmıştı.'],
       '12': ['Troller altınını istemez.', 'Köprüler ister.']}
 def tr_upper(s): return s.replace('i', 'İ').replace('ı', 'I').upper()
 TR_SUB = {k: [tr_upper(x) for x in v] for k, v in TR.items()}
@@ -100,5 +100,5 @@ if __name__ == '__main__':
     if sys.argv[1] == 'plan': plan()
     elif sys.argv[1] == 'refs': refs()
     else:
-        multi.main(D, VOICES, 'bt')
+        multi.main(D, VOICES, 'bt', TR)
         if len(sys.argv) > 2 and sys.argv[2] == 'own': troll_pitch(); tighten()

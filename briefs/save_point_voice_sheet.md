@@ -9,18 +9,18 @@ Satır uzarsa resim kendini senin kaydına göre kaydırıyor (EN'deki gibi), vi
 | # | Kim | Şu anki metin | Ton |
 |---|---|---|---|
 | 1 | Bekçi | Yine mi? | yorgun, sıcak, alışkanlık gibi (şaşırmıyor) |
-| 2 | Anlatıcı | Her öldüğünde bu ateşin başında uyanıyordu. | sakin, bilgi verir gibi |
+| 2 | Anlatıcı | Genç maceracımız her öldüğünde bu ateşin başında uyanıyordu. | sakin, bilgi verir gibi |
 | 3 | Anlatıcı | Yaşlı bekçi de her seferinde kepçesine bir çentik atıyordu. | sakin, "bir çentik" hafif vurgulu |
 | 4 | Kahraman | Kaç oldu? | nefes nefese, meraklı |
 | 5 | Bekçi | Doksan dokuz. | düz, kuru |
 | 6 | Kahraman | Kimse doksan dokuz kere ölmez. | yarı gülerek, biraz gururlu |
 | 7 | Bekçi | Ben öldüm. Bin on iki kere. | sessiz, yavaş, dramsız |
-| 8 | Anlatıcı | Öbür yüzü doluydu. Eski çentikler. Solmuş. | yavaş, parçalar arası kısa duraklar |
-| 9 | Bekçi | Sonra bir gün kalkmayı bıraktım. | çok sessiz, kendi kendine |
+| 8 | Anlatıcı | Kepçenin öbür yüzü doluydu. Eski çentikler. Her biri solmuş. | yavaş, parçalar arası kısa duraklar |
+| 9 | Bekçi | Sonra bir gün saymayı bıraktım. | çok sessiz, kendi kendine |
 | 10 | Kahraman | O zaman benimkileri daha sayma. | kararlı, küçük bir gülümseme |
-| 11 | Bekçi | Döndüğünde çorban sıcak olacak. | sıcak, biraz huysuz |
-| 12 | Anlatıcı | Bekçi bıçağını kaldırdı. | nötr, kısa |
-| 13 | Bekçi | Kalk hadi, evlat. | önce hafif iç çekiş, sonra yumuşak, şefkatli |
+| 11 | Bekçi | Döndüğünde çorban hala sıcak olacak. | sıcak, biraz huysuz |
+| 12 | Anlatıcı | Bekçi ne olacağını bilir halde bıçağını kaldırdı. | nötr, kısa |
+| 13 | Bekçi | Evlat, kalk hadi. | önce hafif iç çekiş, sonra yumuşak, şefkatli |
 
 Kadın satırı yok.
 Gelince: `own_prep.py sp "vocal/save_point/tr" --lines` (TTS_DIR = `renders/save_point/tr_voice_tts`) -> `sp.py build own` -> SUB_LANG=tr render.

@@ -37,4 +37,4 @@ Sen geçiş parasını öder miydin?
 
 **TikTok:** geçmek için bir sikke… sen öder miydin? #ikincidiskitakiniz #ps1 #retrooyun #trol
 
-(The TR version needs Enes's own TR takes first: `briefs/bridge_troll_voice_sheet.md`.)
+(TR video, 26 Nov: Enes's own Turkish takes + Claude's character voice FX `tools/tts/tr_fx.py`: `renders/bridge_troll/kopru_trolleri_neden_gecis_parasi_ister_TR_seslendirme.mp4`; same picture with his clean voice: `..._TR_seslendirme_kuru.mp4`. Voice sheet `briefs/bridge_troll_voice_sheet.md`.)

@@ -481,7 +481,7 @@ def _sub_scr():
     out['sent'] = sent
     return out
 SUBS = look.Subtitles(_sub_scr(), LINES, W, H, S, COL, title_key='none', n=17,
-                      hil=({'ÇENTİK', 'DOKSAN', 'DOKUZ', 'BİN', 'İKİ', 'SOLMUŞ.', 'KALKMAYI'} if TRL else {'NOTCH', 'NINETY-NINE.', 'THOUSAND', 'TWELVE.', 'FADED.', 'FULL.'}))
+                      hil=({'ÇENTİK', 'DOKSAN', 'DOKUZ', 'BİN', 'İKİ', 'SOLMUŞ.', 'SAYMAYI'} if TRL else {'NOTCH', 'NINETY-NINE.', 'THOUSAND', 'TWELVE.', 'FADED.', 'FULL.'}))
 LBL_D = 'ÖLÜM' if TRL else 'DEATHS'; LBL_K = 'BEKÇİNİN ÖLÜMLERİ' if TRL else 'HIS OWN DEATHS'
 def counter_overlay(im, t):
     """game-style death counter on the ladle close-ups: his 98 -> 99 as the notch is finished, the keeper's own count rolling

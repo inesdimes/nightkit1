@@ -28,13 +28,13 @@ D = [('01', 'B', [("Again?", 1.0, 0, 0, 0)]),
      ('12', 'N', [("The keeper raised his knife.", 1.0, 0, 0, 0)]),
      ('13', 'B', [("Get up, kid.", 1.0, 0, 0, 0)])]
 # Turkish voice text (natural case for the TTS) and subtitles (upper case); same sentence count per line as D
-TR = {'01': ['Yine mi?'], '02': ['Her öldüğünde bu ateşin başında uyanıyordu.'],
+TR = {'01': ['Yine mi?'], '02': ['Genç maceracımız her öldüğünde bu ateşin başında uyanıyordu.'],
       '03': ['Yaşlı bekçi de her seferinde kepçesine bir çentik atıyordu.'], '04': ['Kaç oldu?'], '05': ['Doksan dokuz.'],
       '06': ['Kimse doksan dokuz kere ölmez.'], '07': ['Ben öldüm.', 'Bin on iki kere.'],
-      '08': ['Öbür yüzü doluydu.', 'Eski çentikler.', 'Solmuş.'], '09': ['Sonra bir gün kalkmayı bıraktım.'],
-      '10': ['O zaman benimkileri daha sayma.'], '11': ['Döndüğünde çorban sıcak olacak.'], '12': ['Bekçi bıçağını kaldırdı.'],
-      '13': ['Kalk hadi, evlat.']}
-def tr_upper(s): return s.replace('i', 'İ').replace('ı', 'I').upper()
+      '08': ['Kepçenin öbür yüzü doluydu.', 'Eski çentikler.', 'Her biri solmuş.'], '09': ['Sonra bir gün saymayı bıraktım.'],
+      '10': ['O zaman benimkileri daha sayma.'], '11': ['Döndüğünde çorban hâlâ sıcak olacak.'], '12': ['Bekçi ne olacağını bilir halde bıçağını kaldırdı.'],
+      '13': ['Evlat, kalk hadi.']}
+def tr_upper(s): return s.replace('i', 'İ').replace('ı', 'I').replace('â', 'a').upper()      # the pixel font has no Â
 TR_SUB = {k: [tr_upper(x) for x in v] for k, v in TR.items()}
 # delivery per line (exaggeration for Chatterbox): the keeper is tired and quiet, the hero breathless then determined
 EXAG = {'01': 0.35, '05': 0.3, '07': 0.35, '09': 0.3, '11': 0.45, '13': 0.4, '04': 0.6, '06': 0.6, '10': 0.65}
@@ -95,4 +95,4 @@ def plan():
 if __name__ == '__main__':
     if sys.argv[1] == 'plan': plan()
     elif sys.argv[1] == 'refs': refs()
-    else: multi.main(D, VOICES, 'sp')
+    else: multi.main(D, VOICES, 'sp', TR)

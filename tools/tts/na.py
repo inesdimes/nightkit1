@@ -21,9 +21,9 @@ D = [('00', 'N', [("What if you never attack the final boss?", 1.0, 0, 0, 0)]),
      ('06', 'B', [("Oh no... the counter is full!", 1.0, 0, 0, 0)]),
      ('07', 'B', [("Kneel before me, mortal!", 1.0, 0, 0, 0)]),
      ('08', 'B', [("Hey... want some tea again?", 1.0, 0, 0, 0)])]
-TR = {'00': ['Final boss\'a hiç saldırmasan ne olur?'], '01': ['Diz çök, ölümlü!', 'Sıra sende. Saldır!'],
-      '02': ['Hadi ama...', 'Sen oynamadan ben kıpırdayamam!'], '03': ['Peki.', 'Çay ister misin?'],
-      '04': ['Üç yüz yıl.', 'Kimse bu kadar kalmamıştı.'], '05': ['Her kahraman ilk saniyede vurdu.', 'Sen kaldın.'],
+TR = {'00': ['Final boss\'a hiç saldırmasan ne olur?'], '01': ['Diz çök, ölümlü!', 'Sıra senin. Saldır!'],
+      '02': ['Hadi ama...', 'Sen oynamadan ben kıpırdayamam!'], '03': ['Ah, peki.', 'Çay ister misin?'],
+      '04': ['Üç yüz yıl. İnanabiliyor musun?', 'Kimse bu kadar kalmamıştı.'], '05': ['Her kahraman ilk saniyede vurdu.', 'Sen kaldın.'],
       '06': ['Eyvah... sayaç doldu!'], '07': ['Diz çök, ölümlü!'], '08': ['Psst... yine çay ister misin?']}
 def tr_upper(s): return s.replace('i', 'İ').replace('ı', 'I').replace('â', 'a').upper()
 TR_SUB = {k: [tr_upper(x) for x in v] for k, v in TR.items()}
@@ -90,6 +90,6 @@ if __name__ == '__main__':
     if sys.argv[1] == 'plan': plan()
     elif sys.argv[1] == 'refs': refs()
     else:
-        multi.main(D, VOICES, 'na')
+        multi.main(D, VOICES, 'na', TR)
         if len(sys.argv) > 2 and sys.argv[2] == 'own':
             boss_pitch(); tighten()

@@ -12,10 +12,10 @@ Recipe: copy into `renders/never_attack/tr_voice_tts/mix` -> `TTS_DIR=../renders
 | Kayıt | speaker | EN | TR (record this) | how to read |
 |---|---|---|---|---|
 | 1 | NARR | What if you never attack the final boss? | Final boss'a hiç saldırmasan ne olur? | HOOK: calm, clear, a real question |
-| 2 | BOSS | Kneel before me, mortal! It's your turn. Attack! | Diz çök, ölümlü! ... Sıra sende. Saldır! | 1st part BIG and loud; short pause; then bossy, impatient |
+| 2 | BOSS | Kneel before me, mortal! It's your turn. Attack! | Diz çök, ölümlü! ... Sıra senin. Saldır! | 1st part BIG and loud; short pause; then bossy, impatient |
 | 3 | BOSS | Any day now... I can't move until you do! | Hadi ama... Sen oynamadan ben kıpırdayamam! | bored, then frustrated (it's the rule!) |
-| 4 | BOSS | Fine. Would you like some tea? | Peki. ... Çay ister misin? | gives up (sigh); after the pause suddenly polite |
-| 5 | BOSS | Three hundred years. Nobody ever stayed this long. | Üç yüz yıl. Kimse bu kadar kalmamıştı. | warm, old, a little laugh, touched |
+| 4 | BOSS | Fine. Would you like some tea? | Ah Peki. ... Çay ister misin? | gives up (sigh); after the pause suddenly polite |
+| 5 | BOSS | Three hundred years. Nobody ever stayed this long. | Üç yüz yıl inanabiliyor musun? Kimse bu kadar kalmamıştı. | warm, old, a little laugh, touched |
 | 6 | BOSS | Every hero hit me in the first second. You stayed. | Her kahraman ilk saniyede vurdu. Sen kaldın. | quiet, honest; "Sen kaldın." soft, almost thankful |
 | 7 | BOSS | Oh no... the counter is full! | Eyvah... sayaç doldu! | looks up at the counter, alarmed: something is about to break |
 | 8 | BOSS | Kneel before me, mortal! | Diz çök, ölümlü! | EXACTLY like line 2, big (the game restarted) |
