@@ -332,3 +332,8 @@ Changes agreed with Enes (25 Nov):
   say WANTED, the joke only lands at ~3 s ('He was hiring'). Asked Enes for the retention graph (drop at 0-1 s = picture; at the first
   line = voice). 6 h is early; compare at 48 h.
 - Applied to Save Point Keeper: bright fire-lit close frame 0, cover text mid-frame next to the action (Enes), no POV line (Enes).
+- **26 Nov, later (Enes, in chat):** the English shorts posted at **01:00 TR on the last two days got very few views** (numbers and
+  48 h screenshots not sent yet). Reading: the "01:00 beats 22:00" finding (section 21) rested on 3 vs 3 videos, and the three 01:00
+  posts were also the stronger videos, so slot and content were confounded. With two weak 01:00 posts the slot is NOT a reliable
+  lever; the first 1-2 s (stayed %) stays the main suspect. Keep the slot fixed until the test week ends (2 Dec) so only one thing
+  changes; judge videos by stayed % at 48 h, not by the slot. Needed per video: views + stayed % + the 0-3 s retention curve.
