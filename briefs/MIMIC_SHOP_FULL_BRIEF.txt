@@ -1,0 +1,36 @@
+MIMIC SHOP - FULL BRIEF  (26 Nov 2026, Claude; Enes: "şaşırtalım, merak uyandıralım", tone = CREEPY)
+=====================================================================
+Script: examples/mimic_shop.py   Voice: tools/tts/ms.py (Enes's cloned voice)   Captions: captions/mimic_shop.md
+
+1. TITLE / LENGTH
+- YouTube title: Why do shopkeepers buy your junk?
+- Final 31.7 s (38.0 s build x 1.2), 66 words, 10 lines (hook = the narrator says the title).
+
+2. COVER TEXT: WHY DO SHOPS / BUY JUNK?  (TR: DUKKANCI NEDEN / HURDA ALIR?), punch on "junk".
+
+3. RULE + CURIOSITY
+- The shop buys everything because the shop is a mimic: the shopkeeper is its lure, hanging on its tongue.
+- Planted (never explained until the reveal): he never blinks (the hero does), a fixed too-wide grin, the counter breathes
+  (lid lifts, faint red seam), the junk disappears into the counter with a gulp, the gold is wet (drips).
+
+4. CAST / PLACES
+- SHOPKEEPER (NEW, hd.human): tall, thin, pale, slick black hair, plum tunic + apron, eyes always wide, custom wide grin with teeth;
+  legs folded away inside him (he has none). HERO = forget_potion ADV. NEXT HERO = dragon_taxes KNIGHT.
+- MIMIC COUNTER (NEW): plank box, top board = lid hinged at the back, red mouth inside, lower + upper teeth, tongue (bezier limb).
+- SHOP (NEW): dark plank room, beams, back shelves of junk (swords, shields, helmets, bones), red curtain to "the back room",
+  candle on the counter (the only warm light, from below), door that becomes jaws. EXTERIOR (NEW): the shop at night, its two
+  upper windows open as yellow eyes with slit pupils, the door = a red mouth with teeth.
+- UI: SHOP - SELL menu (RUSTY SWORD / BENT SPOON / BROKEN SHIELD 1G, GOLD 12 -> 15); in the reveal: SHOP - SELL > HERO ???.
+
+5. SEQUENCES (tools/render_seq.py)
+| seq | shots | lines |
+| s1 | open (CU grin + rusty sword, POV) / m1 (side two-shot) / m2 spoon gulp / m3 shield gulp | 00 01 02 |
+| s2 | ask (hero) / eat (head tilt) / eyes (ECU, never blinks) / wet (coin dripping in his palm) | 03 04 05 |
+| s3 | back (hero glances at the curtain) / noroom (grin freezes) / look (floor ripples) / reveal (lid up, tongue, lure rises) | 06 07 |
+| s4 | wide (mimic open, lure hanging, hero backs off) / door (runs, the door bites shut, 0.4 s black) | 08 |
+| s5 | ext (outside: windows open as eyes) / next (the knight walks in) / loop tail = frame-0 camera | 09 |
+
+6. SOUND: low drone, the counter's breathing (synced to the lid), broken detuned music box (stops at the reveal), wet clinks,
+   gulps, floor creaks, lid creak, squelch, growl, glitchy menu beeps, the bite, running steps, the house's eyes + breath.
+
+7. LOOP: the last 0.5 s = the frame-0 POV camera: he lifts the next hero's rusty sword.
