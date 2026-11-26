@@ -5,6 +5,7 @@ PART_PREFIX / PART=audio like every example.
   python tools/render_seq.py examples/bridge_troll.py --prefix bt --master out.mp4    # concat all sequences + PART=audio + x1.2 master
   --jobs N   parallel processes (default 8, split over the requested sequences by length)
   --speed 1.0   no speed-up in the master (default 1.2, Format 3.0)
+  SUB_LANG=tr (+ TTS_DIR=<tr voice dir>, --audio <name>_tr.wav) -> sequences in seq_tr/, Turkish subtitles / HUD
 A sequence file is only valid while the timing of the script is unchanged: when the voice timings move, re-render all of them."""
 import os, sys, subprocess, argparse, importlib.util, json, shutil
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -16,7 +17,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(a.script))); sys.path.insert(
 spec = importlib.util.spec_from_file_location('m', a.script); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
 SEQS = {n: (f0, f1) for n, f0, f1 in m.SEQS}; N = m.N; FPS = m.FPS
 proj = a.project or os.path.splitext(os.path.basename(a.script))[0]
-SEQ_DIR = os.path.join(ROOT, '..', 'renders', proj, 'seq'); os.makedirs(SEQ_DIR, exist_ok=True)
+LANG = os.environ.get('SUB_LANG', 'en')                       # SUB_LANG=tr renders into seq_tr/ (never over the English sequences)
+SEQ_DIR = os.path.join(ROOT, '..', 'renders', proj, 'seq' if LANG == 'en' else f'seq_{LANG}'); os.makedirs(SEQ_DIR, exist_ok=True)
 OUT = os.path.join(ROOT, 'out'); os.makedirs(OUT, exist_ok=True)
 manifest = os.path.join(SEQ_DIR, 'manifest.json')
 man = json.load(open(manifest)) if os.path.exists(manifest) else {}

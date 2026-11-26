@@ -523,14 +523,7 @@ def frame_low(t):
 def text_w(s, sc): return len(s) * 6 * sc - sc
 COVER = ('TROL NEDEN', 'PARA İSTER?') if TRL else ('WHY DO TROLLS', 'WANT TOLLS?')
 COVER_Y = int(os.environ.get('COVER_Y', '1330'))
-def _punch_at():
-    """the stressed 'TOLLS' in the hook take: the loudest 50 ms frame in the last 45 % of the line"""
-    import soundfile as _sf
-    try:
-        y, sr = _sf.read(os.path.join(TTS_DIR, 'bt', '00.wav')); y = y if y.ndim == 1 else y.mean(1); fr_ = int(0.05 * sr); n = len(y) // fr_
-        e = (y[:n * fr_].reshape(n, fr_) ** 2).mean(1); i0 = int(n * 0.55); return (i0 + int(np.argmax(e[i0:]))) * 0.05 - 0.08
-    except Exception: return 0.66 * SCR['dur']['00']
-T_PUNCH = T0['00'] + _punch_at()
+T_PUNCH = T0['00'] + 0.66 * SCR['dur']['00']           # v2 (Enes's pick) placement of the 'TOLLS?' punch
 def cover_overlay(im, t):
     b = T0['02'] - 0.25
     if not (0 <= t < b): return
