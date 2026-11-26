@@ -1,0 +1,155 @@
+SAVE POINT KEEPER - FULL BRIEF  (draft 26 Nov 2026, Claude, for Enes to review)
+=====================================================================
+
+1. TITLE / LENGTH
+- Working title: Save Point Keeper
+- YouTube title: Why does the save point keeper count your deaths?
+- Final length: ~33.5 s (after 1.2x)
+- Spoken words: 73 (13 lines)  -> fits the 30 s budget (70-85), room for Enes's slower reading
+
+2. COVER TEXT (burned in 0.0-2.0 s, big pixel text, top third)
+   POV:
+   YOU DIED
+   99 TIMES
+   (Hook template "POV: ..." from the hooks article. The YouTube title keeps the proven "Why does..." shape.)
+
+3. RULE OF THE STORY
+- Every time the hero dies, he wakes up at the same campfire, and the old keeper carves one notch into his ladle.
+- Logic check:
+  * 0 s: hero wakes up, keeper carving = the rule shown in frame 1.
+  * 14 s: the other side of the ladle = the keeper's own deaths from back when he was a hero. Same rule, earlier hero.
+  * 30 s: the hero dies off screen (red flash + YOU DIED), and the keeper lifts the knife again = the rule continues.
+  * 33 s: the hero wakes up at the fire = frame 1. The loop obeys the rule.
+
+4. CAST
+- HERO - HD adventurer (ALREADY BUILT). NO helmet, eyes always visible. Brown leather, short sword, dirty face.
+  Lying on a bedroll at the start. Height 1.0 (reference).
+- KEEPER - old NPC villager (ALREADY BUILT). Add a short grey beard and a dark green hood (small change).
+  Sits on a log by the fire. Seated, he reaches about the hero's shoulder.
+  Readable from far away: big wooden LADLE in his left hand, small knife in his right hand.
+- PROPS (NEW, cheap):
+  * LADLE: long wooden ladle, drawn ~1.5x real size so it reads on a phone.
+    Side A: ~99 fresh, light-coloured notches along the handle (wood colour, cut ends brighter).
+    Side B: the whole handle covered with dark, faded, grey notches (many more, packed tightly).
+  * KNIFE: small and plain.
+  * Soup BOWL (wooden), held on the lap only, never at the mouth.
+  * Old RUSTY SWORD stuck in the ground behind the keeper (background only, never mentioned by name:
+    the viewer connects it at 20 s).
+  * Far GATE: dark castle gate silhouette on the horizon with a red glow (castle wall is ALREADY BUILT, reuse it as a silhouette).
+
+5. PLACE
+- Night camp (ALREADY BUILT): warm orange campfire, cold blue night around it, a few stars.
+  Light carries the story: fire = safe, red gate glow = danger.
+- One place only. The gate is just a far background.
+
+6. SHOT TABLE (final-video seconds)
+| time | picture | line | UI |
+|---|---|---|---|
+| 0.0-2.0 | CLOSE, hero's face fills ~55% of frame height, warm firelight. Hero jolts up from the bedroll, gasping. Keeper's ladle + knife visible at frame right, mid-carve. | KEEPER (0.3): Again? | Cover text POV: / YOU DIED / 99 TIMES |
+| 2.0-5.5 | Slow pull back to a 2-shot. Keeper holds out the bowl, hero takes it and rests it on his lap. Rusty sword visible behind the keeper. | NARR: Every time he died, he woke up at this fire. | subtitles |
+| 5.5-9.5 | INSERT close-up of the ladle, side A: knife cuts one more notch, tiny wood chips. Many notches visible. (PLANTED DETAIL) | NARR: And every time, the old keeper carved one notch into his ladle. | |
+| 9.5-11.0 | Hero nods at the ladle. | HERO: How many is that? | |
+| 11.0-12.0 | Keeper, without looking up. | KEEPER: Ninety-nine. | |
+| 12.0-14.0 | Hero, half laughing. | HERO: Nobody dies ninety-nine times. | |
+| 14.0-17.0 | Keeper slowly TURNS the ladle over. Close-up: side B is full of dark, faded notches. (TWIST) | KEEPER: I did. A thousand and twelve. | |
+| 17.0-20.0 | Slow push in on side B, the firelight flickers over it. | NARR: The other side was full. Old notches. Faded. | |
+| 20.0-23.0 | Keeper glances back at the rusty sword in the ground. Hero follows his look. | KEEPER: Then one day, I stopped getting up. | |
+| 23.0-25.0 | Hero puts the bowl down, stands up, picks up his own sword. | HERO: Then don't count mine yet. | |
+| 25.0-27.0 | Keeper, a small half smile. | KEEPER: Soup's still warm when you're back. | |
+| 27.0-28.5 | Hero walks off toward the red gate on the horizon. Keeper raises the knife to the ladle. | NARR: The keeper raised his knife. | like-toast (auto ~65%) |
+| 28.5-30.5 | WORDLESS BEAT: the knife stops a finger above the ladle. He does NOT carve. He lowers it and looks toward the gate. Music drops out, only the fire crackles. | (silence) | |
+| 30.5-31.5 | Far away: red flash on the horizon + low roar. | - | big red YOU DIED |
+| 31.5-33.0 | Keeper sighs and lifts the knife again, quiet. | KEEPER: Get up, kid. | |
+| 33.0-33.5 | White flash -> cut to EXACTLY the frame-0 framing: hero lying on the bedroll, about to gasp. END. | - | |
+
+7. VOICE SHEET (all male lines = Enes, no female lines)
+| # | speaker | line | how to read |
+|---|---|---|---|
+| 1 | KEEPER | Again? | tired, warm, as if it is a habit, not surprised |
+| 2 | NARR | Every time he died, he woke up at this fire. | calm, matter of fact |
+| 3 | NARR | And every time, the old keeper carved one notch into his ladle. | calm, slight weight on "one notch" |
+| 4 | HERO | How many is that? | out of breath, curious |
+| 5 | KEEPER | Ninety-nine. | flat, dry |
+| 6 | HERO | Nobody dies ninety-nine times. | half laughing, a little proud |
+| 7 | KEEPER | I did. A thousand and twelve. | quiet, slow, no drama |
+| 8 | NARR | The other side was full. Old notches. Faded. | slower, short pauses between the pieces |
+| 9 | KEEPER | Then one day, I stopped getting up. | very quiet, almost to himself |
+| 10 | HERO | Then don't count mine yet. | determined, a small smile |
+| 11 | KEEPER | Soup's still warm when you're back. | warm, a little gruff |
+| 12 | NARR | The keeper raised his knife. | neutral, short |
+| 13 | KEEPER | Get up, kid. | soft sigh first, then gentle, almost fond |
+
+8. SOUND
+- 0.0: sharp inhale/gasp (hero) + fire crackle bed (whole video).
+- 0-28.5: soft 8-bit campfire lullaby, low.
+- 5.5-9.5: knife scrape on wood, small wood chip ticks.
+- 14.0: wood turning creak; the music dips under line 7.
+- 28.5-30.5: music OUT, fire only (the silence is the beat).
+- 30.5: far boom + low roar; YOU DIED sting (short, low, retro).
+- 31.5-33: no music; a single soft note under "Get up, kid."
+- 33.0: save-point chime + white flash; it has to sound like the start of frame 0 (the gasp lands on the rewatch).
+
+9. PLANTED DETAIL / WORDLESS BEAT / LOOP
+- Planted: ladle notches, 0.0 s (frame 1) and the 5.5-9.5 s insert. Reversed at 14.0 s: the other side = the keeper's own deaths.
+- Wordless: 28.5-30.5 s, the knife stops, no notch: he hopes this one makes it.
+- Loop: the last frame (33.5 s) = the frame-0 framing, hero lying just before the gasp; frame 0 starts the gasp + "Again?".
+
+10. MUST / NICE TO HAVE
+MUST
+- Frame 1: hero close and big, already moving (the gasp), cover text on screen, the ladle visible.
+- Hero's eyes visible the whole time (no helmet).
+- Bowl stays at lap/hand height, never at the mouth. The knife never goes INTO the ladle (keep a visible gap,
+  chips sell the cut). Check hand paths on stills: hand over bowl, turning the ladle, picking up the sword.
+- The ladle reads on a phone: oversized, notches high-contrast, side B clearly darker/denser than side A.
+- Last frame = frame-0 framing.
+- <= 40 s.
+NICE
+- Firelight flicker on the ladle during the side-B push-in.
+- A tiny steam wisp from the bowl.
+- The keeper's rusty sword has the same shape as the hero's sword (sharp-eyed viewers spot it).
+
+11. CAPTIONS - ENGLISH CHANNEL
+- YouTube Shorts title: Why does the save point keeper count your deaths? #shorts
+- YouTube description:
+  Every time he died, he woke up at the same fire. The old keeper kept count.
+  How many times did YOU die on one boss? Tell me the boss.
+  #ps1 #retrogaming #pleaseinsertdisc2 #savepoint #soulslike #rpg #gaming
+- Instagram: POV: you died 99 times and the save point keeper has seen worse.
+  How many tries did your hardest boss take? #ps1 #retrogaming #pleaseinsertdisc2 #savepoint #rpg #gamingmemes
+- TikTok: the save point keeper keeps count... #ps1 #retrogaming #pleaseinsertdisc2 #savepoint #rpg #gaming
+- Pinned comment: Which boss would put YOUR notches on that ladle? Name it.
+
+12. TURKISH CHANNEL (İkinci Diski Takınız)
+Cover text: POV: / 99 KERE / ÖLDÜN
+| # | EN | TR (subtitle + voice) |
+|---|---|---|
+| 1 | Again? | YİNE Mİ? |
+| 2 | Every time he died, he woke up at this fire. | HER ÖLDÜĞÜNDE BU ATEŞİN BAŞINDA UYANIYORDU. |
+| 3 | And every time, the old keeper carved one notch into his ladle. | YAŞLI BEKÇİ DE HER SEFERİNDE KEPÇESİNE BİR ÇENTİK ATIYORDU. |
+| 4 | How many is that? | KAÇ OLDU? |
+| 5 | Ninety-nine. | DOKSAN DOKUZ. |
+| 6 | Nobody dies ninety-nine times. | KİMSE DOKSAN DOKUZ KERE ÖLMEZ. |
+| 7 | I did. A thousand and twelve. | BEN ÖLDÜM. BİN ON İKİ KERE. |
+| 8 | The other side was full. Old notches. Faded. | ÖBÜR YÜZÜ DOLUYDU. ESKİ, SOLMUŞ ÇENTİKLER. |
+| 9 | Then one day, I stopped getting up. | SONRA BİR GÜN KALKMAYI BIRAKTIM. |
+| 10 | Then don't count mine yet. | O ZAMAN BENİMKİLERİ DAHA SAYMA. |
+| 11 | Soup's still warm when you're back. | DÖNDÜĞÜNDE ÇORBAN SICAK OLACAK. |
+| 12 | The keeper raised his knife. | BEKÇİ BIÇAĞINI KALDIRDI. |
+| 13 | Get up, kid. | KALK HADİ EVLAT. |
+YOU DIED overlay TR: ÖLDÜN
+- YouTube title TR: Kayıt noktasındaki bekçi neden ölümlerini sayıyor? #shorts
+- Description TR: Her öldüğünde aynı ateşin başında uyanıyordu. Yaşlı bekçi hepsini sayıyordu.
+  Sen bir boss'ta en çok kaç kere öldün? Hangi boss olduğunu yaz.
+  #ikincidiskitakiniz #ps1 #retrooyun #kayitnoktasi #rpg #oyun
+- Instagram TR: POV: 99 kere öldün ve bekçi daha kötüsünü gördü. En zor boss'un kaç denemeni aldı?
+  #ikincidiskitakiniz #ps1 #retrooyun #rpg #oyunmizahi
+- TikTok TR: kayıt noktasındaki bekçi sayıyor... #ikincidiskitakiniz #ps1 #retrooyun #rpg
+- Pinned TR: Senin çentiklerini o kepçeye hangi boss attırırdı? Adını yaz.
+
+SELF-CHECK
+[x] fantasy/RPG trope (save point / respawn); the rule holds in every scene (see 3)
+[x] frame 1 close + moving (gasp) + cover text 0-2 s + ladle visible
+[x] ~33.5 s final, 73 words (30 s budget 70-85)
+[x] planted ladle, wordless knife stop, last frame = frame 0
+[x] no helmets over the eyes, no cup at the mouth, no hands inside objects; on-screen text uses allowed characters only
+[x] comment question in the description + pinned comment
