@@ -41,7 +41,12 @@ if a.seqs:
     json.dump(man, open(manifest, 'w'), indent=1)
 if a.master:
     for n, (f0, f1) in SEQS.items():
-        if n not in man or man[n]['frames'] != [f0, f1]: sys.exit(f'sequence {n} missing or out of date (timing changed): re-render it')
+        if n not in man: sys.exit(f'sequence {n} missing: render it')
+        g0, g1 = man[n]['frames']
+        if g1 - g0 != f1 - f0: sys.exit(f'sequence {n} has a new length ({g1 - g0} -> {f1 - f0} frames): re-render it')
+        if g0 != f0:   # same length, whole-frame shift (e.g. a hook added before it): the file is still valid, only its place moved
+            print(f'sequence {n} reused, shifted {f0 - g0:+d} frames'); man[n]['frames'] = [f0, f1]
+    json.dump(man, open(manifest, 'w'), indent=1)
     lst = os.path.join(OUT, f'{a.prefix}_seq_list.txt')
     open(lst, 'w').write(''.join(f"file '{os.path.abspath(os.path.join(SEQ_DIR, n + '.mp4')).replace(chr(92), '/')}'\n" for n, _, _ in m.SEQS))
     video = os.path.join(OUT, f'{a.prefix}_video.mp4')

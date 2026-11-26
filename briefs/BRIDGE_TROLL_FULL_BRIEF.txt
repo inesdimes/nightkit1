@@ -4,8 +4,10 @@ Script: examples/bridge_troll.py   Voice: tools/tts/bt.py (Enes's cloned voice) 
 
 1. TITLE / LENGTH
 - YouTube title: Why do bridge trolls want tolls?
-- Final length: 35.3 s (42.4 s build x 1.2)
-- Spoken words: 71 (12 lines). Voice 30.0 s at 1x.
+- Final length: 37.8 s (45.3 s build x 1.2)  [v2 hook, 26 Nov: Enes 'no hook' -> line 00, the narrator says the title first]
+- Spoken words: 77 (13 lines). Voice 32.3 s at 1x.
+- v2: line 00 NARR 'Why do bridge trolls want tolls?' over the troll CU (he straightens up over us, cover line 2 punches on
+  'tolls', low hit + 8-bit stab), then he leans in and asks US for a coin. Hook block = 70 whole frames, so s2-s4 were reused.
 
 2. COVER TEXT (burned 0.0-~2.7 s final, middle of the frame under his face)
    WHY DO TROLLS / WANT TOLLS?        TR: TROL NEDEN / PARA İSTER?

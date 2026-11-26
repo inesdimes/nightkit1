@@ -21,6 +21,7 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 
 ## Newest (26 Nov 2026, evening)
 - **Why do bridge trolls want tolls?** (Claude pitch, Enes approved): nightkit HD, new TROLL + forget_potion bridge + dragon_taxes knight/woman. EN with Enes's cloned voice (`tools/tts/bt.py`, takes checked with Whisper: new `tools/tts/asr_check.py`), 35.3 s. **New: rendered as 5 separate sequences** (Enes: fixes re-render only one) with `tools/render_seq.py` (`--seqs s1,s3` / `--master out.mp4`). TR waits for Enes's own takes (`briefs/bridge_troll_voice_sheet.md`).
+- **v2 hook** (Enes: 'hook yok'): narrator says the title first (line 00, Whisper-checked), the troll looms, then asks us for the coin -> `why_do_bridge_trolls_want_tolls_v2_hook_38s.mp4` (37.8 s). Only s1 + s5 re-rendered: the hook is a whole number of frames (70), `render_seq.py --master` reuses same-length sequences that only shifted (verified: reused frames match a fresh render as closely as fresh ones do).
 
 ## Newest (26 Nov 2026)
 - Save Point Keeper (new story, Claude brief, Enes approved): EN + TR rendered with Enes's CLONED voice (Enes: generate the voices on the PC from all his recordings). Boss Wanted early reading 84 views / 9 % stayed -> ANALYTICS section 22.

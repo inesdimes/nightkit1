@@ -166,13 +166,17 @@ from nightkit.audio import Sound, duck_envelope
 OUT = 'out'; os.makedirs(OUT, exist_ok=True)
 TTS_DIR = os.environ.get('TTS_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tts'))
 SCR = json.load(open(os.path.join(TTS_DIR, 'bt', 'script.json'), encoding='utf-8'))
-KEYS = ['%02d' % i for i in range(1, 13)]
+KEYS = ['%02d' % i for i in range(0, 13)]
 # gaps after each line (build s); the sequence breaks add their own action time
 GAP = {'01': 0.3, '02': 0.25, '03': 1.05, '04': 0.35, '05': 1.45, '06': 0.35, '07': 0.2, '08': 1.0, '09': 0.75, '10': 0.75, '11': 2.2, '12': 0.35}
 LEAD = {'01': 0.25, '04': 0.35, '06': 0.6, '09': 0.3, '11': 0.5}          # sequence starts: action before the first line
+# HOOK (Enes 26 Nov: 'no hook'): the narrator says the title first, over the troll close-up, then the troll asks US for a coin.
+# The hook block is a WHOLE number of frames, so every later sequence only shifts by whole frames and its rendered file stays valid.
+HOOK_LEAD = 0.15
+HOOK = math.ceil((HOOK_LEAD + SCR['dur']['00'] + 0.45) * FPS) / FPS
 def _lines():
-    t = 0.0; out = []
-    for k in KEYS:
+    t = HOOK; out = [('00', HOOK_LEAD)]
+    for k in KEYS[1:]:
         t += LEAD.get(k, 0.0); out.append((k, round(t, 3))); t += SCR['dur'][k] + GAP[k]
     return out, t
 LINES, _T_END = _lines(); T0 = dict(LINES)
@@ -186,7 +190,7 @@ DUR = round(T_LOOPF + 0.5, 3); N = int(round(DUR * FPS))
 def fr(x): return int(round(x * FPS))
 SEQS = [('s1', 0, fr(S2)), ('s2', fr(S2), fr(S3)), ('s3', fr(S3), fr(S4)), ('s4', fr(S4), fr(S5)), ('s5', fr(S5), N)]
 # beats
-T_PALM = (-0.55, 0.3)                              # frame 0: his palm comes up toward the traveller
+T_PALM = (T0['01'] - 0.55, T0['01'] + 0.3)        # after the title: his palm comes up toward the traveller (= us)
 T_THREAT = (T0['02'] - 0.1, T0['02'] + 0.45)        # knight raises the sword at him
 T_ASIDE = (T0['03'] + 0.2, T0['03'] + 1.1)          # troll steps aside, sweeps his arm to the bridge
 T_PASS = (T0['03'] + 0.9, S2 + 0.0)                 # knight walks past onto the ramp
@@ -240,6 +244,9 @@ def troll_pose(t):
         if up > 0:
             P['rh_w'] = tuple(lerp3(wpt(TP, TP_YAW, (0.34, 0.95, 0.1)), tgt, up)); P['rpalm'] = (0, 1.0, 0.15); P['rpalm_local'] = False; P['rgrip'] = 0.1; P['rpole'] = (0.5, -1.0, -0.2)
             P.pop('rh', None)
+        if 0 <= t < T0['01'] + 0.3:                                                          # hook: he straightens up over us (looms), then leans in to ask
+            rise = win(t, 0.0, T0['01'] + 0.3, 0.7); P['lean'] = 0.3 - 0.2 * rise; P['nod'] = 0.32 - 0.12 * rise
+            if t >= T_PUNCH - 0.1: P['eyes'] = 'open'; P['brow'] = 0.45
         if 0 <= t < T0['02']: P['eyes'] = 'half' if t < ws('01', 1) - 0.1 else 'open'; P['brow'] = 0.2
         say(P, t, ('01', '03'))
         if T0['02'] - 0.1 <= t < T0['03']: P['eyes'] = 'half'; P['brow'] = -0.1; P['nod'] = 0.05; P['mouth'] = 'neutral' if t < tend('02') else 'soft'
@@ -427,7 +434,7 @@ OPEN_POS = V((-8.62, 1.78, -0.78)); OPEN_TGT = V((-8.0, 1.98, -1.42))
 def cam_shot(t):
     sc = scene(t)
     if sc in ('open', 'loop'):
-        u = sm(seg01(t, -1.0, 2.5)); return lerp3(OPEN_POS + V((-0.04, 0.0, 0.05)), OPEN_POS, u), OPEN_TGT, 40.0
+        u = sm(seg01(t, -1.0, T0['01'] + 1.0)); return lerp3(OPEN_POS + V((-0.17, -0.02, 0.22)), OPEN_POS, u), OPEN_TGT, 40.0
     def span(i):
         a = CUTS[i][1]; b = CUTS[i + 1][1] if i + 1 < len(CUTS) else DUR; return sm(seg01(t, a, b))
     idx = [n for n, _ in CUTS].index(sc); u = span(idx)
@@ -516,11 +523,14 @@ def frame_low(t):
 def text_w(s, sc): return len(s) * 6 * sc - sc
 COVER = ('TROL NEDEN', 'PARA İSTER?') if TRL else ('WHY DO TROLLS', 'WANT TOLLS?')
 COVER_Y = int(os.environ.get('COVER_Y', '1330'))
+T_PUNCH = T0['00'] + 0.66 * SCR['dur']['00']
 def cover_overlay(im, t):
     b = T0['02'] - 0.25
     if not (0 <= t < b): return
     d = ImageDraw.Draw(im); pop = sm(seg01(t, 0, 0.12)); sc0 = 12 if pop >= 1 else 14
-    s1, s2 = COVER; y1 = COVER_Y; y2 = COVER_Y + 8 * sc0 + 30; sc2 = sc0 + 1; w2 = text_w(s2, sc2)
+    punch = win(t, T_PUNCH, T_PUNCH + 0.35, 0.08)                      # 'want TOLLS?' lands: line 2 jumps bigger for a beat
+    s1, s2 = COVER; y1 = COVER_Y; y2 = COVER_Y + 8 * sc0 + 30; sc2 = sc0 + 1 + (2 if punch > 0.5 else 0); w2 = text_w(s2, sc2)
+    y2 -= 7 if punch > 0.5 else 0
     d.rectangle([540 - w2 / 2 - 34, y2 - 22, 540 + w2 / 2 + 34, y2 + 7 * sc2 + 22], fill=(40, 96, 40))
     for s_, y, sc, col, sh in ((s1, y1, sc0, (255, 255, 255), (30, 70, 30)), (s2, y2, sc2, (255, 222, 40), (20, 40, 10))):
         x = int(540 - text_w(s_, sc) / 2)
@@ -538,10 +548,10 @@ def _sub_scr():
         else: sent[k] = [[v[0][0], v[-1][1], ' '.join(TRS[k])]]
     out['sent'] = sent
     return out
-SUBS = look.Subtitles(_sub_scr(), LINES, W, H, S, COL, title_key='none', n=17,
+SUBS = look.Subtitles(_sub_scr(), [x for x in LINES if x[0] != '00'], W, H, S, COL, title_key='none', n=17,
                       hil=({'SİKKE.', 'KÖPRÜ', 'ÖDEDİ.', 'ÇATLADI.', 'KIRK', 'KILIÇ', 'TAŞ.', 'İSTER.'} if TRL else {'COIN.', 'BRIDGE', 'CRACKED.', 'FORTY', 'SWORD.', 'STONE.', 'GOLD.', 'BRIDGES'}))
 from nightkit import cta
-CTA = cta.Achievement(t0=cta.default_time(DUR, dur_on=F(0.5)), lang=SUB_LANG, dur=F(0.5))
+CTA = cta.Achievement(t0=S4 + 0.643, lang=SUB_LANG, dur=F(0.5))     # pinned inside seq 4 (same place as the first render), ~65 %
 def frame_final(t):
     if t >= T_LOOPF: t = t - DUR                                                         # loop tail = the frames just before frame 0
     img, vi = frame_low(t); arr = post.upscale(img, S)
@@ -644,6 +654,10 @@ def build_audio(path):
     g = (1 - mask(T_GROAN - 0.1, S3 + 0.8, 0.2)) * (1 - mask(T_PAT[0] - 0.2, T0['12'] - 0.1, 0.2)) * (1 - 0.5 * under)
     MUS = MUS * g
     for k, m in enumerate((62, 66, 69, 74)): tone(T0['12'] + 0.05 + 0.08 * k, m, 2.4, 0.018, dec=1.0, harm=(1.0, 0.4, 0.2), buf=MUS)
+    # hook: a low hit + an 8-bit stab under the title, a punch on 'TOLLS?'
+    thud(0.02, 52, 0.22, 0.5); nb(0.02, 0.25, 200, 3000, 0.05, 71, 0.5)
+    for k, m in enumerate((50, 57, 62)): tone(0.03 + 0.02 * k, m, 0.9, 0.03, dec=2.5, harm=(1.0, 0.5, 0.3, 0.2))
+    thud(T_PUNCH, 70, 0.12, 0.3); tone(T_PUNCH + 0.01, 74, 0.5, 0.022, dec=5, harm=(1.0, 0.6, 0.3))
     if CTA.on: put(FX, cta.chime(sr), CTA.t0, 1.0)
     # voice
     NB = np.zeros(n); wins = []

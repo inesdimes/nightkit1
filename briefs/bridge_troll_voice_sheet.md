@@ -7,6 +7,7 @@ TTS_DIR = `renders/bridge_troll/tr_voice_tts`, and a `SUB_LANG=tr` render. He ma
 
 | # | speaker | EN | TR (record this) | how to read |
 |---|---|---|---|---|
+| 0 | NARR | Why do bridge trolls want tolls? | Köprü trolleri neden geçiş parası ister? | HOOK: punchy, like a question you dare them to answer; weight on "tolls" / "parası" |
 | 1 | TROLL | One coin. To cross. | Bir sikke. Geçmek için. | deep, slow, bored, a small pause between |
 | 2 | KNIGHT | Or I cut you in half. | Yoksa seni ikiye bölerim. | cocky, a little smile |
 | 3 | TROLL | Fine. Go ahead and cross. | Peki. Buyur, geç. | shrug, no anger at all |

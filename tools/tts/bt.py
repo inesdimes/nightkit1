@@ -15,7 +15,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import multi
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VOICES = {'K': ('am_adam', 'en-us'), 'T': ('bm_george', 'en-gb')}
-D = [('01', 'T', [("One coin.", 1.0, 0, 0, 0), ("To cross.", 1.0, 0, 0, 0.25)]),
+D = [('00', 'N', [("Why do bridge trolls want tolls?", 1.0, 0, 0, 0)]),          # hook (Enes 26 Nov): the title, spoken with weight
+     ('01', 'T', [("One coin.", 1.0, 0, 0, 0), ("To cross.", 1.0, 0, 0, 0.25)]),
      ('02', 'K', [("Or I cut you in half.", 1.0, 0, 0, 0)]),
      ('03', 'T', [("Fine. Go ahead and cross.", 1.0, 0, 0, 0)]),
      ('04', 'N', [("The knight didn't pay.", 1.0, 0, 0, 0), ("The bridge did.", 1.0, 0, 0, 0.3)]),
@@ -27,7 +28,7 @@ D = [('01', 'T', [("One coin.", 1.0, 0, 0, 0), ("To cross.", 1.0, 0, 0, 0.25)]),
      ('10', 'T', [("Every coin is one stone.", 1.0, 0, 0, 0)]),
      ('11', 'N', [("By dawn, the crack was gone.", 1.0, 0, 0, 0)]),
      ('12', 'N', [("Trolls don't want your gold.", 1.0, 0, 0, 0), ("Bridges do.", 1.0, 0, 0, 0.3)])]
-TR = {'01': ['Bir sikke.', 'Geçmek için.'], '02': ['Yoksa seni ikiye bölerim.'], '03': ['Peki. Buyur, geç.'],
+TR = {'00': ['Köprü trolleri neden geçiş parası ister?'], '01': ['Bir sikke.', 'Geçmek için.'], '02': ['Yoksa seni ikiye bölerim.'], '03': ['Peki. Buyur, geç.'],
       '04': ['Şövalye ödemedi.', 'Köprü ödedi.'], '05': ['Yarı yolda eski kemer çatladı.'],
       '06': ['Kral bu köprüye kırk yıl önce para vermeyi bıraktı.'], '07': ['Neden baştan söylemedin?'], '08': ['Elinde kılıç vardı.'],
       '09': ['Şövalye kesesini boşalttı.'], '10': ['Her sikke bir taş.'], '11': ['Şafakta çatlak kapanmıştı.'],
@@ -35,8 +36,8 @@ TR = {'01': ['Bir sikke.', 'Geçmek için.'], '02': ['Yoksa seni ikiye bölerim.
 def tr_upper(s): return s.replace('i', 'İ').replace('ı', 'I').upper()
 TR_SUB = {k: [tr_upper(x) for x in v] for k, v in TR.items()}
 # delivery (Chatterbox exaggeration): the troll is slow, gruff and tired; the knight cocky, then thrown
-EXAG = {'01': 0.45, '03': 0.4, '06': 0.5, '08': 0.35, '10': 0.4, '02': 0.65, '07': 0.6, '12': 0.55}
-PLAN = {'01': [0.8, 0.7], '02': [1.4], '03': [1.5], '04': [1.3, 1.0], '05': [2.1], '06': [3.2], '07': [1.4], '08': [1.1],
+EXAG = {'00': 0.8, '01': 0.45, '03': 0.4, '06': 0.5, '08': 0.35, '10': 0.4, '02': 0.65, '07': 0.6, '12': 0.55}
+PLAN = {'00': [2.2], '01': [0.8, 0.7], '02': [1.4], '03': [1.5], '04': [1.3, 1.0], '05': [2.1], '06': [3.2], '07': [1.4], '08': [1.1],
         '09': [1.7], '10': [1.6], '11': [1.8], '12': [1.6, 0.9]}
 TROLL_ST = -2.0                       # the troll's lines are pitched down a little in the build (bigger, heavier)
 def refs():
