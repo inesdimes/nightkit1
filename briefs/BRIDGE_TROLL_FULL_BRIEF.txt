@@ -1,0 +1,57 @@
+BRIDGE TROLL - FULL BRIEF  (26 Nov 2026, Claude; pitch approved by Enes, "adım ikiye geçelim")
+=====================================================================
+Script: examples/bridge_troll.py   Voice: tools/tts/bt.py (Enes's cloned voice)   Captions: captions/bridge_troll.md
+
+1. TITLE / LENGTH
+- YouTube title: Why do bridge trolls want tolls?
+- Final length: 35.3 s (42.4 s build x 1.2)
+- Spoken words: 71 (12 lines). Voice 30.0 s at 1x.
+
+2. COVER TEXT (burned 0.0-~2.7 s final, middle of the frame under his face)
+   WHY DO TROLLS / WANT TOLLS?        TR: TROL NEDEN / PARA İSTER?
+
+3. RULE OF THE STORY
+- The troll asks one coin per crossing, never forces it, and every coin goes into the bridge.
+- Logic check: 0 s he asks (does not block) -> the knight refuses and crosses free -> the bridge loses HP (7 -> 6), the arch
+  cracks (-> 3) -> the troll holds it up himself -> the king stopped paying 40 years ago -> the knight pays everything (-> 27)
+  -> dawn: the troll patches the crack with the coins' stones -> the next traveller: he asks again = frame 0.
+
+4. CAST
+- TROLL (NEW): hd.human h 2.45 / build 1.7, green-grey skin, bald, yellow eyes, big bulb nose, pointed ears, two tusks,
+  heavy brow ridge, moss on shoulders + scalp, sleeveless dark leather vest, rope belt. Eyes always visible.
+- KNIGHT (ALREADY BUILT, dragon_taxes): silver plate, blue cape + plume, open helmet above the brows.
+- OLD WOMAN (ALREADY BUILT, dragon_taxes): the next traveller in the loop shot, seen from behind.
+- PROPS (NEW): wooden toll bucket with iron bands (coin heap rises), mason's trowel, toll lantern on a post, purse (dtx sack),
+  crack + fresh-mortar patch on the downstream arch face, falling voussoir chunk + splash, grit/dust.
+
+5. PLACE
+- Old stone bridge over the stream (ALREADY BUILT, forget_potion): night (moon, stars, two lanterns) -> dawn (warm sun) -> night.
+
+6. SEQUENCES (Enes: max 5, rendered separately: tools/render_seq.py)  build s -> final s
+| seq | build s | shots | lines |
+|---|---|---|---|
+| s1 | 0.00-9.75 | open (troll CU, palm up) / knight (sword up) / aside (troll steps aside, knight walks on) | 01 02 03 |
+| s2 | 9.75-16.25 | walk (knight up the deck, HUD 7->6 on "The bridge did.") / crack (CU crack + falling stone, HUD 3) / react (troll hears it, runs) | 04 05 |
+| s3 | 16.25-26.92 | hold (troll under the arch holding it up) / kn3 (knight on the bank) / tr3 (troll CU) + knight lowers his sword | 06 07 08 |
+| s4 | 26.92-33.42 | pay (sword in the ground, purse turned over, 24 coins) / bucket (heap, HUD 3->27) | 09 10 |
+| s5 | 33.42-42.42 | dawn (patching) / wl WORDLESS palm on the stone / far (knight looks back, lifts hand) / wide / eve (next traveller) / loop tail | 11 12 |
+
+7. VOICE SHEET -> briefs/bridge_troll_voice_sheet.md
+
+8. SOUND
+- Bed: stream (louder under the arch), crickets at night, birds at dawn. 8-bit troll lullaby (D minor), out from the groan to the
+  hold, out for the wordless beat, warm chord on the last line. Groan + damage blips, crack + boom, stone splash, heavy running
+  steps, strain creaks, 24 coin clinks, trowel scrapes, like-toast chime (auto, 0.5 s final).
+
+9. PLANTED / WORDLESS / LOOP
+- Planted: the bucket + trowel next to him in frame 0, the HUD bridge HP. Paid off: the coins go to the bridge, the trowel patches it.
+- Wordless (~36.1-36.8 build): palm flat on the patched stone, eyes closed; then the knight lifts his hand from the far bank.
+- Loop: last 0.5 s = the frame-0 camera at night, palm starting to rise -> frame 0.
+
+10. SELF-CHECK
+[x] RPG trope (bridge troll toll), rule holds in every scene
+[x] frame 1 close + moving (palm) + cover text
+[x] 35.3 s final, 71 words
+[x] planted bucket/trowel/HP, wordless palm, loop ending
+[x] no helmets over the eyes, hands only near (not into) objects, allowed characters only
+[x] comment question in the description + pinned comment
