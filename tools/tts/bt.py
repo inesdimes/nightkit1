@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import multi
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VOICES = {'K': ('am_adam', 'en-us'), 'T': ('bm_george', 'en-gb')}
-D = [('00', 'N', [("Why do bridge trolls want tolls?", 1.0, 0, 0, 0)]),          # hook (Enes 26 Nov): the title, spoken with weight
+D = [('00', 'N', [("Why do bridge trolls... want TOLLS?!", 1.0, 0, 0, 0)]),   # v3 (Enes: more alive): hook_variants c_0.9_23          # hook (Enes 26 Nov): the title, spoken with weight
      ('01', 'T', [("One coin.", 1.0, 0, 0, 0), ("To cross.", 1.0, 0, 0, 0.25)]),
      ('02', 'K', [("Or I cut you in half.", 1.0, 0, 0, 0)]),
      ('03', 'T', [("Fine. Go ahead and cross.", 1.0, 0, 0, 0)]),
