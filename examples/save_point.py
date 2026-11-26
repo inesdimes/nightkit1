@@ -55,32 +55,72 @@ def set_faces():
     if not _SET: _SET.append(fp.camp_set() + bedroll() + keeper_log() + rusty_sword())
     return _SET[0]
 
-def ladle(hold, d, side_up, flip=0.0, n_a=99, cut=0.0):
-    """ladle held at `hold`, handle along d, notches on the face toward side_up; flip 0..1 turns it over (side B up).
-    1.5x real size so it reads on a phone. Handle 0.62 m, bowl r 0.09."""
-    d = hd.nz(V(d, float)); n0 = hd.nz(V(side_up, float) - d * np.dot(side_up, d))
-    b = np.cross(d, n0); a = flip * PI
-    n = n0 * math.cos(a) + b * math.sin(a); bb = np.cross(d, n)
-    h0 = V(hold, float) - d * 0.12; h1 = h0 + d * 0.62
-    Q = hd.limb(tuple(h0), tuple(h1), 0.022, 0.018, WOOD, n=8, m=2, ref=tuple(n))
-    bc = h1 + d * 0.07 - n * 0.03
-    Rb = np.column_stack([bb, n, d])
-    Q += hd.ellip(tuple(bc), Rb, (0.09, 0.05, 0.1), 10, 6, WOOD_D)
-    # notches: side A (n0 side) fresh and light, side B dense, dark and faded
-    side_a_up = math.cos(a) > 0
-    for s_, col, cnt, w_ in ((1, NOTCH_A, 22, 0.024), (-1, NOTCH_B, 40, 0.03)):
-        nn = n0 * s_
-        for i in range(cnt):
-            u = 0.04 + 0.5 * i / cnt
-            c = h0 + d * u + (n * math.cos(0) if False else 0) * 0
-            cc = h0 + d * u
-            nrm = nn * math.cos(a) + np.cross(d, nn) * math.sin(a)
-            Q += hd.decal(tuple(cc + nrm * 0.021), tuple(nrm), tuple(d), w_ * 0.85, 0.007, col, lift=0.002)
+# ---- the ladle (polish pass 26 Nov): a real wooden ladle = short handle + a deep round bowl at the end.
+# The keeper holds the handle end; the notches are tally marks on the handle's top face (side A), the back is covered (side B).
+HANDLE = 0.36; BOWL_R = 0.085; BOWL_D = 0.07; GRIP_BACK = 0.07        # handle runs from hold - 0.07 to hold + 0.29
+NA_OLD = 14                                                          # side A: earlier tally marks already cut
+def slot_u(i): return 0.035 + (i // 5) * 0.066 + (i % 5) * 0.011       # tally groups of five along the handle (from the hold point)
+GROOVE = (78, 50, 30); LIP = (240, 214, 168); GROOVE_B = (98, 80, 62); LIP_B = (150, 124, 96)
+def ladle_axes(d, side_up, flip=0.0):
+    d = hd.nz(V(d, float)); n0 = hd.nz(V(side_up, float) - d * np.dot(side_up, d)); s0 = np.cross(d, n0); a = flip * PI
+    n = n0 * math.cos(a) + s0 * math.sin(a); return d, n0, n, np.cross(d, n)
+def notch_pt(hold, d, side_up, i):
+    """world point on side A's surface where tally mark i sits (only valid while side A is up)"""
+    d, n0, n, s = ladle_axes(d, side_up, 0.0); return V(hold, float) + d * slot_u(i) + n0 * 0.026
+def ladle(hold, d, side_up, flip=0.0, newA=(1.0, 0.0)):
+    """newA = progress (0..1) of the two marks cut in the film: #15 (his 99th death, frame 0 -> ladle close-up) and #16 (the 100th, end)"""
+    d, n0, n, s = ladle_axes(d, side_up, flip); h = V(hold, float)
+    h0 = h - d * GRIP_BACK; h1 = h0 + d * HANDLE
+    Q = hd.limb(tuple(h0), tuple(h1), 0.025, 0.02, WOOD, n=10, m=2, ref=tuple(n))
+    Q += hd.ellip(tuple(h0), np.column_stack([s, n, d]), (0.026, 0.026, 0.02), 8, 4, WOOD)                     # rounded handle end
+    bc = h1 + d * (BOWL_R * 0.95) - n * 0.012                                       # the bowl hangs off the end, hollow facing side A
+    Rb = np.column_stack([s, n, d])
+    Q += hd.ellip(tuple(bc), Rb, (BOWL_R, 0.05, BOWL_R), 14, 8, WOOD_D, v0=PI * 0.5, v1=PI,
+                  colfn=lambda i, j, cl: hd.shade(WOOD_D, 0.88) if (i + j) % 2 else WOOD_D)       # solid round underside
+    ring = [(BOWL_R * math.cos(2 * PI * k / 20), BOWL_R * math.sin(2 * PI * k / 20)) for k in range(20)]
+    Q += hd.poly_decal(tuple(bc), tuple(n), tuple(d), ring, (184, 134, 84), lift=0.001)                   # light rim
+    Q += hd.poly_decal(tuple(bc), tuple(n), tuple(d), [(x * 0.82, y * 0.82) for x, y in ring], (62, 40, 24), lift=0.002)   # dark hollow
+    Q += hd.poly_decal(tuple(bc + d * 0.012), tuple(n), tuple(d), [(x * 0.45, y * 0.35) for x, y in ring], (84, 56, 34), lift=0.003)
+    Q += hd.limb(tuple(h1 - d * 0.02), tuple(bc - d * (BOWL_R * 0.9)), 0.021, 0.019, WOOD, n=8, m=1)     # neck into the rim
+    def mark(u, nrm, w, col_g, col_l, k=1.0, tilt=0.0):
+        c = h + d * u + nrm * 0.0255; ax = hd.nz(d + np.cross(nrm, d) * tilt)          # tilt != 0: the diagonal strike of a tally group
+        out = hd.decal(tuple(c), tuple(nrm), tuple(ax), w * k, 0.0065, col_g, lift=0.0015)
+        if k > 0.15: out += hd.decal(tuple(c + ax * 0.0048), tuple(nrm), tuple(ax), w * k, 0.0024, col_l, lift=0.002)
+        return out
+    def tally(i, nrm, col_g, col_l, pr=1.0, base_u=0.0, gap=0.066):
+        g, j = divmod(i, 5); u0 = base_u + 0.035 + g * gap
+        if j < 4: return mark(u0 + j * 0.011, nrm, 0.03, col_g, col_l, k=pr)
+        return mark(u0 + 0.0165, nrm, 0.062, col_g, col_l, k=pr, tilt=1.6)          # 5th = strike across the four
+    nA = n0 * math.cos(flip * PI) + np.cross(d, n0) * math.sin(flip * PI)            # side A normal (follows the flip)
+    for i in range(NA_OLD): Q += tally(i, nA, GROOVE, LIP)
+    for i, pr in ((NA_OLD, newA[0]), (NA_OLD + 1, newA[1])):
+        if pr > 0.02: Q += tally(i, -(-nA), mixc(WOOD, GROOVE, min(1, pr * 1.6)), LIP, pr=min(1.0, pr * 1.25))
+    nB = -nA                                                                          # side B: his own deaths, tally groups end to end, faded
+    for i in range(35): Q += tally(i, nB, GROOVE_B, LIP_B, base_u=-0.06, gap=0.047)
+    for g_ in range(8):                                                               # ... and on over the back of the bowl
+        th = 2 * PI * g_ / 8
+        for j in range(5):
+            ang = th + (j - 2) * 0.09 if j < 4 else th; r_ = BOWL_R * 0.62
+            loc = V((r_ * math.cos(ang), -0.034, r_ * math.sin(ang))); p_ = bc + Rb @ loc
+            nrm = hd.nz(Rb @ V((0.62 * math.cos(ang), -0.8, 0.62 * math.sin(ang)))); radial = hd.nz(Rb @ V((math.cos(ang), 0, math.sin(ang))))
+            Q += hd.decal(tuple(p_ + nrm * 0.004), tuple(nrm), tuple(radial if j < 4 else hd.nz(radial + Rb @ V((-math.sin(ang), 0, math.cos(ang))) * 1.4)),
+                          0.004 if j < 4 else 0.005, 0.022 if j < 4 else 0.034, GROOVE_B, lift=0.001)
     return [q for q in Q if q]
-def knife(hold, d):
-    d = hd.nz(V(d, float)); h = V(hold, float)
-    Q = hd.limb(tuple(h - d * 0.05), tuple(h + d * 0.04), 0.014, 0.014, (70, 50, 34), n=6, m=1)
-    Q += hd.limb(tuple(h + d * 0.04), tuple(h + d * 0.15), 0.012, 0.003, (196, 200, 206), n=4, m=1, flat=0.25)
+def mixc(a, b, u): return tuple(int(round(x + (y - x) * max(0.0, min(1.0, u)))) for x, y in zip(a, b))
+def knife(grip, tip, face_n=None):
+    """blade ends exactly at `tip` (always aimed at the ladle). The blade is a flat steel shape whose face turns toward face_n
+    (the camera side) so it reads as a knife, not a wire."""
+    g = V(grip, float); tp = V(tip, float); d = hd.nz(tp - g)
+    fn = V((0, 1.0, 0)) if face_n is None else hd.nz(V(face_n, float))
+    w = np.cross(d, fn)
+    if np.linalg.norm(w) < 1e-4: w = np.cross(d, V((1.0, 0, 0)))
+    w = hd.nz(w); L = np.linalg.norm(tp - g)
+    Q = hd.limb(tuple(g - d * 0.06), tuple(g + d * 0.028), 0.015, 0.014, (70, 50, 34), n=6, m=1)
+    Q += hd.limb(tuple(g + d * 0.026), tuple(g + d * 0.034), 0.02, 0.02, (150, 126, 80), n=6, m=1)       # guard
+    b0 = g + d * 0.034; spine = [b0 + w * 0.012, b0 + d * (L - 0.034) * 0.75 + w * 0.009, tp]
+    edge = [b0 - w * 0.012, b0 + d * (L - 0.034) * 0.6 - w * 0.011]
+    Q.append(hd.face([spine[0], spine[1], spine[2], edge[1], edge[0]], (214, 220, 228)))
+    Q.append(hd.face([edge[0], edge[1], spine[2], edge[1] + w * 0.004], (250, 252, 255)))                 # bright cutting edge
     return [q for q in Q if q]
 
 def respawn_motes(t, t0=0.0, d=0.9):
@@ -254,16 +294,6 @@ def keeper_pose(t):
     P = dict(base=KEEP, yaw=KEEP_YAW, crouch=0.48, lean=0.28, eyes='half', mouth='neutral', brow=-0.2, nod=0.25)
     P['rf'] = (0.14, 0.07, 0.36); P['lf'] = (-0.14, 0.07, 0.32); P['rkpole'] = (0.1, 0.6, 1.0); P['lkpole'] = (-0.1, 0.6, 1.0)
     P['lh'] = (-0.12, 0.72, 0.36); P['lgrip'] = 0.85; P['rgrip'] = 0.85
-    carving = (t < T0['04'] - 0.2) or (T_SIGH[1] <= t)
-    c = 0.5 + 0.5 * math.sin(t * 9.0) if carving else 0.0
-    knife_l = V((0.06, 0.78 + 0.015 * c, 0.4 + 0.02 * c))
-    rest = V((0.18, 0.62, 0.3))                                                 # knife resting on his knee
-    if not carving: knife_l = rest
-    if t >= T_RAISE[0] and t < T_SIGH[1]:                                       # raises the knife above the ladle ... stops ... lowers
-        up = sm(seg01(t, *T_RAISE)); dn = sm(seg01(t, *T_LOWER)); hov = V((0.06, 0.86, 0.42))
-        knife_l = lerp3(lerp3(rest, hov, up), rest, dn)
-        if t >= T_SIGH[0]: knife_l = lerp3(rest, V((0.06, 0.78, 0.4)), sm(seg01(t, *T_SIGH)))
-    P['rh'] = tuple(knife_l)
     for k in ('01', '05', '07', '09', '11', '13'):
         mt = talking(t, k)
         if mt: P['mouth'] = mt
@@ -279,17 +309,62 @@ def keeper_pose(t):
     if T_BOOM <= t < T_SIGH[0]: P['eyes'] = 'closed' if t > T_BOOM + 0.35 else 'wide'; P['brow'] = -0.7
     if t >= T_SIGH[0]: P['eyes'] = 'half'; P['brow'] = -0.4; P['nod'] = 0.3; P['mouth'] = talking(t, '13') or 'soft'
     return P
-def flip_u(t): return sm(seg01(t, *T_FLIP))
+T_UNFLIP = (T0['11'] - 0.7, T0['11'] - 0.05)                       # back to side A while the hero stands (small polish adjustment)
+def flip_u(t): return sm(seg01(t, *T_FLIP)) * (1 - sm(seg01(t, *T_UNFLIP)))
+T_N99 = T0['03'] + 0.62 * SCR['dur']['03']                         # notch #15 (death 99) fully cut ~ on 'notch'
+T_N100 = (T_SIGH[1] + 0.05, T_SIGH[1] + 1.05)                       # notch #16 (death 100) during 'Get up, kid.'
+def notch_progress(t):
+    a = CUTS[2][1]                                                  # most of the cut happens inside the ladle close-up, so it reads
+    p99 = 0.15 * sm(seg01(t, 0.0, a)) + 0.85 * sm(seg01(t, a + 0.25, T_N99))
+    if t < 0: p99 = 0.0                                             # loop tail: just before frame 0, the cut has not started
+    return (p99, sm(seg01(t, *T_N100)))
+def carving_now(t): return (0.0 <= t < T0['04'] - 0.2) or (t < 0) or (T_SIGH[1] <= t)
 _KC = {}
+def _ladle_geo(P):
+    lw = fp.grip_pt(P, 'l', 0.06, 0.0); RWk = P['_RW']; d_l = hd.nz(RWk @ V((0.55, 0.45, 0.6))); up = RWk @ V((0, 0.6, 1.0)); return lw, d_l, up
+def knife_targets(t, P, lw, d_l, up):
+    g, tp = _knife_targets(t, P, lw, d_l, up); return V(g, float), V(tp, float)
+def _knife_targets(t, P, lw, d_l, up):
+    """(wanted grip, blade tip): the blade always points at the ladle, never at the hero"""
+    d, n0, n, side = ladle_axes(d_l, up, 0.0)
+    if np.dot(side, P['_RW'] @ V((1.0, 0, 0))) < 0: side = -side              # 'side' = toward his knife hand
+    slot = NA_OLD + (1 if t >= T_SIGH[0] else 0)
+    NP = notch_pt(lw, d_l, up, slot)
+    stroke = math.sin(t * 9.0)                                                 # short sawing strokes across the handle
+    tip_c = NP + side * 0.013 * stroke + n0 * 0.002
+    grip_c = NP + side * 0.15 + n0 * 0.06 - d * 0.02 + side * 0.013 * stroke
+    rest_g = V(P['base']) + hd.Ry(P['yaw']) @ V((0.2, 0.6, 0.3))              # resting on his right knee
+    mid = V(lw) + d * 0.2
+    rest_t = rest_g + hd.nz(mid - rest_g) * 0.14
+    hov_g = NP + n0 * 0.17 + side * 0.07; hov_t = hov_g + hd.nz(NP - hov_g) * 0.135      # wordless: poised over the next notch
+    if carving_now(t) and not (T_RAISE[0] <= t < T_SIGH[1]):
+        k = 1.0 if t >= T_SIGH[1] or t < T0['04'] - 0.45 else 1 - sm(seg01(t, T0['04'] - 0.45, T0['04'] - 0.2))
+        return lerp3(rest_g, grip_c, k), lerp3(rest_t, tip_c, k)
+    if T_RAISE[0] <= t < T_SIGH[1]:
+        up_ = sm(seg01(t, *T_RAISE)); dn = sm(seg01(t, *T_LOWER)); back = sm(seg01(t, *T_SIGH))
+        g = lerp3(lerp3(rest_g, hov_g, up_), rest_g, dn); tp = lerp3(lerp3(rest_t, hov_t, up_), rest_t, dn)
+        if t >= T_SIGH[0]: g = lerp3(rest_g, grip_c, back); tp = lerp3(rest_t, tip_c, back)
+        return g, tp
+    k = sm(seg01(t, T0['04'] - 0.2, T0['04'] + 0.15))                         # carving -> rest
+    return rest_g, rest_t
 def keeper(t):
     k = round(t * FPS * 4)
     if k not in _KC:
-        _KC.clear(); P = keeper_pose(t); Q = hd.human(KEEPER, P); lw = fp.grip_pt(P, 'l', 0.06, 0.0); rw = fp.grip_pt(P, 'r', 0.06, 0.0)
-        RWk = P['_RW']; d_l = hd.nz(RWk @ V((0.55, 0.45, 0.6))); up = RWk @ V((0, 0.6, 1.0))
-        _KC[k] = (P, Q, lw, d_l, up, rw)
+        _KC.clear(); P = keeper_pose(t); P.pop('rh', None)
+        P['rh_w'] = tuple(V(P['base']) + hd.Ry(P['yaw']) @ V((0.2, 0.6, 0.3))); hd.human(KEEPER, P)
+        lw, d_l, up = _ladle_geo(P)
+        for _ in range(2):                                                    # wrist target so the GRIP lands where the knife needs it
+            g_want, tip = knife_targets(t, P, lw, d_l, up)
+            g_now = fp.grip_pt(P, 'r', 0.06, 0.0); P['rh_w'] = tuple(V(P['rh_w']) + (g_want - g_now))
+            P['rpalm'] = tuple(hd.nz(tip - g_want)); P['rpalm_local'] = False
+            Q = hd.human(KEEPER, P); lw, d_l, up = _ladle_geo(P)
+        g_want, tip = knife_targets(t, P, lw, d_l, up)
+        rw = fp.grip_pt(P, 'r', 0.06, 0.0)
+        if np.linalg.norm(tip - rw) > 0.22 or np.linalg.norm(tip - rw) < 0.09: tip = rw + hd.nz(tip - rw) * 0.14
+        _KC[k] = (P, Q, lw, d_l, up, rw, tip)
     return _KC[k]
 def ladle_frame(t):
-    P, Q, lw, d_l, up, rw = keeper(t); n0 = hd.nz(V(up) - d_l * np.dot(up, d_l)); return lw, d_l, n0
+    P, Q, lw, d_l, up, rw, tip = keeper(t); n0 = hd.nz(V(up) - d_l * np.dot(up, d_l)); return lw, d_l, n0
 
 # ======================= camera =======================
 P3 = look.Path
@@ -302,10 +377,12 @@ def cam_shot(t):
         return lerp3((0.55, 1.35, 0.45), (0.5, 1.3, 0.7), u), lerp3((0.75, 0.62, 2.3), (0.8, 0.65, 2.4), u), 52.0
     if sc in ('ladleA', 'flip'):
         i_ = 2 if sc == 'ladleA' else 4
-        lw, d_l, n0 = ladle_frame(CUTS[i_][1] + 0.01); c = V(lw) + d_l * 0.2
+        lw, d_l, n0 = ladle_frame(CUTS[i_][1] + 0.01); c = V(lw) + d_l * 0.21
         u = sm(seg01(t, CUTS[i_][1], CUTS[i_ + 1][1])); side = hd.nz(np.cross(d_l, n0))
-        dist = lerp(0.58, 0.48, u) if sc == 'ladleA' else lerp(0.55, 0.38, u)
-        pos = c + n0 * dist + side * 0.1; return pos, c, 40.0
+        KP_ = keeper(CUTS[i_][1] + 0.01)[0]
+        if np.dot(side, KP_['_RW'] @ V((1.0, 0, 0))) < 0: side = -side
+        dist = lerp(0.6, 0.5, u) if sc == 'ladleA' else lerp(0.58, 0.42, u)
+        pos = c + n0 * dist * 0.9 - side * dist * 0.4 + V((0, 0.04, 0)); return pos, c, 40.0
     if sc == 'talk':
         u = sm(seg01(t, T0['06'] - 0.35, T0['06'] - 0.05))
         if u <= 0.0:
@@ -350,15 +427,15 @@ def frame_low(t):
     layers.append(bowl(bc)); layers.append(steam(bc, t))
     rs = respawn_motes(t)
     if rs: layers.append(rs); L.append(((HERO[0], 0.7, HERO[2] - 0.3), (190, 230, 255), 1.4 * (1 - sm(seg01(t, 0.0, 0.9)))))
-    KP, KQ, lw, d_l, up, rw = keeper(t); layers.append(KQ)
-    cutting = (t < T0['04'] - 0.2) or (T_SIGH[1] <= t)
-    layers.append(ladle(lw, d_l, up, flip=flip_u(t)))
-    layers.append(knife(rw, hd.nz(KP['_RW'] @ V((-0.4, -0.2, 0.6)))))
-    if cutting and sc in ('ladleA', 'open', 'end'):                                     # wood chips off the notch
+    KP, KQ, lw, d_l, up, rw, tip = keeper(t); layers.append(KQ)
+    cutting = carving_now(t) and not (T_RAISE[0] <= t < T_SIGH[1])
+    layers.append(ladle(lw, d_l, up, flip=flip_u(t), newA=notch_progress(t)))
+    layers.append(knife(rw, tip, face_n=V(pos) - V(tip)))
+    if cutting and sc in ('ladleA', 'open', 'two', 'end'):                              # wood chips curl off the blade tip
         n0 = hd.nz(V(up) - d_l * np.dot(up, d_l)); Q = []
-        for i in range(6):
-            u_ = (t * 2.2 + hsh(i, 41)) % 1.0; c = V(lw) + d_l * (0.06 + 0.03 * hsh(i, 42)) + n0 * (0.03 + 0.08 * u_) + V((0.03 * math.sin(i * 3), -0.25 * u_ * u_, 0.02 * math.cos(i)))
-            Q += hd.bx(tuple(c), np.eye(3), (0.004, 0.004, 0.004), (226, 196, 150))
+        for i in range(7):
+            u_ = (t * 2.4 + hsh(i, 41)) % 1.0; c = V(tip) + n0 * (0.01 + 0.05 * u_) + V((0.025 * math.sin(i * 3) * u_, -0.18 * u_ * u_, 0.02 * math.cos(i) * u_))
+            Q += hd.bx(tuple(c), np.eye(3), (0.0045, 0.0045, 0.0045), (232, 204, 158))
         layers.append([q for q in Q if q])
     R = Renderer(W, H, fog=(12, 14, 24))
     img, vi, zb = zrender(R, cam, layers, L, fov=fov, fog_start=9, fog_end=40, ambient=0.34, return_z=True)
@@ -397,12 +474,31 @@ def _sub_scr():
     return out
 SUBS = look.Subtitles(_sub_scr(), LINES, W, H, S, COL, title_key='none', n=17,
                       hil=({'ÇENTİK', 'DOKSAN', 'DOKUZ', 'BİN', 'İKİ', 'SOLMUŞ.', 'KALKMAYI'} if TRL else {'NOTCH', 'NINETY-NINE.', 'THOUSAND', 'TWELVE.', 'FADED.', 'FULL.'}))
+LBL_D = 'ÖLÜM' if TRL else 'DEATHS'; LBL_K = 'BEKÇİNİN ÖLÜMLERİ' if TRL else 'HIS OWN DEATHS'
+def counter_overlay(im, t):
+    """game-style death counter on the ladle close-ups: his 98 -> 99 as the notch is finished, the keeper's own count rolling
+    to 1012 on the flip (too many notches to read one by one), 99 -> 100 at the end"""
+    sc = scene(t); d = ImageDraw.Draw(im)
+    def box(label, val, pop=0.0, col=(255, 214, 60)):
+        vs = str(val); s1 = 5; s2 = int(round(12 + 4 * pop)); w = max(text_w(label, s1), text_w(vs, s2)) + 44
+        x0 = 540 - w // 2; y0 = 150
+        d.rectangle([x0, y0, x0 + w, y0 + 7 * s1 + 7 * s2 + 58], fill=(14, 10, 8)); d.rectangle([x0 + 6, y0 + 6, x0 + w - 6, y0 + 7 * s1 + 7 * s2 + 52], outline=(150, 110, 60), width=4)
+        ctext(d, label, y0 + 18, s1, (232, 222, 200), o=3); ctext(d, vs, y0 + 7 * s1 + 32 - int(14 * pop), s2, col, o=5)
+    if sc == 'ladleA':
+        v = 99 if t >= T_N99 else 98; pop = win(t, T_N99, T_N99 + 0.3, 0.12); box(LBL_D, v, pop, (255, 214, 60) if v == 98 else (255, 120, 80))
+    elif sc == 'flip' and t >= (ws('07', 1) if len(SCR['sent']['07']) > 1 else T0['07']) - 0.05:
+        a, b = ws('07', 1) if len(SCR['sent']['07']) > 1 else T0['07'], tend('07')
+        u = sm(seg01(t, a, b - 0.05)); v = int(round(1012 * u)); pop = win(t, b - 0.05, b + 0.3, 0.12)
+        box(LBL_K, v, pop, (210, 200, 186) if u < 1 else (255, 120, 80))
+    elif sc == 'end' and t >= T_SIGH[1]:
+        v = 100 if t >= T_N100[1] else 99; pop = win(t, T_N100[1], T_N100[1] + 0.3, 0.12); box(LBL_D, v, pop, (255, 214, 60) if v == 99 else (255, 120, 80))
 from nightkit import cta
 CTA = cta.Achievement(t0=cta.default_time(DUR, dur_on=F(0.5)), lang=SUB_LANG, dur=F(0.5))
 def frame_final(t):
     if t >= T_LOOPF: t = t - DUR                                                         # loop tail = the frames just before frame 0
     img, vi = frame_low(t); arr = post.upscale(img, S)
     im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)); cover_overlay(im, t)
+    if t >= 0: counter_overlay(im, t)
     arr = np.asarray(im).astype(np.float32); arr = died_overlay(arr, t)
     arr = SUBS.apply(arr, t) if t >= 0 else arr
     arr = CTA.apply(arr, t) if t >= 0 else arr
