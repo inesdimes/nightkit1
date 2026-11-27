@@ -1,4 +1,4 @@
-INSERT DISC 2 - STORY RULES FOR GPT  (version 27 Nov 2026)
+INSERT DISC 2 - STORY RULES FOR GPT  (version 27 Nov 2026, b: stakes + re-hooks)
 Paste this whole file at the start of a new chat, then ask for ideas.
 =====================================================================
 
@@ -51,17 +51,26 @@ These are the reasons for the rules. Do not break them without saying why.
 - HOOK BY 2 SECONDS: the question or the strange thing must be clear within the first 2 s.
   (One video only made its joke clear at ~3 s, and 91 % of viewers swiped away.)
 - The first spoken sentence already tells the story. No intro, no "Have you ever...", no setup line.
+- STAKES IN THE FIRST 3 SECONDS: a character the viewer roots for, something he can LOSE, and urgency
+  (a timer, a closing gate, a counter running out, someone coming). "He just wants to get through" is not enough.
+- RE-HOOK EVERY 5-7 SECONDS: when a question is answered, open the next one at once (a new problem, a new rule,
+  a reveal). Never a stretch of pure talk or explaining with nothing new on screen.
+- ONE HEAD FAKE at least: make the viewer expect A, then snap to B (he looks like he will jump... then he does not).
 - Something new every 2-3 s. No silence longer than about 1 s (except the wordless beat).
 - Plant ONE concrete detail early (an object, a HUD counter, a habit) that the twist reverses or pays off.
 - ONE wordless beat of 1-2 s where the viewer feels or realises it (a look, a hand that stops, a light going out).
 - The narrator says facts, never feelings ("he was sad" is forbidden). The picture carries the feeling.
 - ENDING: a short final line (max ~10 words) that invites an answer, then the video ends.
+- COMMENT QUESTION: answerable in ONE word or a choice (A or B?), e.g. "Jump or launch him?". People comment when it is easy
+  to answer; an open question ("what do you think?") gets nothing. Our comments were 0 on every video.
 - LOOP (must): the last shot connects back to frame 1 (same framing or the same action starting again).
   Say exactly how the last frame matches the first.
 - At most 4 characters and 3 places.
 - SPOKEN WORDS: the finished video is sped up 1.2x. Enes reads male lines, Betul reads female lines.
   About 70-85 words for 30 s, 90-115 for 40 s, 35-45 for 15-20 s. No line over ~16 words. Every line has a speaker.
 - On-screen game text: short, UPPER-CASE (e.g. VILLAGE 9/10, SELL: HERO?).
+- FIRST 2 SECONDS: at most ONE game text besides the cover title (one counter OR one prompt, not both): too much text
+  in frame 1 slows the reading.
 
 4. CAMERA RULES (your second job)
 ---------------------------------------------------------------------
@@ -92,13 +101,15 @@ STEP 3 - STORY + CAMERA SCRIPT (after my OK), in this order:
      Places: one line each (look, light, time of day)
   4. Shot table:
      | time | camera (distance, angle, movement) | what happens (action + expression) | line (speaker: text) | on-screen game text |
-  5. Planted detail, wordless beat, loop ending: one line each with the exact seconds
-  6. One question for the pinned comment
+  5. Planted detail, wordless beat, head fake, loop ending: one line each with the exact seconds
+  6. Stakes + urgency (what can he lose, why now) and the re-hook moments with their seconds
+  7. One question for the pinned comment (one word or A-or-B)
 
-SELF-CHECK before sending step 3 (answer in 5 lines):
+SELF-CHECK before sending step 3 (answer in 6 lines):
   [ ] fantasy/RPG trope, "Why do...?" title (or a reason for another), logic holds in every scene
-  [ ] frame 1 big + moving + bright, hook clear within 2 s
+  [ ] frame 1 big + moving + bright, hook clear within 2 s, at most one game text besides the cover
+  [ ] stakes + urgency in the first 3 s, a re-hook every 5-7 s, at least one head fake
   [ ] final length <= 35 s (40 max), word count inside the budget
   [ ] planted detail + wordless beat + loop ending present
-  [ ] the ending invites an answer
+  [ ] the ending + the pinned comment ask a one-word / A-or-B question
 If two rules clash, keep the one from section 2 and tell me which one you dropped.
