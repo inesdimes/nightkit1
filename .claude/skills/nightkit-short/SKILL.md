@@ -7,6 +7,9 @@ description: Production order for a new Insert Disc 2 short (or a revision) in t
 Read `CONTINUE.md` and `PIPELINE.md` first. Reuse existing models, sets and tools; never rewrite what did not change.
 Stop at every gate marked STOP, show the result in a few lines and wait for Enes.
 
+0a. **Rules filter** (Enes, 27 Nov 2026) - every story Enes sends (GPT or his own) is checked against `briefs/GPT_STORY_RULES.txt`
+   (sections 2-4 + the self-check). Claude completes whatever is missing or weak itself, without asking, and lists in a few lines
+   what was added / changed and why (stakes + urgency in 3 s, re-hook every 5-7 s, head fake, frame 1, hook by 2 s, loop, length, comment question).
 0. **Script lint** - `python tools/qa/script_lint.py <narration>`; read the hints (pace, hook, pivot, last line).
 1. **Plan** - a short feasibility plan: what is reused, what is new (models, set), cameras, timing, audio. STOP.
 2. **Asset lock** - one function per character / prop / set (PIPELINE phase 1). Preview them yourself with
