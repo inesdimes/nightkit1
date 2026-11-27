@@ -19,6 +19,18 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 ```
 (For Final Boss B also run A's `PART=audio` first; same for Guard Forgets B.)
 
+## Newest (28 Nov 2026) - Why do NPCs stand still at night? (queue #1, built after the weekly reset)
+- Brief `briefs/night_freeze.md` through the rules filter (v27 Nov c): Bram no longer points (he would be seen), the rule is spoken
+  ("It only sees what moves.", "But fire never stands still."), Bram RESPAWNS at dawn and says his repeated line -> perfect loop (he is in frame 0).
+  Villagers restaged: frozen in the street mid-task (broom, washing, bucket, kid mid-step), not facing the walls (faces visible).
+- `examples/night_freeze.py` (new: the Watcher fog giant with lantern eyes + long fingers, cat, red hat, night street with lit windows that
+  click off, puddles with THOOM ripples, 2D detection cone + meter, dawn/night time-lapse, respawn), voice `tools/tts/nf.py`
+  (N/K/B cloned, Marta = Kokoro whisper placeholder). 5 sequences -> `renders/night_freeze/why_do_npcs_stand_still_at_night_29s.mp4`
+  (29.2 s, -13.9 LUFS, -2.0 dBTP, check 11/13: FAIL = 1.2x length, WARN = planned cuts). Thumbnails EN/TR, `captions/night_freeze.md`,
+  TR sheet `briefs/night_freeze_voice_sheet.md` (Betül = Marta). Next in the queue: loading_tips.
+- Lessons: Whisper small.en hears "respawns" as "responds" (hyphenated text "re-spawns" fixed the clone); long bash heredocs with many quotes
+  break in Git Bash: write patch scripts to the scratchpad instead.
+
 ## Next (27 Nov 2026): six full briefs by Claude wait in `briefs/QUEUE_27NOV.md` (Enes liked all six; build after the weekly limit resets).
 
 ## Newest (27 Nov 2026) - Why do tutorials make you jump? (GPT story with the new rules, full authority to Claude)
