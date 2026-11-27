@@ -19,6 +19,23 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 ```
 (For Final Boss B also run A's `PART=audio` first; same for Guard Forgets B.)
 
+## Newest (27 Nov 2026) - Why do tutorials make you jump? (GPT story with the new rules, full authority to Claude)
+- Enes wrote the story with GPT using the new `briefs/GPT_STORY_RULES.txt` (v27 Nov: GPT = story + camera only) and gave Claude full authority.
+  Rule: the tutorial gate opens when SOMEONE leaves the ground; the counter does not check who. The knight smashes three hurdles (JUMPS 0/1),
+  the instructor steps in to demonstrate, the knight shoulder-charges him over the last hurdle -> JUMPS 1/1 (wordless flight beat), the gate
+  opens, he lands on course 2, DOUBLE JUMP, the knight glances: "Want to try that twice?" -> loop: the last frame = frame 0 (course 2 is the
+  same layout seen again; checked on stills: frame 0 vs DUR-0.12 s match).
+- Claude additions: the spoken title as line 00; PRESS X TO JUMP prompts the knight ignores; TUTORIAL 1-1 HUD counter (pulses on
+  "Watch the counter", green pop at 1/1); the classic game jump sound on the launch; smash 1 at 0.9 s (inside the hook).
+- `examples/tutorial_jump.py` (new: instructor with bushy brows + white gloves, JUMP road sign with 3D pixel text, breakable hurdles with
+  ballistic planks, chunked training yard, gatehouses + portcullis + two-sided counter panel, camera-following sky dome), voice
+  `tools/tts/tj.py` (cloned, Whisper 10/10 exact). 5 sequences -> `renders/tutorial_jump/why_do_tutorials_make_you_jump_28s.mp4`
+  (28.0 s, -13.5 LUFS, -1.7 dBTP, check 11/13: FAIL = 1.2x length, WARN = planned cuts / subtitle pops). Critique r1-r2 in
+  `reviews/tutorial_jump.md`. Thumbnails EN/TR, `captions/tutorial_jump.md`, TR sheet `briefs/tutorial_jump_voice_sheet.md` (10 lines).
+- Lessons: a camera outside the yard wall (x > 3) sweeps the banner posts across the lens; a sky dome re-centred in steps makes false cuts
+  (now it moves with the camera); look.Path with scalar keys returns a float; pixel text on a board: u = cross(facing, up), not (up, facing).
+- 28 s, not GPT's 23 s: the spoken title + the clone's pace. Not watched in motion by Claude (stills + measurements only).
+
 ## Newest (26 Nov 2026, night) - Turkish versions with Enes's OWN voice (4 videos)
 - Enes recorded all TR lines (`vocal/<bridge toll|mimic shop|never attack|save point> tr/Kayıt (n).m4a`) and edited the TR text in the voice sheets. Takes copied to `renders/<proj>/tr_voice_tts/mix`, `own_prep.py --lines`, then `SUB_LANG=tr <mod>.py build own` (**new:** `multi.main(..., TR)` finds the sentence breaks from the TURKISH sentence lengths when SUB_LANG=tr; with the EN lengths 'Mimikler insan doğasını öğrendi.' split in the wrong pause).
 - **Whisper check of his Turkish** (large-v3-turbo, Chatterbox python, language='turkish'; script was in the session scratchpad): he ad-libbed 'Sıra senin', 'Ah, peki', 'İnanabiliyor musun?' (NA), 'saymayı bıraktım' (SP 9); Enes confirmed, TR tables + sheets synced. Whisper heard BT 11 as 'Özür dilerim' but Enes said it is 'Her sikke bir taş' (slow short lines are unreliable). NA 03 sentence break set by hand from Whisper word timestamps (1.56 / 1.73 s).
