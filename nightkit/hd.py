@@ -276,7 +276,13 @@ def human(S, P):
             Q += limb(el, wr, 0.04, 0.03, S['skin'], n=nl, m=2, ref=Wd(np.array([0, 0, 1.0])), bulge=0.05, cap0=False)
         palm = g(key + 'palm')
         palm = Wd(Rch @ np.array([-sd * 1.0, 0, 0.2])) if palm is None else (Wd(np.asarray(palm, float)) if g(key + 'palm_local', True) else np.asarray(palm, float))
-        Q += hand(wr, wr - el, palm, g(key + 'grip', 0.25), S['gloves'] or S['skin'], k, ring=(S.get('ring') if key == S.get('ring_hand', 'l') else None), side=sd)
+        if g(key + 'fingers') is not None:                                # opt-in hand with real fingers (nightkit/hands.py); old grip hand otherwise
+            from . import hands as _hands
+            _o = {}; Q += _hands.hand(wr, wr - el, palm, g(key + 'fingers'), S['gloves'] or S['skin'], k, ring=(S.get('ring') if key == S.get('ring_hand', 'l') else None),
+                                      side=sd, wrist=g(key + 'wrist', (0.0, 0.0)), out=_o)
+            P['_' + key + 'tips'] = _o['tips']; P['_' + key + 'grip'] = _o['grip']
+        else:
+            Q += hand(wr, wr - el, palm, g(key + 'grip', 0.25), S['gloves'] or S['skin'], k, ring=(S.get('ring') if key == S.get('ring_hand', 'l') else None), side=sd)
         P['_' + key + 'wrist'] = wr; P['_' + key + 'dir'] = nz(wr - el); P['_' + key + 'palm'] = nz(palm)
     # ---- legs
     for sd, key in ((1, 'r'), (-1, 'l')):
