@@ -337,3 +337,25 @@ Changes agreed with Enes (25 Nov):
   posts were also the stronger videos, so slot and content were confounded. With two weak 01:00 posts the slot is NOT a reliable
   lever; the first 1-2 s (stayed %) stays the main suspect. Keep the slot fixed until the test week ends (2 Dec) so only one thing
   changes; judge videos by stayed % at 48 h, not by the slot. Needed per video: views + stayed % + the 0-3 s retention curve.
+
+## 23. All 22 English shorts, posting time vs result (Studio screenshots 27 Nov 2026 ~06:55; folder `analysis 48 hours/`)
+Posting times were read from the start of each Studio views graph (matches logged times within ~3 min). Full list:
+`analysis 48 hours/paylaşım saatleri - tam liste.txt`. Several of the earlier 22/01 labels were off (stolen car 23:00, four_phases and
+enemies_queue 02:00, mimic + one potion 22:30, 3 knocks 01:30).
+
+| Period | Videos | Median views | Videos >= ~900 | Median stayed % |
+|---|---|---|---|---|
+| 15-19 Nov | 11 | ~1.2 K | 8 / 11 | **55.8 %** |
+| 20-25 Nov | 11 | ~800 | 5 / 11 | **33.2 %** |
+
+- Slot: evening (19-23 TR) median ~1.1 K vs after midnight (01-04 TR) ~1.0 K. No slot effect; the best video (Final Boss A, 3.7 K) was a 23:00 post.
+- Stayed % fell from a ~56 % median to ~33 %: viewers swipe more in the first seconds. That is what changed, not the feed.
+- Dead videos (stolen car 6.4 %, boss speech 13.6 %, dragon taxes 15.4 %) show no country data ("Türkiye %0" = placeholder); they were
+  swiped in the first test batch. There is no sign they were sent to "the wrong feed".
+- Region does follow the clock a little: 19:00-21:00 TR posts got big TR shares (guards forget TR 38 %, pizza cat TR 33 %, knight TR 19 %),
+  22:30+ posts mostly US. Those TR-heavy videos still reached ~1.2-1.4 K, so it does not decide success, but the test week's 18:00 slot
+  sits in the TR-heavy window.
+- Titles: "Why do <game trope>?" titles median ~1.1 K; the late story titles ("What if every healing potion...", "What if the dragon...",
+  "The Last Time He Heard...") 26-391 views. The weak videos of 20-25 Nov are mostly the longer nightkit HD emotional stories (44-67 s).
+  Exceptions that survived: very short loops (knight 14 s, BHB 21 s, cats 15 s, pizza cat 16 s) live on rewatches with low stayed %.
+- 82-96 % of viewers are new on every video: no returning audience yet, each video stands alone in the feed test.
