@@ -315,7 +315,8 @@ def human(S, P):
         P['_' + key + 'knee'] = kn; P['_' + key + 'ankle'] = an; P['_' + key + 'hip'] = hip
     # ---- cloak (open at the front, folds, hangs from the shoulders)
     if S['cloak']:
-        Q += cloak(chest, neck, RW, RP, pel, S, P, k, bw)
+        if S.get('cloak_hd'): Q += cloak_hd(chest, neck, RW, RP, Rb, pel, base, S, P, k, bw)   # opt-in soft cloth cloak
+        else: Q += cloak(chest, neck, RW, RP, pel, S, P, k, bw)
     P['_head'] = hc; P['_chest'] = chest; P['_pel'] = pel; P['_RH'] = RH; P['_RW'] = RW; P['_waist'] = waist; P['_neck'] = neck
     return Q
 
@@ -513,6 +514,95 @@ def cloak(chest, neck, RW, RP, pel, S, P, k, bw):
         hc = P.get('_head_hint', neck + RW @ np.array([0, 0.03, -0.1]))
         Q += ellip(neck + RW @ np.array([0, 0.02, -0.11]), RW @ Rx(0.5), (0.12 * k, 0.05 * k, 0.09 * k), 10, 4, col, closed=False)
     # clasp
+    Q += bx(neck + RW @ np.array([0.0, -0.05, 0.075 * bw]), RW, (0.02, 0.02, 0.008), S['buckle'])
+    return Q
+
+def cloak_hd(chest, neck, RW, RP, Rb, pel, base, S, P, k, bw):
+    """soft cloth cloak (opt-in: spec(cloak_hd=True)); ~ 22 x 32 grid instead of the 6 x 16 tube.
+    Each column hangs from the shoulders as a chain under gravity: uneven pleats that deepen toward the hem, a wavy hem,
+    the top edge rides the shoulders (shrug / raised arms), the cloth slides over the back, skirt and legs instead of
+    passing through them and pools on the ground (kneel / crouch). Motion: P['cape_sway'] (back, as before),
+    P['cape_side'] (sideways), P['cape_t'] (time: pleats breathe and a ripple runs down the cloth); body.Performer sets all
+    three from the body's own motion with a spring (follow-through)."""
+    col = S['cloak']; ln = S['cloak_len'] * k; Q = []; NR, NC = 22, 32
+    sway = P.get('cape_sway', 0.0); sside = P.get('cape_side', 0.0); tt = P.get('cape_t', 0.0)
+    top = neck + RW @ np.array([0, -0.035, -0.02]); gy = float(base[1]) + 0.012
+    th0, th1 = PI * 1.03, PI * 1.97
+    bk = RW @ np.array([0, 0, -1.0]); bk[1] = 0.0; bk = nz(bk) if np.linalg.norm(bk) > 1e-6 else np.array([0, 0, -1.0])
+    sdw = np.cross(np.array([0, 1.0, 0]), bk)                                  # world sideways (character's right when bk = back)
+    # how far each shoulder is raised (shrug, arms up) relative to rest
+    lift = {}
+    for s_, sg in (('r', 1), ('l', -1)):
+        shp = P.get('_' + s_ + 'sh')
+        lift[sg] = 0.0 if shp is None else float(np.clip((RW.T @ (np.asarray(shp) - chest))[1] - 0.05 * k, -0.05, 0.12))
+    # collision shapes: torso (elliptic, along the spine), skirt, leg + upper-arm capsules
+    caps = []
+    for a_, b_, r_ in (('_rhip', '_rknee', 0.085), ('_lhip', '_lknee', 0.085), ('_rknee', '_rankle', 0.07), ('_lknee', '_lankle', 0.07),
+                       ('_rsh', '_rel', 0.058), ('_lsh', '_lel', 0.058)):
+        if P.get(a_) is not None and P.get(b_) is not None: caps.append((np.asarray(P[a_], float), np.asarray(P[b_], float), r_ * max(1.0, bw)))
+    sk = S['skirt'] or 0.0; crouch = P.get('crouch', 0.0)
+    def collide(p):
+        # torso: ellipse around the spine pel -> neck in the chest frame
+        ax = neck - pel; u = float(np.clip((p - pel) @ ax / max(ax @ ax, 1e-9), 0.0, 1.0))
+        if u > 0.0 or (p - pel) @ ax > -0.02:
+            c = pel + ax * u; R_ = RW if u > 0.45 else RP; q = R_.T @ (p - c)
+            rx, rz = (0.2 + 0.015 * u) * bw, (0.15 - 0.01 * u) * bw; e = (q[0] / rx) ** 2 + (q[2] / rz) ** 2
+            if e < 1.0 or (q[2] > 0.0 and abs(q[0]) < rx):                       # the cloak always stays on the BACK of the torso
+                xx = float(np.clip(q[0], -rx * 0.995, rx * 0.995)); q = np.array([xx, q[1], -(rz + 0.012) * math.sqrt(1.0 - (xx / rx) ** 2)]); p = c + R_ @ q
+        # skirt hem cone below the pelvis
+        if sk > 0.02:
+            q = RP.T @ (p - pel); d = -q[1]
+            if 0.0 < d < sk + 0.02:
+                w = d / sk; rx, rz = (0.17 + 0.06 * w) * bw + 0.012, (0.12 + 0.07 * w) * bw + 0.08 * crouch * w + 0.012
+                e = (q[0] / rx) ** 2 + (q[2] / rz) ** 2
+                if e < 1.0 or (q[2] > 0.0 and abs(q[0]) < rx):
+                    xx = float(np.clip(q[0], -rx * 0.995, rx * 0.995)); p = pel + RP @ np.array([xx, q[1], -rz * math.sqrt(1.0 - (xx / rx) ** 2)])
+        for a, b, r in caps:
+            ab = b - a; h = float(np.clip((p - a) @ ab / max(ab @ ab, 1e-9), 0.0, 1.0)); c = a + ab * h; dv = p - c; dl = np.linalg.norm(dv)
+            if dl < r: p = c + (dv / dl if dl > 1e-6 else bk) * r
+        if p[1] < gy: p = p.copy(); p[1] = gy
+        return p
+    G = []; F = []
+    for j in range(NC + 1):
+        th = th0 + (th1 - th0) * j / NC; cs, sn = math.cos(th), math.sin(th)
+        # pleats: three uneven waves around the back, deeper toward the hem, drifting slowly with time
+        def pleat(s):
+            a = (0.016 + 0.04 * s ** 1.1) * bw
+            return a * (0.55 * math.sin(7 * th + 0.4 + 0.25 * math.sin(tt * 0.9)) + 0.3 * math.sin(12 * th + 1.7 + 1.6 * s + 0.3 * tt)
+                        + 0.25 * math.sin(4 * th + 2.3 + 0.4 * math.sin(tt * 0.6 + 1.0)))
+        hem = 1.0 + 0.035 * math.sin(5 * th + 0.8) + 0.02 * math.sin(11 * th + 2.0)
+        sgn = 1 if cs > 0 else -1; side_w = abs(cs) ** 1.5
+        p0 = top + RW @ np.array([0.19 * bw * cs, -0.03 * side_w + lift[sgn] * side_w * 0.8, 0.12 * bw * sn])
+        nrm = RW @ np.array([cs, 0, sn])                                       # outward around the body
+        D = []
+        for i in range(NR + 1):
+            s = i / NR; L_ = ln * hem
+            p = p0 + np.array([0, -L_ * s, 0]) + RW @ np.array([0.12 * bw * cs * s, 0, 0.1 * bw * sn * s - 0.06 * s])
+            p = p + nrm * pleat(s)
+            p = p + bk * (0.05 * s * s + sway * s * s * 0.3) + sdw * (sside * s * s * 0.3)
+            p = p + bk * (0.012 + 0.03 * abs(sway)) * s ** 1.5 * math.sin(6.0 * s - 3.2 * tt + 0.6 * th)   # ripple travelling down
+            D.append(p)
+        col_pts = [D[0]]
+        for i in range(1, NR + 1):                                             # hang as a chain: keep segment lengths, slide over the body
+            seg = np.linalg.norm(D[i] - D[i - 1]); pr = col_pts[-1]; d0 = nz(D[i] - D[i - 1])
+            ax = neck - pel; u = float((pr - pel) @ ax / max(ax @ ax, 1e-9))
+            if -0.05 < u < 1.0:                                                # on the back: slide along it when gravity points into the body (bow)
+                nb = (RW if u > 0.45 else RP) @ np.array([0, 0, -1.0])
+                if d0 @ nb < 0.0: d0 = nz(d0 - nb * float(d0 @ nb))
+            q = pr + d0 * seg
+            col_pts.append(collide(q))
+        G.append(col_pts)
+        F.append([pleat(i / NR) / ((0.016 + 0.04 * (i / NR) ** 1.1) * bw + 1e-9) for i in range(NR + 1)])
+    R = [[G[j][i] for j in range(NC + 1)] for i in range(NR + 1)]
+    C = [np.mean([G[j][i] for j in range(NC + 1)], axis=0) - bk * 0.3 for i in range(NR + 1)]   # 'inside' = toward the body
+    dk = shade(col, 0.58); lt = shade(col, 1.15)
+    def colfn(i, j):
+        f = (F[j][i] + F[min(NC, j + 1)][i]) * 0.5                             # pleat crests lighter, valleys darker
+        if i == NR - 1: return shade(col, 0.6)                                 # darker hem band so the edge reads
+        return mix(dk, lt, float(np.clip(0.5 + 0.7 * f, 0.0, 1.0)))
+    Q += rings_mesh(R, col, C, False, False, colfn, False, False)
+    if S['hood']:
+        Q += ellip(neck + RW @ np.array([0, 0.02, -0.11]), RW @ Rx(0.5), (0.12 * k, 0.05 * k, 0.09 * k), 10, 4, col, closed=False)
     Q += bx(neck + RW @ np.array([0.0, -0.05, 0.075 * bw]), RW, (0.02, 0.02, 0.008), S['buckle'])
     return Q
 

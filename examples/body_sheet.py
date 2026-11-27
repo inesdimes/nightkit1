@@ -1,6 +1,8 @@
 """Review sheet for nightkit/body.py (phase 3). Not a video.
   python examples/body_sheet.py          # every gesture, 3/4 front, medium-full shot
   python examples/body_sheet.py clip     # an 8 s performance (Performer timeline) -> renders/body_sheet/clip
+  python examples/body_sheet.py cloak    # old tube cloak vs soft cloak_hd, 3 angles x 5 poses -> cloak_sheet.png
+  python examples/body_sheet.py cloakclip  # the 8 s performance seen from behind 3/4 -> renders/body_sheet/cloakclip
 Output: C:/Users/USER/Documents/blender-shorts/renders/body_sheet/"""
 import os, sys, math
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
@@ -12,7 +14,8 @@ from nightkit import hd, body, look, post
 V = np.array
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'renders', 'body_sheet'); os.makedirs(OUT, exist_ok=True)
 S = hd.spec(h=1.78, build=1.05, skin=(222, 176, 140), hair=(62, 44, 32), hair_style='messy', eye=(70, 110, 150), brow=(46, 32, 24),
-            cloak=(60, 80, 140), cloak_len=0.9)
+            cloak=(60, 80, 140), cloak_len=0.9, cloak_hd=True)
+S_OLD = dict(S, cloak_hd=None)
 def ground():
     Q = []
     for i in range(-4, 4):
@@ -42,8 +45,27 @@ TIMELINE = [(0.0, 'idle'), (0.8, 'wave'), (2.2, 'shrug'), (3.4, 'arms_crossed'),
 def clip():
     pf = body.Performer(S, TIMELINE); d = os.path.join(OUT, 'clip'); os.makedirs(d, exist_ok=True)
     for f in range(int(8.0 * 24)):
-        t = f / 24; P = pf.at(t); P['cape_sway'] = 0.0
+        t = f / 24; P = pf.at(t)
         render(hd.human(S, P), *CAM).resize((1080, 1920), Image.NEAREST).save(os.path.join(d, f'f_{f + 1:04d}.png'))
     print('wrote clip frames')
+CAMS = {'front': (V((0.9, 1.25, 2.9)), V((0.0, 1.0, 0.0))), 'side': (V((3.0, 1.2, -0.3)), V((0.0, 1.0, 0.0))), 'back': (V((-1.3, 1.35, -2.7)), V((0.0, 1.0, 0.0)))}
+def cloak():
+    rows = []
+    for g in ('idle', 'cheer', 'bow', 'slump', 'kneel'):
+        row = Image.new('RGB', (6 * 274, 484), (30, 30, 34))
+        for a, (tag, SS) in enumerate((('old', S_OLD), ('hd', S))):
+            pf = body.Performer(SS, [(0.0, g)], breath=False, sway=False); P = pf.at(1.5)
+            for b, cn in enumerate(('front', 'side', 'back')):
+                row.paste(label(render(hd.human(SS, dict(P)), *CAMS[cn]), f'{g} {tag} {cn}'), ((a * 3 + b) * 274, 0))
+        rows.append(row)
+    sh = Image.new('RGB', (6 * 274, len(rows) * 484)); [sh.paste(r, (0, i * 484)) for i, r in enumerate(rows)]
+    sh.save(os.path.join(OUT, 'cloak_sheet.png')); print('wrote cloak_sheet.png')
+def cloakclip():
+    pf = body.Performer(S, TIMELINE); d = os.path.join(OUT, 'cloakclip'); os.makedirs(d, exist_ok=True)
+    cam = (V((-1.6, 1.3, -2.4)), V((0.0, 1.0, 0.0)))
+    for f in range(int(8.0 * 24)):
+        t = f / 24; P = pf.at(t)
+        render(hd.human(S, P), *cam).resize((1080, 1920), Image.NEAREST).save(os.path.join(d, f'f_{f + 1:04d}.png'))
+    print('wrote cloakclip frames')
 if __name__ == '__main__':
-    {'sheet': sheet, 'clip': clip}[sys.argv[1] if len(sys.argv) > 1 else 'sheet']()
+    {'sheet': sheet, 'clip': clip, 'cloak': cloak, 'cloakclip': cloakclip}[sys.argv[1] if len(sys.argv) > 1 else 'sheet']()

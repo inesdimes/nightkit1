@@ -157,7 +157,28 @@ class Performer:
         elif om > math.pi - 0.05: return _lerp(a, b, u)
         else: n = (math.sin((1 - u) * om) * na + math.sin(u * om) * nb) / math.sin(om)
         return tuple(sh + n * (la + (lb - la) * u))
-    def at(self, t, talk=0.0):
+    def _drive(self, t):
+        """where the upper back is (body-local metres, forward / right / up) - what the cloak lags behind"""
+        P = self._core(t); k = self.k
+        f = 0.45 * k * math.sin(P['lean']) + P['pel'][2] + 0.1 * math.sin(P['twist'])
+        s = 0.45 * k * math.sin(-P['side']) + P['pel'][0]
+        u = P['pel'][1] - P['crouch'] + 0.2 * (sum(P[c + 'shrug'][0] for c in 'rl'))
+        return V((f, s, u))
+    def cape(self, t):
+        """cloak follow-through: a damped spring per axis integrated from t = 0 on a fixed 1/48 s grid (deterministic, cached).
+        Returns (cape_sway, cape_side): the cloth swings back when the body moves forward, sideways the other way, and settles."""
+        h = 1.0 / 48; n = max(0, int(round(t / h)))
+        if not hasattr(self, '_cs'): self._cs = [(V((0.0, 0.0)), V((0.0, 0.0)))]; self._cx = [self._drive(0.0), self._drive(0.0)]
+        w = 2 * math.pi * 1.2; z = 0.32
+        while len(self._cs) <= n:
+            m = len(self._cs); self._cx.append(self._drive(m * h))
+            acc = (self._cx[-1] - 2 * self._cx[-2] + self._cx[-3]) / (h * h)
+            a_ = V((acc[0] - 0.5 * acc[2], -acc[1]))                     # forward push -> cloth lags back; a drop lifts it a bit
+            d, v = self._cs[-1]; v = v + h * (-w * w * d - 2 * z * w * v + a_); d = d + h * v
+            self._cs.append((d, v))
+        d = self._cs[n][0]
+        return float(np.clip(0.06 + d[0] / 0.15, -0.3, 1.4)), float(np.clip(d[1] / 0.15, -0.8, 0.8))
+    def _core(self, t):
         i = max(j for j in range(len(self.keys)) if self.keys[j][0] <= t) if t >= self.keys[0][0] else 0
         P = self._eval(i, t)
         # oscillations of the current gesture (fade in with the blend) and the previous one (fade out)
@@ -175,6 +196,11 @@ class Performer:
             w = math.sin(2 * math.pi * t / 6.5 + 1.7 * self.seed)
             P['pel'] = (P['pel'][0] + 0.016 * w * self.k, P['pel'][1] - 0.004 * abs(w), P['pel'][2])
             P['side'] += -0.025 * w
+        return P
+    def at(self, t, talk=0.0):
+        P = self._core(t)
+        if self.S.get('cloak_hd'):                                      # soft cloak: follow-through + living folds
+            P['cape_sway'], P['cape_side'] = self.cape(t); P['cape_t'] = t
         if talk > 0.02:
             hy, hn, ht = P['head']; P['head'] = (hy + 0.03 * talk * math.sin(t * 5.3), hn + 0.03 * talk * math.sin(t * 7.9), ht)
         if self.ftrack is not None: P['face'] = self.ftrack.at(t, talk=talk)
