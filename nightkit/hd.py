@@ -252,8 +252,12 @@ def human(S, P):
     sw_walk = 0.0 if feet_walk is None else math.sin(g('walk'))
     for sd, key in ((1, 'r'), (-1, 'l')):
         sh = chest + Wd(Rch @ np.array([sd * (0.178 - 0.02 * fem) * bw, 0.05 * k, -0.01]))
+        if g(key + 'shrug') is not None:                                   # opt-in (nightkit/body.py): shoulder up / forward in the chest frame
+            su, sf = g(key + 'shrug'); sh = sh + Wd(Rch @ np.array([0.0, su, sf]))
         la, lf = 0.29 * k, 0.255 * k
         tgt = g(key + 'h_w')
+        if tgt is None and g(key + 'hc') is not None:                      # opt-in (nightkit/body.py): hand target in the chest frame
+            tgt = chest + Wd(Rch @ np.asarray(g(key + 'hc'), float))
         if tgt is None:
             tl = g(key + 'h')
             if tl is None:
@@ -262,6 +266,7 @@ def human(S, P):
             tgt = W(np.asarray(tl, float))
         pole = Wd(Rch @ np.array([sd * 0.5, -0.3, -1.0]))
         if g(key + 'pole') is not None: pole = Wd(np.asarray(g(key + 'pole'), float))
+        if g(key + 'pole_c') is not None: pole = Wd(Rch @ np.asarray(g(key + 'pole_c'), float))
         el, wr = ik2(sh, tgt, la, lf, pole)
         slv = tun if S['sleeves'] in ('long', 'short') else S['skin']
         arm_col = S['skin'] if S['sleeves'] in ('short', 'none') else tun
@@ -275,6 +280,7 @@ def human(S, P):
         else:
             Q += limb(el, wr, 0.04, 0.03, S['skin'], n=nl, m=2, ref=Wd(np.array([0, 0, 1.0])), bulge=0.05, cap0=False)
         palm = g(key + 'palm')
+        if g(key + 'palm_c') is not None: palm = Rch @ np.asarray(g(key + 'palm_c'), float)
         palm = Wd(Rch @ np.array([-sd * 1.0, 0, 0.2])) if palm is None else (Wd(np.asarray(palm, float)) if g(key + 'palm_local', True) else np.asarray(palm, float))
         if g(key + 'fingers') is not None:                                # opt-in hand with real fingers (nightkit/hands.py); old grip hand otherwise
             from . import hands as _hands
@@ -283,7 +289,7 @@ def human(S, P):
             P['_' + key + 'tips'] = _o['tips']; P['_' + key + 'grip'] = _o['grip']
         else:
             Q += hand(wr, wr - el, palm, g(key + 'grip', 0.25), S['gloves'] or S['skin'], k, ring=(S.get('ring') if key == S.get('ring_hand', 'l') else None), side=sd)
-        P['_' + key + 'wrist'] = wr; P['_' + key + 'dir'] = nz(wr - el); P['_' + key + 'palm'] = nz(palm)
+        P['_' + key + 'wrist'] = wr; P['_' + key + 'dir'] = nz(wr - el); P['_' + key + 'palm'] = nz(palm); P['_' + key + 'el'] = el; P['_' + key + 'sh'] = sh
     # ---- legs
     for sd, key in ((1, 'r'), (-1, 'l')):
         hip = pel + (RP @ np.array([sd * 0.092 * bw, -0.035, 0]))
@@ -306,11 +312,11 @@ def human(S, P):
         Q += limb(bt + (kn - an) * 0.06, bt + (kn - an) * 0.0, 0.066, 0.066, shade(S['boots'], 0.75), n=nl, m=1, ref=Wd(np.array([0, 0, 1.0])))
         fdir = g(key + 'fdir'); fdir = nz(Wd(np.array([sd * 0.08, 0, 1.0]))) if fdir is None else nz(np.asarray(fdir, float))
         Q += foot(an, fdir, S['boots'], k)
-        P['_' + key + 'knee'] = kn; P['_' + key + 'ankle'] = an
+        P['_' + key + 'knee'] = kn; P['_' + key + 'ankle'] = an; P['_' + key + 'hip'] = hip
     # ---- cloak (open at the front, folds, hangs from the shoulders)
     if S['cloak']:
         Q += cloak(chest, neck, RW, RP, pel, S, P, k, bw)
-    P['_head'] = hc; P['_chest'] = chest; P['_pel'] = pel; P['_RH'] = RH; P['_RW'] = RW
+    P['_head'] = hc; P['_chest'] = chest; P['_pel'] = pel; P['_RH'] = RH; P['_RW'] = RW; P['_waist'] = waist; P['_neck'] = neck
     return Q
 
 def head(hc, RH, S, P, k):
