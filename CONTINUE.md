@@ -19,6 +19,8 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 ```
 (For Final Boss B also run A's `PART=audio` first; same for Guard Forgets B.)
 
+## Next (27 Nov 2026): six full briefs by Claude wait in `briefs/QUEUE_27NOV.md` (Enes liked all six; build after the weekly limit resets).
+
 ## Newest (27 Nov 2026) - Why do tutorials make you jump? (GPT story with the new rules, full authority to Claude)
 - Enes wrote the story with GPT using the new `briefs/GPT_STORY_RULES.txt` (v27 Nov: GPT = story + camera only) and gave Claude full authority.
   Rule: the tutorial gate opens when SOMEONE leaves the ground; the counter does not check who. The knight smashes three hurdles (JUMPS 0/1),
