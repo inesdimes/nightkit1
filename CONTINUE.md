@@ -28,6 +28,8 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
   (N/K/B cloned, Marta = Kokoro whisper placeholder). 5 sequences -> `renders/night_freeze/why_do_npcs_stand_still_at_night_29s.mp4`
   (29.2 s, -13.9 LUFS, -2.0 dBTP, check 11/13: FAIL = 1.2x length, WARN = planned cuts). Thumbnails EN/TR, `captions/night_freeze.md`,
   TR sheet `briefs/night_freeze_voice_sheet.md` (Betül = Marta). Next in the queue: loading_tips.
+- **v2 after Enes's review (boss look, light, NPCs in walls, torch, jerky):** see `reviews/night_freeze.md` -> `..._v2_29s.mp4`. New QA habits for every
+  short: a per-frame intersection check vs set props, a per-frame joint-jump check, light = glow + ground pool (depth-masked), smooth_pose.
 - Lessons: Whisper small.en hears "respawns" as "responds" (hyphenated text "re-spawns" fixed the clone); long bash heredocs with many quotes
   break in Git Bash: write patch scripts to the scratchpad instead.
 

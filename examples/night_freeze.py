@@ -23,6 +23,9 @@ hsh, lerp, lerp3, mixc = dtx.hsh, dtx.lerp, dtx.lerp3, dtx.mixc
 def seg01(t, a, b): return max(0.0, min(1.0, (t - a) / (b - a))) if b > a else (1.0 if t >= b else 0.0)
 def win(t, a, b, r=0.25): return sm(seg01(t, a, a + r)) * (1 - sm(seg01(t, b - r, b)))
 def nz(v): v = V(v, float); n = np.linalg.norm(v); return v / n if n > 1e-9 else v
+def rot_y(d):
+    """3x3 rotation whose local y axis points along d"""
+    d = nz(d); u, w = hd.frame_for(d, (1.0, 0, 0)); return np.column_stack([u, d, -w])
 def grip_pt(P, key, off=0.075, lift=0.03): return P['_' + key + 'wrist'] + P['_' + key + 'dir'] * off + P['_' + key + 'palm'] * lift
 def F(x): return round(x * 1.2, 4)
 SUB_LANG = os.environ.get('SUB_LANG', 'en'); TRL = SUB_LANG == 'tr'
@@ -58,7 +61,7 @@ T_TURN = (S_TURN + 0.15, S_TURN + 0.75)             # he turns: the face is righ
 S_FLAME = S_TURN + 2.0                              # wordless beat = S_TURN .. S_FLAME
 T0['06'] = S_FLAME + 0.35                           # N: "But fire never stands still."
 S_HAT = tend('06') + 0.3
-T_THROW = S_HAT + 0.35; T_LANDHAT = T_THROW + 1.25
+T_THROW = S_HAT + 0.6; T_LANDHAT = T_THROW + 1.25
 T_GRAB = (T_THROW + 0.45, T_THROW + 1.05)
 T0['07'] = T_LANDHAT + 0.2                          # N: "Every night, someone has to move."
 S_DAWN = tend('07') + 0.3
@@ -129,8 +132,8 @@ def street_set():
     for x, z, yaw, i in HOUSES:
         Q += dtx.house(x, z, yaw, 4.0, 3.4, 2.8, WALLS[i % 4], ROOFS[i % 4], seed=i)
     # the cart, two lamp posts, a barrel, the village gate arch at the end of the street
-    Q += hd.bx((1.7, 0.62, 3.6), hd.Ry(0.2), (0.5, 0.06, 0.8), (110, 80, 52)) + hd.bx((1.7, 0.3, 3.6), hd.Ry(0.2), (0.06, 0.3, 0.06), (86, 62, 42))
-    for sd in (1, -1): Q += hd.lathe(V((1.7, 0.34, 3.6)) + hd.Ry(0.2) @ V((sd * 0.56, 0, 0)), hd.Ry(0.2) @ hd.Rz(PI / 2), [(0.34, 0), (0.34, 0.06)], 12, (90, 66, 44))
+    Q += hd.bx((-1.85, 0.62, 8.2), hd.Ry(0.2), (0.5, 0.06, 0.8), (110, 80, 52)) + hd.bx((-1.85, 0.3, 8.2), hd.Ry(0.2), (0.06, 0.3, 0.06), (86, 62, 42))
+    for sd in (1, -1): Q += hd.lathe(V((-1.85, 0.34, 8.2)) + hd.Ry(0.2) @ V((sd * 0.56, 0, 0)), hd.Ry(0.2) @ hd.Rz(PI / 2), [(0.34, 0), (0.34, 0.06)], 12, (90, 66, 44))
     for (x, z) in ((-2.55, -1.6), (2.55, 7.6)): Q += hd.bx((x, 1.2, z), np.eye(3), (0.06, 1.2, 0.06), (60, 46, 34))
     Q += hd.lathe((-2.5, 0, 3.0), np.eye(3), [(0.28, 0.0), (0.32, 0.4), (0.28, 0.8)], 9, (110, 76, 46))
     for sd in (1, -1): Q += hd.bx((sd * 2.4, 1.8, 15.0), np.eye(3), (0.4, 1.8, 0.4), (120, 116, 112))
@@ -226,34 +229,41 @@ def cat(c, yaw, ph, s=1.0):
     return [q for q in Q if q]
 
 # ----------------------- the Watcher -----------------------
-WG = (34, 38, 50); WG2 = (26, 28, 38); WFACE = (112, 114, 126); WEYE = (255, 244, 196)
+ROBE = (24, 26, 36); ROBE2 = (32, 34, 46); MASK = (168, 162, 152); MASK_D = (120, 114, 108); HANDC = (170, 164, 156); WEYE = (255, 244, 196)
 def watcher(base, head, lean=0.0, reach=None, eyes=1.0, esz=1.0):
-    """a 6 m fog giant: dark trunk and shoulders, a long pale face (head = world point of the face centre), lantern eyes, long fingers.
-    reach = world point the right hand's fingers stretch to (or None)"""
+    """the Watcher: a 6 m hooded robe of fog-dark cloth, a long neck, a cracked white mask with two lantern eyes,
+    long sleeves and very long pale fingers. head = world centre of the mask; reach = where the right hand's fingers go (or None)"""
     base = V(base, float); head = V(head, float); Q = []
-    neck = base + V((0, 4.6, 0)) + (head - base - V((0, 5.3, 0))) * 0.5
-    Q += hd.limb(tuple(base + V((0, 0.0, 0))), tuple(base + V((0, 2.6, 0))), 0.45, 0.6, WG2, n=10, m=3)
-    Q += hd.limb(tuple(base + V((0, 2.6, 0))), tuple(neck), 0.6, 0.35, WG, n=10, m=3)
-    d = nz(head - neck); Q += hd.limb(tuple(neck), tuple(head - d * 0.4), 0.22, 0.2, WG, n=8, m=2)
-    fwd = nz(V((head[0] - neck[0], 0, head[2] - neck[2])) if np.linalg.norm(V((head[0] - neck[0], 0, head[2] - neck[2]))) > 0.05 else V((0, 0, -1.0)))
-    yaw = math.atan2(fwd[0], fwd[2]); R = hd.Ry(yaw) @ hd.Rx(0.15 + lean)
-    Q += hd.ellip(tuple(head), R, (0.32, 0.62, 0.3), 12, 8, WFACE, colfn=lambda i, j, cl: hd.shade(WFACE, 0.78) if cl[2] < 0.05 else WFACE)
-    for sd in (1, -1):                                                                        # the eyes: big lanterns, deep sockets
-        ec = V(head) + R @ V((sd * 0.12, 0.12, 0.27))
-        Q += hd.ellip(tuple(ec), R, (0.09 * esz, 0.07 * esz, 0.03), 8, 4, mixc((50, 50, 60), WEYE, eyes))
-        for q in Q[-1:]: q['emit'] = True
-        Q += [q for q in hd.ellip(tuple(ec + R @ V((0, 0, 0.012))), R, (0.075 * esz, 0.055 * esz, 0.025), 8, 4, mixc((40, 40, 50), WEYE, eyes))]
-        for q in Q[-8:]: q['emit'] = eyes > 0.1
-    sh = [base + V((sd * 0.9, 4.2, 0)) for sd in (1, -1)]
-    for sd, s_ in zip((1, -1), sh):
-        tgt = V(reach, float) if (reach is not None and sd > 0) else s_ + V((sd * 0.4, -2.6, 0.6))
-        el = (s_ + tgt) / 2 + V((sd * 0.5, 0.6, 0))
-        Q += hd.limb(tuple(s_), tuple(el), 0.18, 0.12, WG, n=7, m=2) + hd.limb(tuple(el), tuple(tgt), 0.12, 0.07, WG, n=7, m=2)
-        dd = nz(tgt - el)
-        for k_ in range(4):                                                                   # very long fingers
-            sp = (k_ - 1.5) * 0.25; fd = nz(dd + np.cross(dd, V((0, 1.0, 0))) * sp + V((0, -0.2, 0)))
-            Q += hd.limb(tuple(tgt), tuple(tgt + fd * 0.9), 0.04, 0.012, WG2, n=5, m=2)
-    return [q for q in Q if q], R
+    sh_c = base + V((0, 4.25, 0))
+    Q += hd.lathe(tuple(base), np.eye(3), [(0.95, 0.0), (0.78, 1.0), (0.6, 2.4), (0.5, 3.6), (0.56, 4.25)], 14, ROBE,
+                  colfn=lambda i, j: ROBE2 if j % 2 else ROBE, cap0=False)
+    Q += hd.ellip(tuple(sh_c), np.eye(3), (0.75, 0.22, 0.45), 12, 5, ROBE2)
+    d = nz(head - sh_c); Q += hd.limb(tuple(sh_c), tuple(head - d * 0.35), 0.2, 0.17, ROBE, n=8, m=3)
+    fwd = V((head[0] - sh_c[0], 0, head[2] - sh_c[2]))
+    fwd = nz(fwd) if np.linalg.norm(fwd) > 0.05 else V((0, 0, -1.0))
+    yaw = math.atan2(fwd[0], fwd[2]); Rh = hd.Ry(yaw) @ hd.Rx(0.2 + lean)
+    Q += hd.ellip(tuple(head + Rh @ V((0, 0.06, -0.08))), Rh, (0.44, 0.58, 0.42), 12, 8, ROBE2, keep=lambda c: c[2] < 0.16)       # the hood
+    Q += hd.ellip(tuple(head), Rh, (0.3, 0.42, 0.2), 12, 8, MASK, keep=lambda c: c[2] > -0.02,
+                  colfn=lambda i, j, cl: MASK_D if cl[1] < -0.25 else MASK)                                                   # the mask
+    Q += hd.decal(tuple(head + Rh @ V((0.06, 0.05, 0.205))), Rh @ V((0, 0, 1.0)), Rh @ V((0.25, 1.0, 0)), 0.012, 0.3, (60, 56, 52), lift=0.006)   # the crack
+    for sd in (1, -1):
+        ec = head + Rh @ V((sd * 0.11, 0.1, 0.18))
+        Q += hd.ellip(tuple(ec), Rh, (0.085 * esz, 0.06 * esz, 0.03), 8, 4, (16, 14, 18))                                       # socket
+        E = hd.ellip(tuple(ec + Rh @ V((0, 0, 0.018))), Rh, (0.06 * esz, 0.042 * esz, 0.02), 8, 4, mixc((40, 40, 50), WEYE, eyes))
+        for q in E: q['emit'] = eyes > 0.05
+        Q += E
+    for sd in (1, -1):
+        s_ = sh_c + V((sd * 0.72, -0.05, 0))
+        tgt = V(reach, float) if (reach is not None and sd > 0) else s_ + V((sd * 0.35, -2.2, 0.5))
+        el = (s_ + tgt) / 2 + V((sd * 0.45, 0.5, 0))
+        Q += hd.limb(tuple(s_), tuple(el), 0.2, 0.17, ROBE, n=8, m=2) + hd.limb(tuple(el), tuple(tgt), 0.17, 0.2, ROBE2, n=8, m=2)   # sleeves
+        dd = nz(tgt - el); Q += hd.ellip(tuple(tgt + dd * 0.08), rot_y(dd), (0.08, 0.05, 0.1), 8, 4, HANDC)
+        side = nz(np.cross(dd, V((0, 1.0, 0))))
+        for k_ in range(4):
+            sp = (k_ - 1.5) * 0.22; a0 = tgt + dd * 0.14 + side * sp * 0.15
+            mid = a0 + nz(dd + side * sp) * 0.45; tip = mid + nz(dd + side * sp * 1.4 + V((0, -0.35, 0))) * 0.4
+            Q += hd.limb(tuple(a0), tuple(mid), 0.025, 0.018, HANDC, n=5, m=1) + hd.limb(tuple(mid), tuple(tip), 0.018, 0.006, HANDC, n=5, m=1)
+    return [q for q in Q if q], Rh
 W_BASE0 = V((0.6, 0.0, 13.0))                                                                 # far down the street, in the fog
 def watcher_state(t):
     """(base, head, lean, reach, eyes 0..1) or None"""
@@ -267,10 +277,11 @@ def watcher_state(t):
     if t >= S_TURN:
         kz = knight_pos(t)[2]; base = V((0.1, 0.0, kz + 3.2)); head = V((0.15, 2.05, kz + 0.75))
     reach = None
-    if t >= T_GRAB[0] and t < T_GRAB[1] + 0.6:                                                 # the fingers come for Bram
+    if t >= T_GRAB[0] and t < T_GRAB[1] + 1.5:                                                 # the fingers come for Bram
         u = sm(seg01(t, T_GRAB[0], T_GRAB[1])); bp = V((B_POS[0], 1.2, B_POS[1]))
         base = V((0.6, 0.0, 11.0)); head = base + V((0, 4.8, -0.8)); reach = tuple(lerp3(tuple(base + V((0.8, 3.6, -0.6))), tuple(bp), u))
-        if t > T_GRAB[1]: reach = tuple(lerp3(tuple(bp), tuple(base + V((0.9, 3.8, 0.0))), sm(seg01(t, T_GRAB[1], T_GRAB[1] + 0.5))))
+        if t > T_GRAB[1]:
+            bx = V(bram_state(t)[0]['base']) if bram_state(t)[0] is not None else V((0.6, 2.2, 10.0)); reach = tuple(bx + V((0.0, 1.5, 0.0)))
     if T_LANDHAT <= t < S_DAWN: base = V((0.6, 0.0, 12.0 + 8 * seg01(t, T_LANDHAT, S_DAWN))); head = base + V((0, 5.0, -0.6))
     return base, head, 0.0, reach, eyes
 
@@ -284,14 +295,35 @@ def knight_pos(t):
         z = Z_ARR + 1.3 * (t - t * t / 1.2) if t < 0.6 else Z_ARR + 0.39
         return X_K, 0.0, z, (1.3 * (1 - t / 0.6) if t < 0.6 else 0.0)
     # "Hide? I'm the hero." he turns his back to the fog and swaggers down the street (towards -z), stops at his shadow
-    z0 = Z_ARR + 0.39; u = seg01(t, T0['05'] + 0.1, T_SHADOW); z = z0 - 2.4 * sm(u)
-    return lerp(X_K, -0.5, sm(u)), PI, z, (1.3 if 0.02 < u < 0.98 else 0.0)
+    z0 = Z_ARR + 0.39; u = seg01(t, T0['05'] + 0.45, T_SHADOW); z = z0 - 2.4 * sm(u)
+    yaw = PI * sm(seg01(t, T0['05'] - 0.25, T0['05'] + 0.45))
+    return lerp(X_K, -0.5, sm(u)), yaw, z, (1.3 if 0.02 < u < 0.98 else 0.0)
+def smooth_pose(fn, t, span=0.12):
+    """average every numeric pose value over +-span (weights 1-2-3-2-1), only with samples from the same shot"""
+    P0 = fn(t)
+    if P0 is None: return None
+    sc = scene(t); S_ = []
+    for dt, w in ((-span, 1), (-span / 2, 2), (0.0, 3), (span / 2, 2), (span, 1)):
+        ts = t + dt
+        if ts < 0 or ts >= DUR or scene(ts) != sc: continue
+        P = P0 if dt == 0 else fn(ts)
+        if P is not None: S_.append((P, w))
+    out = dict(P0)
+    for k, v in P0.items():
+        if k.startswith('_') or isinstance(v, (str, bool)) or v is None: continue
+        vals = [(P.get(k), w) for P, w in S_]
+        if any(x is None or type(x) != type(v) for x, _ in vals): continue
+        wt = sum(w for _, w in vals)
+        if isinstance(v, (int, float)): out[k] = sum(float(x) * w for x, w in vals) / wt
+        elif isinstance(v, (tuple, list)) and all(len(x) == len(v) for x, _ in vals):
+            out[k] = tuple(sum(float(x[i]) * w for x, w in vals) / wt for i in range(len(v)))
+    return out
 def knight_pose(t):
     x, yaw, z, v = knight_pos(t); tt = t - DUR if t >= S_LOOP else t
     P = dict(base=(x, 0.0, z), yaw=yaw, eyes='open', mouth='smile', brow=0.2, lean=0.04, cape_sway=0.2 * math.sin(t * 1.7), head=(0.0, 0.0, 0.0))
     P['rh'] = (0.22, 1.18, 0.32); P['rgrip'] = 0.95; P['rpalm'] = (-1.0, 0.0, 0.0)                   # the torch, held forward
     P['lh'] = (-0.24, 1.0, 0.1); P['lgrip'] = 0.4
-    if v > 0.05: P['walk'] = 2 * PI * 0.9 * (tt + (0.0 if t < S_HERO else 0.0)); P['stride'] = 0.3
+    P['walk'] = 2 * PI * 0.9 * tt; P['stride'] = 0.3 * min(1.0, v / 1.3)
     if t >= S_LOOP or t < S_EYES + 0.2:                                                       # frame 0 / loop: the wave in front of her face
         wv = win(tt, -0.6, S_EYES + 0.2, 0.3) if t < S_LOOP else sm(seg01(t, DUR - 0.6, DUR))
         if wv > 0:
@@ -349,14 +381,15 @@ def bram_state(t):
     if S_HAT - 0.6 <= t < T_GRAB[1]:
         P['head'] = (0.25, 0.0, 0.0); P['look'] = (0.4, 0.0)                                       # looks at the knight
         g = sm(seg01(t, S_HAT, T_THROW)); P['rh'] = lerp3((0.2, 0.9, 0.05), (0.08, 1.82, 0.05), g); P['rgrip'] = 0.8   # takes his hat
-        if t < T_THROW: hat = 'hand'
+        if t < T_THROW and g > 0.9: hat = 'hand'
         if t >= T_THROW:
             th = sm(seg01(t, T_THROW, T_THROW + 0.25)); P['rh'] = lerp3((0.08, 1.82, 0.05), (0.55, 1.7, 0.6), th); P['rgrip'] = lerp(0.8, 0.1, th); hat = 'fly'
             P['yaw'] = -PI / 2 - 0.35 - 0.4 * th; P['eyes'] = 'half'; P['mouth'] = 'soft'
-    if T_GRAB[0] + 0.5 <= t < T_GRAB[1] + 0.35:                                                    # taken: pulled up and away into the fog
-        u = sm(seg01(t, T_GRAB[0] + 0.5, T_GRAB[1] + 0.35)); P['base'] = (lerp(B_POS[0], 0.6, u), 3.0 * u, lerp(B_POS[1], 9.0, u)); P['eyes'] = 'wide'; P['mouth'] = 'o'
+    if T_GRAB[1] - 0.1 <= t < T_GRAB[1] + 1.5:                                                     # taken: lifted, then drawn back into the fog
+        lift = sm(seg01(t, T_GRAB[1] - 0.1, T_GRAB[1] + 0.5)); pull = seg01(t, T_GRAB[1] + 0.4, T_GRAB[1] + 1.5) ** 2
+        P['base'] = (lerp(B_POS[0], 0.6, pull), 0.9 * lift + 2.2 * pull, lerp(B_POS[1], 10.0, pull)); P['eyes'] = 'wide'; P['mouth'] = 'o'
         P['lh'] = (-0.4, 1.7, 0.2); P['rh'] = (0.4, 1.7, 0.2); hat = 'fly' if t < T_LANDHAT else 'ground'
-    if t >= T_GRAB[1] + 0.35 and t < T_RESPAWN: return None, ('ground' if t < T_HATON[0] else 'marta')
+    if t >= T_GRAB[1] + 1.5 and t < T_RESPAWN: return None, ('ground' if t < T_HATON[0] else 'marta')
     if T_RESPAWN <= t < S_LOOP + 0.8:
         P['yaw'] = -PI / 2 - 0.35 - (0.9 if t < T_NIGHT[0] else 0.9 * (1 - sm(seg01(t, T_NIGHT[0], T_NIGHT[0] + 0.6))))
         P['mouth'] = 'open' if talking(t, '09') > 0.5 else 'smile'; P['brow'] = 0.2; P['eyes'] = 'open'
@@ -432,19 +465,26 @@ def proj_shadow(Q, L, col=(8, 10, 20)):
     return out
 def world(t):
     pos, tgt, fov = cam_shot(t); nt = night(t); zc = float(pos[2])
-    KP = knight_pose(t); QK = knight(KP)
+    KP = smooth_pose(knight_pose, t); QK = knight(KP)
     layers = [sky(t, zc), set_faces(), puddles(t, nt), windows(t)]
     # the torch in his left hand (flame always moves)
-    g = grip_pt(KP, 'r', 0.05, 0.0); tc = g + V((0.0, 0.12, 0.0))
-    if t < S_HAT + 2.0 or t >= S_LOOP: layers.append(dtx.torch_faces(tc, t * (1.6 if S_FLAME <= t < S_HAT else 1.0), k=1.25 if S_FLAME <= t < S_HAT else 1.0, seed=3))
+    tc = grip_pt(KP, 'r', 0.05, 0.0) + V((0.0, 0.2, 0.0))
+    if t < S_HAT + 2.0 or t >= S_LOOP:
+        ax = nz(np.cross(KP['_rdir'], KP['_rpalm'])); ax = ax if ax[1] > 0 else -ax; ax = nz(ax + V((0, 0.6, 0)))
+        g0 = grip_pt(KP, 'r', 0.04, 0.0); tc = g0 + ax * 0.2
+        layers.append(hd.limb(tuple(g0 - ax * 0.2), tuple(tc), 0.016, 0.022, (82, 56, 34), n=6, m=1)
+                      + hd.lathe(tuple(tc - ax * 0.04), rot_y(ax), [(0.03, 0.0), (0.034, 0.05)], 7, (52, 38, 28)))
+        layers.append(dtx.torch_faces(tc + ax * 0.01, t * (1.6 if S_FLAME <= t < S_HAT else 1.0), k=0.62 if S_FLAME <= t < S_HAT else 0.5, seed=3, stick=False))
+        KP['_flame'] = tc + ax * 0.08
     if KP.get('_sword'):
         gr = grip_pt(KP, 'l', 0.06, 0.0); d = hd.Ry(KP['yaw']) @ V((-0.05, 0.95, 0.45)); layers.append(hd.sword(tuple(gr), tuple(nz(d)), KP['_lpalm'], length=0.85))
     layers.append(QK)
-    MP = marta_pose(t); layers.append(hd.human(MARTA, MP))
+    MP = smooth_pose(marta_pose, t); layers.append(hd.human(MARTA, MP))
     if MP.get('_broom'):
         a_ = grip_pt(MP, 'l', 0.05, 0.0); b_ = grip_pt(MP, 'r', 0.05, 0.0); d_ = nz(b_ - a_); tip = b_ + d_ * 0.75
         layers.append(hd.limb(tuple(a_ - d_ * 0.25), tuple(tip), 0.016, 0.016, (120, 86, 52), n=6, m=1) + hd.limb(tuple(tip), tuple(tip + d_ * 0.3), 0.03, 0.12, (190, 160, 90), n=8, m=1))
     BP, hat = bram_state(t)
+    if BP is not None: BP = smooth_pose(lambda x: bram_state(x)[0], t)
     if BP is not None:
         sc_ = 1.0
         if T_RESPAWN <= t < T_RESPAWN + 0.4: sc_ = sm(seg01(t, T_RESPAWN, T_RESPAWN + 0.4))
@@ -461,7 +501,7 @@ def world(t):
         layers.append(red_hat(p, hd.Rz(u * 7.0) @ hd.Rx(u * 3.0)))
     elif hat == 'ground': layers.append(red_hat(HAT_LAND + V((0, 0.0, 0)), hd.Rx(1.4)))
     elif hat == 'marta': layers.append(red_hat(grip_pt(MP, 'r', 0.04, 0.06), hd.Rx(0.3)))
-    for i in range(len(VILS)): layers.append(hd.human(VILS[i][0], vil_pose(i, t)))
+    for i in range(len(VILS)): layers.append(hd.human(VILS[i][0], smooth_pose(lambda x, i=i: vil_pose(i, x), t)))
     if T_CAT[0] - 0.3 <= t < T_YANK + 0.3:                                                       # the cat
         if t < T_SNAP: u = seg01(t, T_CAT[0], T_CAT[1]); c = V((lerp(-2.6, 2.4, u), 0.0, 3.2))
         else:
@@ -469,13 +509,16 @@ def world(t):
         if t < T_YANK + 0.25: layers.append(cat(c, PI / 2, t * 22))
     ws_ = watcher_state(t)
     if ws_ is not None:
-        base, head, lean, reach, eyes = ws_; QW, RW_ = watcher(base, head, lean, reach, eyes, 1.7 if scene(t) in ('reveal', 'cat') else 1.0); layers.append(QW)
+        base, head, lean, reach, eyes = ws_; QW, RW_ = watcher(base, head, lean, reach, eyes, 1.6 if scene(t) in ('reveal', 'cat') else 1.0); layers.append(QW); ws_ = ws_ + (RW_,)
     # lights: the moon (cool, from high left), the torch (warm, flicker), window glow before the eyes open, the eye glow; dawn sun
     L = []
     flick = 1.0 + 0.15 * math.sin(t * 23) + 0.1 * math.sin(t * 37)
     L.append((tuple(V(tgt) + V((-8.0, 12.0, 6.0))), mixc((255, 226, 190), (110, 130, 200), nt), lerp(26.0, 7.0, nt)))
     if t < S_HAT + 2.0 or t >= S_LOOP: L.append((tuple(tc + V((0, 0.35, 0.1))), (255, 170, 90), 0.9 * flick * nt + 0.1))
-    if ws_ is not None and ws_[4] > 0.2: L.append((tuple(V(ws_[1]) + V((0, 0, -0.6))), (210, 220, 190), 1.2 * ws_[4]))
+    if ws_ is not None and ws_[4] > 0.2:
+        L.append((tuple(V(ws_[1]) + ws_[5] @ V((0, -0.4, 1.4))), (210, 220, 190), 0.6 * ws_[4]))
+        ga = gaze_aim(t)
+        if ga is not None: L.append((tuple(ga + V((0, 1.4, 0))), (220, 236, 200), 1.3 * ws_[4]))          # the spot really lights who stands in it
     if t >= S_HERO and t < S_TURN + 0.6 and ws_ is not None:                                      # the cone shines down on him from behind: his shadow
         layers.append(proj_shadow(QK, V(ws_[1]) + V((0, 0, -0.4))))
     return layers, L, (KP, MP, ws_)
@@ -490,7 +533,7 @@ def frame_low(t):
     a = look.outline(np.asarray(img).astype(np.float32), zb)
     a = np.clip((a - 80) * 1.12 + 84, 0, 255)
     if nt > 0.01: a = a * (1 - 0.25 * nt) + (a * np.array([0.78, 0.86, 1.18])) * 0.25 * nt        # moonlight blue grade
-    return post.ps1(Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)), levels=6), vi, R, poses
+    return post.ps1(Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)), levels=6), vi, R, poses, zb
 
 # ======================= overlays (1080 x 1920) =======================
 def tw(s, sc): return font.width(s, sc)
@@ -521,26 +564,78 @@ def cover(d, t):
     for i, (s, sc) in enumerate(zip(lines, scs)):
         if i == len(lines) - 1: d.rectangle([540 - w / 2 - 30, yy - 18, 540 + w / 2 + 30, yy + 7 * sc + 18], fill=(70, 18, 30))
         ctext(d, s, yy, sc, (255, 222, 120) if i == len(lines) - 1 else WHT, o=6); yy += 7 * sc + 34
-def cone(arr, t, vi, R, ws_):
-    """the Watcher's gaze: a pale translucent wedge from its eyes to where it looks"""
-    if ws_ is None or ws_[4] < 0.3 or night(t) < 0.5: return arr
+def gaze_aim(t):
     sc = scene(t)
-    if sc not in ('reveal', 'cat', 'hero', 'hat'): return arr
-    head = V(ws_[1])
-    if sc == 'reveal': aim = V((lerp(-2.0, 1.5, 0.5 + 0.5 * math.sin(t * 1.3)), 0.0, 6.0))
-    elif sc == 'cat':
-        if t < T_SNAP: aim = V((lerp(1.5, -1.5, seg01(t, S_CAT, T_SNAP)), 0.0, 3.0))
-        else: aim = V((lerp(-2.6, 2.4, seg01(T_SNAP, *T_CAT)), 0.0, 3.2))
-    elif sc == 'hero': aim = V((knight_pos(t)[0], 0.0, knight_pos(t)[2] - 0.6))
-    else: aim = V((B_POS[0], 0.6, B_POS[1])) if t >= T_THROW else V((-0.5, 0.0, 1.0))
-    a = R.project(tuple(head + V((0, 0.1, -0.3))), vi)
-    side = nz(np.cross(aim - head, V((0, 1.0, 0)))); rad = 1.1
-    b = R.project(tuple(aim + side * rad), vi); c = R.project(tuple(aim - side * rad), vi)
+    if sc == 'reveal': return V((lerp(-2.0, 1.5, 0.5 + 0.5 * math.sin(t * 1.3)), 0.0, 6.0))
+    if sc == 'cat':
+        if t < T_SNAP: return V((lerp(1.5, -1.5, seg01(t, S_CAT, T_SNAP)), 0.0, 3.0))
+        return V((lerp(-2.6, 2.4, seg01(T_SNAP, *T_CAT)), 0.0, 3.2)) + (V((0.6, 0, 26.0)) - V((lerp(-2.6, 2.4, seg01(T_SNAP, *T_CAT)), 0.0, 3.2))) * sm(seg01(t, T_SNAP + 0.1, T_YANK + 0.3)) * 0.3
+    if sc == 'hero': kx, _, kz, _ = knight_pos(t); return V((kx, 0.0, kz + 0.1))
+    if sc == 'hat': return V(lerp3((-0.5, 0.0, 1.0), (B_POS[0], 0.0, B_POS[1]), sm(seg01(t, T_THROW - 0.1, T_THROW + 0.35))))
+    return None
+def cone(arr, t, vi, R, ws_):
+    """the Watcher's gaze: a soft pale beam from its eyes + a bright spot on the ground where it lands"""
+    if ws_ is None or ws_[4] < 0.3 or night(t) < 0.5: return arr
+    aim = gaze_aim(t)
+    if aim is None: return arr
+    sc = scene(t); a0 = CUTS[[n for n, _ in CUTS].index(sc)][1]; fade = sm(seg01(t, a0, a0 + 0.3)) * ws_[4]
+    arr = pool(arr, R, vi, aim, 1.0, (210, 226, 190), 0.55 * fade, 16)                     # the spot: always, even when the head is off-screen
+    head = V(ws_[1]); a = _proj(R, vi, head + V((0, 0.08, 0.2)))
+    side = nz(np.cross(aim - head, V((0, 1.0, 0)))); rad = 1.0
+    b = _proj(R, vi, aim + side * rad); c = _proj(R, vi, aim - side * rad)
     if a is None or b is None or c is None: return arr
     ov = Image.new('L', (W * S, H * S), 0); dd = ImageDraw.Draw(ov)
-    dd.polygon([(a[0] * S, a[1] * S), (b[0] * S, b[1] * S), (c[0] * S, c[1] * S)], fill=int(70 * ws_[4]))
-    m = np.asarray(ov).astype(np.float32)[..., None] / 255.0
-    return arr * (1 - m) + np.array([236, 240, 210], np.float32) * m
+    dd.polygon([(a[0], a[1]), (b[0], b[1]), (c[0], c[1])], fill=int(55 * fade))
+    m = np.asarray(ov.filter(ImageFilter.GaussianBlur(10))).astype(np.float32)[..., None] / 255.0
+    return arr * (1 - m * 0.4) + np.array([232, 240, 214], np.float32) * m
+from PIL import ImageFilter
+GMASK = None
+def ground_mask(vi, zb):
+    """1 where the rendered pixel is the ground plane (y = 0) itself, 0 where something stands in front of it (people, walls)"""
+    cx, cy, cz, ca, sa, cp, sp, fpx = vi
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32) + 0.5
+    X = (xx - W / 2) / fpx; Y = (H / 2 - yy) / fpx; Z2 = np.ones_like(X)
+    py = cp * Y + sp * Z2; Zc = -sp * Y + cp * Z2
+    with np.errstate(divide='ignore', invalid='ignore'):
+        sg = np.where(py < -1e-4, -cy / py, np.inf)                       # depth (Z2) of the ground hit along this pixel
+        dep = np.where(zb > 0, 1.0 / np.maximum(zb, 1e-9), np.inf)
+    m = (np.isfinite(sg) & (dep > sg * 0.93)).astype(np.float32)
+    return np.asarray(Image.fromarray((m * 255).astype(np.uint8)).resize((W * S, H * S), Image.BILINEAR)).astype(np.float32) / 255.0
+def _proj(R, vi, p):
+    q = R.project(tuple(p), vi); return None if q is None else (q[0] * S, q[1] * S, q[2])
+def glow(arr, R, vi, p, rad_m, col, k):
+    """additive soft glow around a 3D point (radius in metres -> pixels by depth)"""
+    q = _proj(R, vi, p)
+    if q is None: return arr
+    r = max(6.0, rad_m * vi[7] * S / max(0.2, q[2])); x0, x1 = int(max(0, q[0] - r)), int(min(W * S, q[0] + r)); y0, y1 = int(max(0, q[1] - r)), int(min(H * S, q[1] + r))
+    if x1 <= x0 or y1 <= y0: return arr
+    yy, xx = np.mgrid[y0:y1, x0:x1]; d = np.sqrt((xx - q[0]) ** 2 + (yy - q[1]) ** 2) / r
+    m = np.clip(1 - d, 0, 1) ** 2.2 * k; arr[y0:y1, x0:x1] += m[..., None] * np.array(col, np.float32)
+    return arr
+def pool(arr, R, vi, c, rad, col, k, blur=18):
+    """a soft pool of light on the ground (ellipse projected, blurred, added)"""
+    pts = [_proj(R, vi, V(c) + V((rad * math.cos(a), 0.0, rad * math.sin(a)))) for a in np.linspace(0, 2 * PI, 20)[:-1]]
+    if any(p_ is None for p_ in pts): return arr
+    ov = Image.new('L', (W * S, H * S), 0); ImageDraw.Draw(ov).polygon([(p_[0], p_[1]) for p_ in pts], fill=255)
+    m = np.asarray(ov.filter(ImageFilter.GaussianBlur(blur))).astype(np.float32) / 255.0 * k
+    if GMASK is not None: m = m * GMASK
+    return arr + m[..., None] * np.array(col, np.float32)
+def lights2d(arr, t, vi, R, KP, ws_):
+    nt = night(t)
+    if nt < 0.2: return arr
+    for k_, (c, n, i) in enumerate(WIN):                                                      # lit windows: glow + a pool on the street
+        off_t = T_OPEN + 0.25 + 0.22 * (k_ % 7)
+        if (t < off_t) or (t >= T_NIGHT[0] + 0.6):
+            arr = glow(arr, R, vi, V(c) + V(n) * 0.05, 0.9, (255, 170, 80), 0.55 * nt)
+            arr = pool(arr, R, vi, V((c[0] + n[0] * 1.1, 0.0, c[2])), 0.9, (255, 160, 70), 0.22 * nt, 14)
+    if KP.get('_flame') is not None and (t < S_HAT + 2.0 or t >= S_LOOP):                     # the torch
+        f = V(KP['_flame']); fl = 1.0 + 0.12 * math.sin(t * 23)
+        arr = glow(arr, R, vi, f, 0.55 * fl, (255, 150, 60), 0.85 * nt)
+        arr = pool(arr, R, vi, V((f[0], 0.0, f[2])), 1.5 * fl, (255, 140, 60), 0.2 * nt, 22)
+    if ws_ is not None and ws_[4] > 0.05:                                                     # the lantern eyes
+        Rh = ws_[5]
+        for sd in (1, -1): arr = glow(arr, R, vi, V(ws_[1]) + Rh @ V((sd * 0.11, 0.1, 0.24)), 0.16, (255, 236, 170), 0.75 * ws_[4])
+    return arr
 COL = {'N': (242, 238, 226), 'K': (150, 200, 255), 'M': (255, 190, 200), 'B': (255, 214, 140)}
 def _sub_scr():
     if not TRL: return SCR
@@ -559,8 +654,9 @@ from nightkit import cta
 CTA = cta.Achievement(t0=T0['08'] - 0.1, lang=SUB_LANG, dur=F(1.5), y=300)
 def frame_final(t):
     if t >= DUR: t = t - DUR
-    img, vi, R, (KP, MP, ws_) = frame_low(t); arr = post.upscale(img, S)
-    arr = cone(arr, t, vi, R, ws_)
+    img, vi, R, (KP, MP, ws_), zb = frame_low(t); arr = post.upscale(img, S)
+    global GMASK; GMASK = ground_mask(vi, zb)
+    arr = cone(arr, t, vi, R, ws_); arr = lights2d(arr, t, vi, R, KP, ws_)
     im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)); d = ImageDraw.Draw(im)
     hud(d, t); meter(d, t); cover(d, t)
     arr = np.asarray(im).astype(np.float32)

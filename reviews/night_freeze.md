@@ -49,3 +49,92 @@ Top 3 fixes this round:
 
 Top 3 fixes this round: none blocking -> final = `renders/night_freeze/why_do_npcs_stand_still_at_night_29s.mp4`.
 
+## Round 3 - 2026-11-27 - why_do_npcs_stand_still_at_night_v2_29s.mp4
+
+- duration 29.38 s, 705 frames, 11 cuts at 2.21, 4.08, 7.38, 8.08, 11.46, 14.62, 16.29, 18.25, 18.75, 19.12, 22.08
+- opening motion (first 1 s): 3.16
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 1.2 s
+- sheet: out\qa\night_freeze\critique_r3.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3. 
+
+## Round 4 - 2026-11-27 - why_do_npcs_stand_still_at_night_v2_29s.mp4
+
+- duration 29.38 s, 705 frames, 11 cuts at 2.21, 4.08, 7.38, 8.08, 11.46, 14.62, 16.29, 18.25, 18.88, 19.12, 22.08
+- opening motion (first 1 s): 3.16
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 1.2 s
+- sheet: out\qa\night_freeze\critique_r4.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3. 
+
+## Round 4 - 2026-11-27 - why_do_npcs_stand_still_at_night_v2_29s.mp4
+
+- duration 29.38 s, 705 frames, 11 cuts at 2.21, 4.08, 7.38, 8.08, 11.46, 14.62, 16.29, 18.25, 18.88, 18.92, 22.08
+- opening motion (first 1 s): 3.16
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 1.2 s
+- sheet: out\qa\night_freeze\critique_r4.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3.
+
+## Enes's review of v1 (28 Nov 2026) -> v2
+Enes: the boss looks bad, the lighting does not read as light, NPCs pass through walls, the torch is too big and not in the hand, moves are jerky.
+Measured causes + fixes:
+- Bram stood INSIDE the cart the whole film and Marta walked through it at dawn (the cart read as a wall/table on the stills; never
+  checked). New per-frame intersection check (character vertices vs houses / cart / barrel / posts): 0 hits after moving the cart.
+- Jerky: per-frame jumps of head/wrists up to 0.81 m (Bram's pull), 0.37 m (Marta), snaps on every pose-branch switch. Fix: every pose
+  is averaged over +-0.12 s inside its shot (smooth_pose), the knight turns in 0.7 s, walking stride follows the speed, Bram is lifted
+  then drawn away over 1.6 s, the hat only leaves his head when the hand is there. Remaining max ~0.14 m/frame = normal arm speed.
+- Light: real ground pools (masked to the street by the depth buffer, so people are not painted over), glows for torch / windows / eyes,
+  a soft beam + a bright spot where the gaze lands + a real light there; the spot fades in (no pop when the head is off-screen).
+- The Watcher redesigned: hooded robe, cracked white mask, lantern eyes in dark sockets, sleeves, long pale jointed fingers.
+- Torch: own model, stick through the fist along the grip axis, flame 0.5 (was 1.0-1.25 with a 0.45 m stick above the hand).
+- Final v2: `renders/night_freeze/why_do_npcs_stand_still_at_night_v2_29s.mp4` (29.4 s, check 11/13 = 1.2x length + planned cuts).
+  Remaining critique flags at 18.9 s = the camera pan + the spot sweeping onto Bram (checked frame by frame: continuous).
