@@ -14,7 +14,7 @@ import multi
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 VOICES = {'K': ('am_adam', 'en-us'), 'B': ('bm_george', 'en-gb'), 'M': ('bf_emma', 'en-gb')}
 D = [('00', 'N', [("Why do NPCs stand still at night?", 1.0, 0, 0, 0)]),
-     ('01', 'K', [("Hello?", 1.0, 0, 0, 0), ("Is anyone home?", 1.0, 0, 0, 0.2)]),
+     ('01', 'K', [("Hello?", 1.0, 0, 0, 0), ("Why is nobody moving?", 1.0, 0, 0, 0.2)]),
      ('02', 'N', [("They aren't broken.", 1.0, 0, 0, 0), ("They're hiding.", 1.0, 0, 0, 0.3)]),
      ('03', 'M', [("Stop. Moving.", 0.85, 0, 0, 0)]),
      ('04', 'N', [("It only sees what moves.", 1.0, 0, 0, 0)]),
@@ -22,15 +22,16 @@ D = [('00', 'N', [("Why do NPCs stand still at night?", 1.0, 0, 0, 0)]),
      ('06', 'N', [("But fire never stands still.", 1.0, 0, 0, 0)]),
      ('07', 'N', [("Every night, someone has to move.", 1.0, 0, 0, 0)]),
      ('08', 'N', [("At dawn, every NPC respawns.", 1.0, 0, 0, 0)]),
-     ('09', 'B', [("Nice weather today!", 1.0, 0, 0, 0)])]
-TR = {'00': ['NPC\'ler geceleri neden kıpırdamaz?'], '01': ['Merhaba?', 'Kimse yok mu?'], '02': ['Bozuk değiller.', 'Saklanıyorlar.'],
+     ('09', 'B', [("Nice weather today!", 1.0, 0, 0, 0)]),
+     ('10', 'B', [("Over here!", 1.0, 0, 0, 0)])]                                  # Bram waves his hat to draw the gaze off the knight (Enes 28 Nov)
+TR = {'00': ['NPC\'ler geceleri neden kıpırdamaz?'], '01': ['Merhaba?', 'Neden kimse kıpırdamıyor?'], '02': ['Bozuk değiller.', 'Saklanıyorlar.'],
       '03': ['Kıpırdama.'], '04': ['O sadece kıpırdayanı görür.'], '05': ['Saklanmak mı?', 'Ben kahramanım.'],
       '06': ['Ama ateş hiç durmaz.'], '07': ['Her gece birinin kıpırdaması gerekir.'], '08': ['Şafakta her NPC yeniden doğar.'],
-      '09': ['Bugün hava ne güzel!']}
+      '09': ['Bugün hava ne güzel!'], '10': ['Buraya bak!']}
 def tr_upper(s): return s.replace('i', 'İ').replace('ı', 'I').replace('â', 'A').upper()
 TR_SUB = {k: [tr_upper(x) for x in v] for k, v in TR.items()}
-EXAG = {'00': 0.45, '01': 0.55, '02': 0.4, '04': 0.4, '05': 0.6, '06': 0.45, '07': 0.45, '08': 0.45, '09': 0.65}
-PLAN = {'00': [2.2], '01': [0.6, 1.0], '02': [1.1, 0.9], '03': [1.2], '04': [1.5], '05': [0.6, 0.9], '06': [1.6], '07': [2.0], '08': [1.9], '09': [1.3]}
+EXAG = {'00': 0.45, '01': 0.55, '02': 0.4, '04': 0.4, '05': 0.6, '06': 0.45, '07': 0.45, '08': 0.45, '09': 0.65, '10': 0.7}
+PLAN = {'00': [2.2], '01': [0.6, 1.0], '02': [1.1, 0.9], '03': [1.2], '04': [1.5], '05': [0.6, 0.9], '06': [1.6], '07': [2.0], '08': [1.9], '09': [1.3], '10': [0.9]}
 CLONED = ('N', 'K', 'B')
 def refs():
     src = os.path.join(REPO, 'tts', 'sp_refs'); out = os.path.join(REPO, 'tts', 'nf_refs'); os.makedirs(out, exist_ok=True)

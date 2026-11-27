@@ -138,3 +138,41 @@ Measured causes + fixes:
 - Torch: own model, stick through the fist along the grip axis, flame 0.5 (was 1.0-1.25 with a 0.45 m stick above the hand).
 - Final v2: `renders/night_freeze/why_do_npcs_stand_still_at_night_v2_29s.mp4` (29.4 s, check 11/13 = 1.2x length + planned cuts).
   Remaining critique flags at 18.9 s = the camera pan + the spot sweeping onto Bram (checked frame by frame: continuous).
+## Round 5 - 2026-11-27 - why_do_npcs_stand_still_at_night_v3_32s.mp4
+
+- duration 32.21 s, 773 frames, 12 cuts at 2.21, 4.88, 8.17, 8.88, 12.25, 15.42, 17.08, 19.04, 19.92, 20.75, 24.25, 27.21
+- opening motion (first 1 s): 2.66
+- still stretches (>= 2 s): none
+- quiet stretches (>= 1.5 s without voice-level sound): none
+- longest gap between voice-level sounds: 1.4 s
+- sheet: out\qa\night_freeze\critique_r5.png
+
+| criterion | score 1-10 | worst problem |
+|---|---|---|
+| readability (faces, eyes, props) |  |  |
+| motivation + timing |  |  |
+| framing |  |  |
+| limbs + contacts |  |  |
+| text |  |  |
+| cuts |  |  |
+| sound vs picture |  |  |
+| pacing |  |  |
+
+Top 3 fixes this round:
+1. 
+2. 
+3.
+
+## Enes's review of v2 (28 Nov 2026) -> v3
+- Cover question bigger + centred (auto-size per line). DAWN box sized from its text.
+- The knight's LEFT arm reached across his body: hd's right hand sits at local +x, Marta stands at his right -> torch in the LEFT hand,
+  wave + sword with the RIGHT. Lesson: hd 'r' = local +x (for yaw 0 = world +x).
+- "Walking but not walking": hd walk_cycle lifts the feet with the default lift even at stride 0 -> walk/stride/lift only while moving.
+- "Is anyone home?" made no sense with everyone in the street -> "Hello? Why is nobody moving?" (answered by "They aren't broken. They're hiding.").
+- Why Bram threw his hat was unclear -> he takes it off and WAVES it high: "Over here!" (new line 10): he moves on purpose to pull the gaze off
+  the knight; the hat falls from his hand when he is taken.
+- Why Marta put the hat on him was unclear -> at dawn she picks the hat out of the puddle on camera, Bram respawns bald and pats his head,
+  then she puts it on. The pointed hat read as a traffic cone -> red felt hat with a brim, band and white feather.
+- Checks: 0 intersections, Marta/Bram no overlap, joint jumps > 0.15 m/frame only in Bram's (intended) accelerating pull into the fog.
+  Day ambience + lute added (check found 3 silent half-seconds in the dawn part).
+- Final v3: `renders/night_freeze/why_do_npcs_stand_still_at_night_v3_32s.mp4` (32.2 s, -14 LUFS, check 11/13 = 1.2x length + planned cuts).

@@ -35,7 +35,7 @@ from nightkit.audio import Sound, duck_envelope
 OUT = 'out'; os.makedirs(OUT, exist_ok=True)
 TTS_DIR = os.environ.get('TTS_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'tts'))
 SCR = json.load(open(os.path.join(TTS_DIR, 'nf', 'script.json'), encoding='utf-8'))
-KEYS = ['%02d' % i for i in range(0, 10)]
+KEYS = ['%02d' % i for i in range(0, 11)]
 T0 = {}
 def tend(k): return T0[k] + SCR['dur'][k]
 def ws(k, i): s_ = SCR['sent'][k]; return T0[k] + s_[min(i, len(s_) - 1)][0]
@@ -61,15 +61,21 @@ T_TURN = (S_TURN + 0.15, S_TURN + 0.75)             # he turns: the face is righ
 S_FLAME = S_TURN + 2.0                              # wordless beat = S_TURN .. S_FLAME
 T0['06'] = S_FLAME + 0.35                           # N: "But fire never stands still."
 S_HAT = tend('06') + 0.3
-T_THROW = S_HAT + 0.6; T_LANDHAT = T_THROW + 1.25
-T_GRAB = (T_THROW + 0.45, T_THROW + 1.05)
-T0['07'] = T_LANDHAT + 0.2                          # N: "Every night, someone has to move."
+T_TAKEOFF = (S_HAT + 0.2, S_HAT + 0.75)            # Bram takes his hat off ...
+T_WAVE = T_TAKEOFF[1] + 0.05                        # ... and waves it high: he MOVES on purpose
+T_THROW = T_WAVE                                    # (the gaze leaves the knight here)
+T0['10'] = T_WAVE + 0.1                             # Bram: "Over here!"
+T_GRAB = (tend('10') + 0.15, tend('10') + 0.75)     # the fingers reach him
+T_DROP = T_GRAB[1] + 0.05; T_LANDHAT = T_DROP + 0.5 # the hat falls from his hand into the puddle
+T0['07'] = T_GRAB[1] + 1.0                          # N: "Every night, someone has to move."
 S_DAWN = tend('07') + 0.3
 T_SUN = (S_DAWN, S_DAWN + 1.3)                      # time-lapse sunrise
+T_PICK = (S_DAWN + 0.9, S_DAWN + 1.9)               # Marta walks to the puddle, bends, picks up the hat
 T0['08'] = S_DAWN + 1.0                             # N: "At dawn, every NPC respawns."
-T_RESPAWN = we('08', 0) - 0.55
-T_HATON = (T_RESPAWN + 0.6, T_RESPAWN + 1.4)
-T0['09'] = max(tend('08') + 0.3, T_HATON[1] - 0.2)  # Bram: "Nice weather today!"
+T_RESPAWN = max(we('08', 0) - 0.45, T_PICK[1] + 0.1)
+T_PAT = (T_RESPAWN + 0.45, T_RESPAWN + 1.25)        # he pats his bare head: where is my hat?
+T_HATON = (T_PAT[1] - 0.15, T_PAT[1] + 0.65)        # Marta puts it on his head
+T0['09'] = T_HATON[1] + 0.05                        # Bram: "Nice weather today!"
 S_LOOP = tend('09') + 0.35
 T_NIGHT = (S_LOOP, S_LOOP + 1.0)                    # time-lapse back to night
 DUR = round(S_LOOP + 2.4, 3); N = int(round(DUR * FPS))
@@ -100,7 +106,7 @@ def dawn_left(t):
     return max(0, int(math.ceil(30 * (1 - t / S_DAWN))))
 def detect(t):
     """the Watcher's detection of the knight 0..1 (the meter)"""
-    if t < T_OPEN + 0.3 or t >= T_GRAB[0] + 0.3: return 0.0
+    if t < T_OPEN + 0.3 or t >= T_WAVE + 0.5: return 0.0
     if t < S_CAT: return 0.06
     if t < T_YANK: return lerp(0.06, 0.3, seg01(t, S_CAT, T_YANK))
     if t < S_HERO: return 0.3
@@ -147,7 +153,7 @@ def set_faces():
     global SET
     if SET is None: SET = street_set()
     return SET
-PUDDLES = [(-0.9, -2.2, 0.55), (-0.6, 3.4, 0.5), (1.0, 5.2, 0.6), (0.4, 8.6, 0.5)]
+PUDDLES = [(-0.9, -2.2, 0.55), (1.2, 2.15, 0.42), (1.0, 5.2, 0.6), (0.4, 8.6, 0.5)]
 def puddles(t, nt):
     """dark puddles with a moon glint; rings ripple after every THOOM"""
     Q = []
@@ -211,9 +217,13 @@ VILS = [(dtx.VIL1, (-2.1, 5.0), PI / 2 + 0.4), (dtx.VIL2, (2.1, 6.6), -PI / 2), 
 M_POS = (0.25, 1.15); B_POS = (1.75, 2.75)
 HAT = (196, 36, 40)
 def red_hat(c, R, s=1.0):
+    """Bram's red felt hat: wide soft brim, rounded crown, dark band, a white feather (c = bottom centre, R = its frame)"""
     c = V(c, float)
-    Q = hd.lathe(tuple(c), R, [(0.13 * s, 0.0), (0.12 * s, 0.03 * s), (0.085 * s, 0.12 * s), (0.04 * s, 0.24 * s), (0.005, 0.3 * s)], 10, HAT)
-    Q += hd.lathe(tuple(c - R @ V((0, 0.005, 0))), R, [(0.17 * s, 0.0), (0.17 * s, 0.02 * s)], 10, hd.shade(HAT, 0.8))
+    Q = hd.lathe(tuple(c), R, [(0.2 * s, 0.0), (0.19 * s, 0.012 * s), (0.115 * s, 0.02 * s), (0.11 * s, 0.1 * s), (0.08 * s, 0.14 * s), (0.02, 0.155 * s)], 12, HAT)
+    Q += hd.lathe(tuple(c + R @ V((0, -0.004, 0))), R, [(0.205 * s, 0.0), (0.2 * s, 0.01 * s)], 12, hd.shade(HAT, 0.75))
+    Q += hd.lathe(tuple(c + R @ V((0, 0.022 * s, 0))), R, [(0.118 * s, 0.0), (0.118 * s, 0.025 * s)], 12, (70, 24, 26))
+    a = c + R @ V((0.1 * s, 0.04 * s, 0.02)); b = a + R @ V((0.06 * s, 0.14 * s, -0.08 * s)); e = b + R @ V((0.02, 0.08 * s, -0.12 * s))
+    Q += hd.limb(tuple(a), tuple(b), 0.012 * s, 0.018 * s, (240, 238, 230), n=5, m=1) + hd.limb(tuple(b), tuple(e), 0.018 * s, 0.004, (240, 238, 230), n=5, m=1)
     return [q for q in Q if q]
 def cat(c, yaw, ph, s=1.0):
     c = V(c, float); R = hd.Ry(yaw); BK = (22, 20, 26)
@@ -321,34 +331,34 @@ def smooth_pose(fn, t, span=0.12):
 def knight_pose(t):
     x, yaw, z, v = knight_pos(t); tt = t - DUR if t >= S_LOOP else t
     P = dict(base=(x, 0.0, z), yaw=yaw, eyes='open', mouth='smile', brow=0.2, lean=0.04, cape_sway=0.2 * math.sin(t * 1.7), head=(0.0, 0.0, 0.0))
-    P['rh'] = (0.22, 1.18, 0.32); P['rgrip'] = 0.95; P['rpalm'] = (-1.0, 0.0, 0.0)                   # the torch, held forward
-    P['lh'] = (-0.24, 1.0, 0.1); P['lgrip'] = 0.4
-    P['walk'] = 2 * PI * 0.9 * tt; P['stride'] = 0.3 * min(1.0, v / 1.3)
+    P['lh'] = (-0.22, 1.18, 0.32); P['lgrip'] = 0.95; P['lpalm'] = (1.0, 0.0, 0.0)                    # the torch, held forward (left hand)
+    P['rh'] = (0.24, 1.0, 0.1); P['rgrip'] = 0.4
+    if v > 0.03: P['walk'] = 2 * PI * 0.9 * tt; P['stride'] = 0.3 * min(1.0, v / 1.3); P['lift'] = 0.1 * min(1.0, v / 1.3)   # legs move only when he walks
     if t >= S_LOOP or t < S_EYES + 0.2:                                                       # frame 0 / loop: the wave in front of her face
         wv = win(tt, -0.6, S_EYES + 0.2, 0.3) if t < S_LOOP else sm(seg01(t, DUR - 0.6, DUR))
         if wv > 0:
-            fc = V((M_POS[0] - 0.2, 1.52, M_POS[1] - 0.05)); base_ = V((x, 0.0, z))
-            hw = lerp3(tuple(base_ + V((-0.24, 1.0, 0.1))), tuple(fc), wv); P.pop('lh', None)
-            P['lh_w'] = (hw[0], hw[1], hw[2] + 0.07 * math.sin(tt * 13) * wv); P['lgrip'] = 0.1; P['lpalm'] = (1.0, 0.0, 0.2); P['lpalm_local'] = False
+            fc = V((M_POS[0] - 0.24, 1.5, M_POS[1] - 0.12)); base_ = V((x, 0.0, z))
+            hw = lerp3(tuple(base_ + V((0.24, 1.0, 0.1))), tuple(fc), wv); P.pop('rh', None)
+            P['rh_w'] = (hw[0], hw[1] + 0.05 * math.sin(tt * 13) * wv, hw[2] + 0.06 * math.sin(tt * 13) * wv); P['rgrip'] = 0.1; P['rpalm'] = (-1.0, 0.0, 0.2); P['rpalm_local'] = False
             P['head'] = (0.55 * wv, 0.0, 0.0); P['look'] = (0.6 * wv, 0.0)
             P['mouth'] = 'open' if talking(t, '01') > 0.5 else 'smile'
     if S_EYES + 0.2 <= t < S_HERO:
         P['head'] = (0.45, 0.0, 0.0); P['mouth'] = 'open' if talking(t, '01') > 0.5 else 'smile'
         if t >= S_REVEAL: P['mouth'] = 'neutral'; P['brow'] = 0.1; P['head'] = (0.0, 0.15, 0.0)
-        if t >= S_CAT: P['_sword'] = True; P['lh'] = (-0.3, 1.25, 0.35); P['lgrip'] = 0.9                 # draws the sword
+        if t >= S_CAT: P['_sword'] = True; P['rh'] = (0.3, 1.25, 0.35); P['rgrip'] = 0.9                 # draws the sword
     if t >= S_HERO and t < S_TURN:
-        P['_sword'] = True; P['lh'] = (-0.3, 1.25, 0.35); P['lgrip'] = 0.9
+        P['_sword'] = True; P['rh'] = (0.3, 1.25, 0.35); P['rgrip'] = 0.9
         P['mouth'] = 'open' if talking(t, '05') > 0.5 else 'smile'; P['brow'] = -0.2; P['head'] = (0.0, 0.05, 0.05)
         if t >= T_SHADOW - 0.2:                                                                       # he sees the light + his long shadow: stops
             u = sm(seg01(t, T_SHADOW - 0.2, T_SHADOW + 0.3)); P['head'] = (0.0, -0.35 * u, 0.0); P['look'] = (0.0, -0.6 * u); P['mouth'] = 'neutral' if u > 0.5 else P['mouth']
             P['eyes'] = 'wide' if u > 0.5 else 'open'; P['brow'] = 0.0
     if t >= S_TURN and t < S_HAT + 2.0:
-        P['_sword'] = True; P['lh'] = (-0.3, 1.25, 0.35); P['lgrip'] = 0.9
+        P['_sword'] = True; P['rh'] = (0.3, 1.25, 0.35); P['rgrip'] = 0.9
         u = sm(seg01(t, *T_TURN)); P['yaw'] = PI - 0.0; P['head'] = (PI * 0.62 * u, 0.12 * u, 0.0); P['twist'] = 0.55 * u; P['look'] = (0.6 * u, 0.25 * u)
         P['eyes'] = 'wide'; P['brow'] = -0.4; P['mouth'] = 'o' if u > 0.6 else 'neutral'
         P['lf'] = (-0.11, 0.075 + 0.12 * u, 0.12 * u)                                                 # frozen mid-step, one foot up
         if t >= S_FLAME: P['look'] = (0.6, -0.35)                                                     # eyes down to the torch
-        if t >= T_THROW: P['look'] = (0.2, 0.0)
+        if t >= T_THROW: P['look'] = (-0.2, 0.0)
     if t >= S_HAT + 2.0 and t < S_LOOP:                                                               # dawn: relaxes, stunned
         P['_sword'] = False; P['eyes'] = 'open'; P['mouth'] = 'neutral'; P['brow'] = -0.3; P['head'] = (0.3, 0.0, 0.0)
     return P
@@ -362,42 +372,54 @@ def marta_pose(t):
     if T0['03'] - 0.1 <= t < tend('03') + 0.2: P['look'] = (-EYE_DIR, 0.0); P['eyes'] = 'half'
     if S_DAWN + 0.6 <= t < T_NIGHT[1]:
         u = sm(seg01(t, S_DAWN + 0.6, S_DAWN + 1.1)); P['yaw'] = lerp(-PI / 2, -2.4, u); P.pop('_broom', None); P['eyes'] = 'open'; P['mouth'] = 'smile'; P['brow'] = 0.0
-        hp = V((B_POS[0] - 0.2, 0.0, B_POS[1] + 0.6)); m0 = V((M_POS[0], 0.0, M_POS[1]))
-        w = sm(seg01(t, S_DAWN + 0.9, T_HATON[0]));  P['base'] = tuple(lerp3(tuple(m0), tuple(hp), w))
-        if 0.02 < w < 0.98: P['walk'] = 2 * PI * 1.2 * t; P['stride'] = 0.25
+        hp = V((B_POS[0] - 0.2, 0.0, B_POS[1] + 0.62)); m0 = V((M_POS[0], 0.0, M_POS[1])); pk = V((HAT_LAND[0] + 0.32, 0.0, HAT_LAND[2] + 0.36))
+        w1 = sm(seg01(t, S_DAWN + 0.7, T_PICK[0] + 0.45)); w2 = sm(seg01(t, T_PICK[1] - 0.1, T_RESPAWN - 0.15))
+        P['base'] = tuple(lerp3(tuple(lerp3(tuple(m0), tuple(pk), w1)), tuple(hp), w2))
+        P['yaw'] = lerp(lerp(-PI / 2, -2.4, w1), -3.44, w2)
+        if 0.02 < w1 < 0.98 or 0.02 < w2 < 0.98: P['walk'] = 2 * PI * 1.2 * t; P['stride'] = 0.25; P['lift'] = 0.09
+        bend = win(t, T_PICK[0] + 0.35, T_PICK[1] - 0.05, 0.25)                                                  # bends down to the puddle
+        if bend > 0: P['crouch'] = 0.35 * bend; P['lean'] = 0.08 + 0.55 * bend; P['rh'] = lerp3((0.2, 0.9, 0.05), (0.15, 0.35, 0.45), bend); P['head'] = (0.0, -0.4 * bend, 0.0)
+        if t >= T_PICK[1] - 0.05 and t < T_HATON[0]: P['rh'] = (0.22, 1.05, 0.3); P['rgrip'] = 0.7                    # holds the wet hat up
         if t >= T_HATON[0]:
-            h_ = win(t, T_HATON[0], T_HATON[1] + 0.2, 0.3); P['lh'] = lerp3((-0.2, 0.9, 0.05), (0.15, 1.75, 0.45), h_); P['rh'] = lerp3((0.2, 0.9, 0.05), (0.35, 1.75, 0.45), h_)
-        if t >= T_NIGHT[0]:                                                                            # back to her wall
-            r = sm(seg01(t, T_NIGHT[0], T_NIGHT[0] + 0.8)); P['base'] = tuple(lerp3(tuple(hp), tuple(m0), r)); P['yaw'] = lerp(-2.4, -PI / 2, r)
+            h_ = win(t, T_HATON[0], T_HATON[1] + 0.25, 0.3); P['lh'] = lerp3((-0.2, 0.9, 0.05), (0.05, 1.62, 0.55), h_); P['rh'] = lerp3((0.22, 1.05, 0.3), (0.3, 1.62, 0.55), h_)
+        if t >= T_NIGHT[0] - 0.2:                                                                      # back to her place
+            r = sm(seg01(t, T_NIGHT[0] - 0.2, T_NIGHT[0] + 1.0)); P['base'] = tuple(lerp3(tuple(hp), tuple(m0), r)); P['yaw'] = lerp(-3.44, -PI / 2, r)
             if r > 0.9: P['_broom'] = True; P['lh'] = (-0.12, 1.12, 0.3); P['rh'] = (0.1, 0.85, 0.42)
-            P['walk'] = 2 * PI * 1.4 * t; P['stride'] = 0.3; P['mouth'] = 'neutral'
+            P['walk'] = 2 * PI * 1.4 * t; P['stride'] = 0.3 * (1 - r); P['lift'] = 0.1 * (1 - r); P['mouth'] = 'neutral'
     elif S_DAWN <= t < S_DAWN + 0.6: P['mouth'] = 'neutral'
     return P
 def bram_state(t):
-    """'here' / 'gone' / 'respawn' + pose"""
+    """(pose or None, where the hat is: head / hand / fall / ground / marta)"""
     P = dict(base=(B_POS[0], 0.0, B_POS[1]), yaw=-PI / 2 - 0.35, eyes='open', mouth='neutral', brow=-0.2, head=(0.0, 0.0, 0.0))
     P['lh'] = (-0.22, 0.92, 0.12); P['rh'] = (0.22, 0.92, 0.12)
     hat = 'head'
-    if S_HAT - 0.6 <= t < T_GRAB[1]:
-        P['head'] = (0.25, 0.0, 0.0); P['look'] = (0.4, 0.0)                                       # looks at the knight
-        g = sm(seg01(t, S_HAT, T_THROW)); P['rh'] = lerp3((0.2, 0.9, 0.05), (0.08, 1.82, 0.05), g); P['rgrip'] = 0.8   # takes his hat
-        if t < T_THROW and g > 0.9: hat = 'hand'
-        if t >= T_THROW:
-            th = sm(seg01(t, T_THROW, T_THROW + 0.25)); P['rh'] = lerp3((0.08, 1.82, 0.05), (0.55, 1.7, 0.6), th); P['rgrip'] = lerp(0.8, 0.1, th); hat = 'fly'
-            P['yaw'] = -PI / 2 - 0.35 - 0.4 * th; P['eyes'] = 'half'; P['mouth'] = 'soft'
+    if S_HAT - 0.6 <= t < T_GRAB[1] + 1.5:
+        P['head'] = (0.25, 0.0, 0.0); P['look'] = (0.4, 0.0); P['brow'] = -0.5                                         # looks at the knight
+        g = sm(seg01(t, *T_TAKEOFF)); P['rh'] = lerp3((0.22, 0.92, 0.12), (0.08, 1.84, 0.05), g); P['rgrip'] = 0.8        # hand to the hat
+        if g > 0.9: hat = 'hand'
+        if t >= T_WAVE:                                                                                                  # waves it high, calls it over
+            u = sm(seg01(t, T_WAVE, T_WAVE + 0.3)); wv = math.sin((t - T_WAVE) * 9.0)
+            P['rh'] = lerp3((0.08, 1.84, 0.05), (0.28 + 0.22 * wv, 2.2, 0.2), u); P['head'] = (0.1, 0.35 * u, 0.0); P['look'] = (0.0, 0.5 * u)
+            P['eyes'] = 'wide'; P['brow'] = 0.6; P['mouth'] = 'open' if talking(t, '10') > 0.5 else 'grit'
+            P['lh'] = (-0.3, 1.1, 0.25)
     if T_GRAB[1] - 0.1 <= t < T_GRAB[1] + 1.5:                                                     # taken: lifted, then drawn back into the fog
-        lift = sm(seg01(t, T_GRAB[1] - 0.1, T_GRAB[1] + 0.5)); pull = seg01(t, T_GRAB[1] + 0.4, T_GRAB[1] + 1.5) ** 2
-        P['base'] = (lerp(B_POS[0], 0.6, pull), 0.9 * lift + 2.2 * pull, lerp(B_POS[1], 10.0, pull)); P['eyes'] = 'wide'; P['mouth'] = 'o'
-        P['lh'] = (-0.4, 1.7, 0.2); P['rh'] = (0.4, 1.7, 0.2); hat = 'fly' if t < T_LANDHAT else 'ground'
-    if t >= T_GRAB[1] + 1.5 and t < T_RESPAWN: return None, ('ground' if t < T_HATON[0] else 'marta')
+        lift = sm(seg01(t, T_GRAB[1] - 0.1, T_GRAB[1] + 0.5)); pull = seg01(t, T_GRAB[1] + 0.4, T_GRAB[1] + 1.5) ** 1.6
+        P['base'] = (lerp(B_POS[0], 0.6, pull), 0.9 * lift + 1.8 * pull, lerp(B_POS[1], 8.5, pull)); P['eyes'] = 'wide'; P['mouth'] = 'o'
+        P['lh'] = lerp3(P['lh'], (-0.4, 1.7, 0.2), lift); P['rh'] = lerp3(P['rh'], (0.4, 1.7, 0.2), lift)
+        hat = 'hand' if t < T_DROP else ('fall' if t < T_LANDHAT else 'ground')
+    if t >= T_GRAB[1] + 1.5 and t < T_RESPAWN:
+        return None, ('ground' if t < T_PICK[1] - 0.05 else 'marta')
     if T_RESPAWN <= t < S_LOOP + 0.8:
         P['yaw'] = -PI / 2 - 0.35 - (0.9 if t < T_NIGHT[0] else 0.9 * (1 - sm(seg01(t, T_NIGHT[0], T_NIGHT[0] + 0.6))))
         P['mouth'] = 'open' if talking(t, '09') > 0.5 else 'smile'; P['brow'] = 0.2; P['eyes'] = 'open'
+        pt = win(t, T_PAT[0], T_HATON[0] + 0.2, 0.25)                                                 # pats his bare head: confused
+        if pt > 0:
+            P['rh'] = lerp3((0.22, 0.92, 0.12), (0.06, 1.86, 0.03), pt); P['rgrip'] = 0.2; P['rpalm'] = (0.0, -1.0, 0.0)
+            P['head'] = (0.0, 0.25 * pt, 0.1 * math.sin(t * 6) * pt); P['look'] = (0.0, 0.6 * pt); P['brow'] = lerp(0.2, -0.7, pt); P['mouth'] = 'o'
         hat = 'marta' if t < T_HATON[1] - 0.25 else 'head'
         if t >= T_NIGHT[0] + 0.5: P['mouth'] = 'neutral'
-    if t >= T_LANDHAT and hat == 'fly' and t < T_RESPAWN: hat = 'ground'
     return P, hat
-HAT_LAND = V((-0.6, 0.02, 3.4))
+HAT_LAND = V((1.2, 0.03, 2.15))
 def vil_pose(i, t):
     sp, (x, z), yaw = VILS[i]
     P = dict(base=(x, 0.0, z), yaw=yaw, eyes='open', mouth='neutral', brow=-0.2, head=(0.0, 0.0, 0.0))
@@ -407,7 +429,9 @@ def vil_pose(i, t):
     day = 1 - night(t)
     if day > 0.3 and t < T_NIGHT[1]:
         P['yaw'] = yaw + 0.6 * min(1.0, day * 1.4) * (1 if x < 0 else -1); P['mouth'] = 'smile'; P['brow'] = 0.1; P['eyes'] = 'open'
-        P['lh'] = (-0.3, 1.0 + 0.4 * max(0, math.sin(t * 4 + i)), 0.1)
+        dk = sm(seg01(day, 0.3, 0.7)); lh0 = P.get('lh', (-0.24, 0.92, 0.1))
+        P['lh'] = lerp3(lh0, (-0.3, 1.0 + 0.4 * max(0, math.sin(t * 4 + i)), 0.1), dk)
+        if i == 1: P['lean'] = lerp(0.25, 0.05, dk); P['rh'] = lerp3((0.22, 0.6, 0.15), (0.25, 0.92, 0.1), dk)
     return P
 
 # =====================================================================================================================
@@ -439,7 +463,7 @@ def cam_shot(t):
         kx, _, kz, _ = knight_pos(t); tg = V((kx + 0.12, 1.4, kz - 0.25)); p = tg + V((-0.25, 0.08, -0.75))
         return V(motion.dolly(tuple(p), tuple(tg), motion.creep(t, a, 0.003))), tg, 40.0
     if sc == 'hat':
-        p = V((-0.25, 1.6, 1.85 + 0.15 * u)); tg = V(lerp3((1.6, 1.55, 2.95), tuple(HAT_LAND + V((0.4, 0.5, 0.0))), sm(seg01(t, T_GRAB[1] - 0.1, T_LANDHAT + 0.3))))
+        p = V((-0.25, 1.6, 1.85 + 0.15 * u)); tg = V(lerp3((1.6, 1.6, 2.95), tuple(HAT_LAND + V((0.25, 0.6, 0.3))), sm(seg01(t, T_GRAB[1] + 0.2, T_LANDHAT + 0.4))))
         return p, tg, 46.0
     if sc == 'dawn':
         p = V((-0.35, 1.6, 2.05 - 0.2 * u)); tg = V((1.4, 1.4, 2.6)); return p, tg, 50.0
@@ -468,16 +492,16 @@ def world(t):
     KP = smooth_pose(knight_pose, t); QK = knight(KP)
     layers = [sky(t, zc), set_faces(), puddles(t, nt), windows(t)]
     # the torch in his left hand (flame always moves)
-    tc = grip_pt(KP, 'r', 0.05, 0.0) + V((0.0, 0.2, 0.0))
+    tc = grip_pt(KP, 'l', 0.05, 0.0) + V((0.0, 0.2, 0.0))
     if t < S_HAT + 2.0 or t >= S_LOOP:
-        ax = nz(np.cross(KP['_rdir'], KP['_rpalm'])); ax = ax if ax[1] > 0 else -ax; ax = nz(ax + V((0, 0.6, 0)))
-        g0 = grip_pt(KP, 'r', 0.04, 0.0); tc = g0 + ax * 0.2
+        ax = nz(np.cross(KP['_ldir'], KP['_lpalm'])); ax = ax if ax[1] > 0 else -ax; ax = nz(ax + V((0, 0.6, 0)))
+        g0 = grip_pt(KP, 'l', 0.04, 0.0); tc = g0 + ax * 0.2
         layers.append(hd.limb(tuple(g0 - ax * 0.2), tuple(tc), 0.016, 0.022, (82, 56, 34), n=6, m=1)
                       + hd.lathe(tuple(tc - ax * 0.04), rot_y(ax), [(0.03, 0.0), (0.034, 0.05)], 7, (52, 38, 28)))
         layers.append(dtx.torch_faces(tc + ax * 0.01, t * (1.6 if S_FLAME <= t < S_HAT else 1.0), k=0.62 if S_FLAME <= t < S_HAT else 0.5, seed=3, stick=False))
         KP['_flame'] = tc + ax * 0.08
     if KP.get('_sword'):
-        gr = grip_pt(KP, 'l', 0.06, 0.0); d = hd.Ry(KP['yaw']) @ V((-0.05, 0.95, 0.45)); layers.append(hd.sword(tuple(gr), tuple(nz(d)), KP['_lpalm'], length=0.85))
+        gr = grip_pt(KP, 'r', 0.06, 0.0); d = hd.Ry(KP['yaw']) @ V((0.05, 0.95, 0.45)); layers.append(hd.sword(tuple(gr), tuple(nz(d)), KP['_rpalm'], length=0.85))
     layers.append(QK)
     MP = smooth_pose(marta_pose, t); layers.append(hd.human(MARTA, MP))
     if MP.get('_broom'):
@@ -494,13 +518,13 @@ def world(t):
             k_ = 0.25 + 0.75 * sc_
             for q in QB: q['p'] = [tuple(c0 + (V(p) - c0) * k_) for p in q['p']]; refresh(q)
         layers.append(QB)
-        if hat == 'head': layers.append(red_hat(V(BP['_head']) + BP['_RH'] @ V((0, 0.1, -0.01)), BP['_RH']))
-        if hat == 'hand': layers.append(red_hat(grip_pt(BP, 'r', 0.05, 0.05), hd.Rx(2.6)))
-    if hat == 'fly':
-        u = seg01(t, T_THROW, T_LANDHAT); p0 = V((B_POS[0] - 0.4, 1.9, B_POS[1] + 0.1)); p = lerp3(tuple(p0), tuple(HAT_LAND), u); p = V(p) + V((0, 1.6 * math.sin(PI * u), 0))
-        layers.append(red_hat(p, hd.Rz(u * 7.0) @ hd.Rx(u * 3.0)))
-    elif hat == 'ground': layers.append(red_hat(HAT_LAND + V((0, 0.0, 0)), hd.Rx(1.4)))
-    elif hat == 'marta': layers.append(red_hat(grip_pt(MP, 'r', 0.04, 0.06), hd.Rx(0.3)))
+        if hat == 'head': layers.append(red_hat(V(BP['_head']) + BP['_RH'] @ V((0, 0.085, -0.005)), BP['_RH']))
+        if hat == 'hand': layers.append(red_hat(grip_pt(BP, 'r', 0.06, 0.04) - V((0, 0.06, 0)), hd.Rx(0.5) @ hd.Rz(0.3 * math.sin(t * 9.0))))
+    if hat == 'fall':
+        u = sm(seg01(t, T_DROP, T_LANDHAT)) if False else seg01(t, T_DROP, T_LANDHAT) ** 1.6
+        p0 = V((B_POS[0] + 0.25, 2.3, B_POS[1] + 0.1)); p_ = V(lerp3(tuple(p0), tuple(HAT_LAND), u)); layers.append(red_hat(p_, hd.Rz(1.6 * u) @ hd.Rx(0.8 * u)))
+    elif hat == 'ground': layers.append(red_hat(HAT_LAND, hd.Rz(0.25)))
+    elif hat == 'marta': layers.append(red_hat(grip_pt(MP, 'r', 0.05, 0.04) + V((0, 0.02, 0)), hd.Rx(0.25)))
     for i in range(len(VILS)): layers.append(hd.human(VILS[i][0], smooth_pose(lambda x, i=i: vil_pose(i, x), t)))
     if T_CAT[0] - 0.3 <= t < T_YANK + 0.3:                                                       # the cat
         if t < T_SNAP: u = seg01(t, T_CAT[0], T_CAT[1]); c = V((lerp(-2.6, 2.4, u), 0.0, 3.2))
@@ -545,13 +569,13 @@ for _s in [TX['dawn'], *TX['cov']]: font.check(_s)
 WHT = (240, 236, 226); PALE = (226, 232, 255); RED = (255, 70, 60)
 def hud(d, t):
     if night(t) < 0.5 and t < T_NIGHT[0] + 0.5: return
-    s = dawn_left(t); txt = f"{TX['dawn']} 0:{s:02d}"
-    d.rectangle([40, 40, 470, 150], fill=(10, 12, 28)); d.rectangle([40, 40, 470, 150], outline=(120, 130, 190), width=4)
-    ctext(d, txt, 64, 9, PALE, o=5, x=66)
+    s = dawn_left(t); txt = f"{TX['dawn']} 0:{s:02d}"; w_ = tw(txt, 8)
+    d.rectangle([40, 40, 66 + w_ + 28, 150], fill=(10, 12, 28)); d.rectangle([40, 40, 66 + w_ + 28, 150], outline=(120, 130, 190), width=4)
+    ctext(d, txt, 67, 8, PALE, o=5, x=66)
 def meter(d, t):
     v = detect(t)
     if v <= 0.0: return
-    x0, y0 = 640, 50; wb = 370; shake = int(6 * math.sin(t * 60)) if v > 0.9 else 0
+    x0, y0 = 650, 50; wb = 370; shake = int(6 * math.sin(t * 60)) if v > 0.9 else 0
     d.rectangle([x0 - 8 + shake, y0 - 8, x0 + wb + 8 + shake, y0 + 92], fill=(10, 12, 28)); d.rectangle([x0 - 8 + shake, y0 - 8, x0 + wb + 8 + shake, y0 + 92], outline=(150, 150, 170), width=4)
     cx, cy = x0 + 46 + shake, y0 + 42                                                             # the eye icon
     d.ellipse([cx - 34, cy - 20, cx + 34, cy + 20], fill=(236, 230, 200)); d.ellipse([cx - 13, cy - 13, cx + 13, cy + 13], fill=(30, 30, 40))
@@ -559,7 +583,8 @@ def meter(d, t):
     col = mixc((240, 220, 120), RED, seg01(v, 0.5, 0.95)); d.rectangle([bx0, y0 + 24, bx0 + int((x0 + wb - 6 - x0 - 100) * v), y0 + 60], fill=col)
 def cover(d, t):
     if not (0 <= t < T0['01'] + 0.3): return
-    lines = TX['cov']; scs = [9, 10, 11]; y = 300
+    lines = TX['cov']; scs = [min(sc_, max(6, int(1000 / (len(l_) * 6 - 1)))) for l_, sc_ in zip(lines, (12, 13, 15))]
+    y = int(960 - (sum(7 * c_ for c_ in scs) + 34 * (len(lines) - 1)) / 2)
     w = max(tw(s, sc) for s, sc in zip(lines, scs)); yy = y
     for i, (s, sc) in enumerate(zip(lines, scs)):
         if i == len(lines) - 1: d.rectangle([540 - w / 2 - 30, yy - 18, 540 + w / 2 + 30, yy + 7 * sc + 18], fill=(70, 18, 30))
@@ -711,9 +736,14 @@ def build_audio(path):
     tone(T_EYE_MOVE, 50, 0.5, 0.012, dec=3, glide=0.08, harm=(1.0, 0.5, 0.3)); nb(T_EYE_MOVE, 0.5, 200, 1200, 0.01, 7, 1)
     cr = (np.sin(2 * np.pi * 4200 * t) * (np.sin(2 * np.pi * 28 * t) > 0.6) * (np.sin(2 * np.pi * 0.7 * t) > -0.2)).astype(float) * 0.004
     crick = np.where((t < T_OPEN) | (t > T_NIGHT[0] + 0.5), 1.0, 0.0) * nightv; BED += cr * crick
+    dayv = 1 - nightv                                                                                   # day bed: air + a far village murmur + a soft lute
+    BED += s.filt(s.rng.normal(0, 1, n), lo=150, hi=1200) * 0.014 * dayv + s.filt(s.rng.normal(0, 1, n), lo=300, hi=900) * 0.006 * dayv * (0.6 + 0.4 * np.sin(2 * np.pi * 0.7 * t))
+    lute = [64, 67, 71, 72, 71, 67, 64, 62, 60, 64, 67, 69]; x = T_SUN[0] + 0.5; k = 0
+    while x < T_NIGHT[0] + 0.4:
+        tone(x, lute[k % len(lute)], 0.7, 0.016, dec=4.0, harm=(1.0, 0.45, 0.2, 0.1), buf=MUS); x += 0.3; k += 1
     x = T_SUN[0] + 0.3; k = 0
     while x < T_NIGHT[0]:
-        m0 = 86 + 6 * hsh(k, 3); tone(x, m0, 0.09, 0.008, dec=18, glide=0.25, buf=BED); tone(x + 0.11, m0 + 3, 0.07, 0.006, dec=20, glide=-0.2, buf=BED); x += 0.45 + 0.5 * hsh(k, 4); k += 1
+        m0 = 86 + 6 * hsh(k, 3); tone(x, m0, 0.09, 0.012, dec=18, glide=0.25, buf=BED); tone(x + 0.11, m0 + 3, 0.07, 0.01, dec=20, glide=-0.2, buf=BED); x += 0.25 + 0.35 * hsh(k, 4); k += 1
     # torch crackle (soft, a few pops), louder in the flame close-up
     BED += s.filt(s.rng.normal(0, 1, n), lo=200, hi=1500) * 0.006 * nightv * (1 + 2.5 * mask(S_FLAME, S_HAT, 0.1))
     for i in range(int(DUR * 4)):
@@ -743,7 +773,10 @@ def build_audio(path):
         thud(hb, 52, 0.12, 0.25); thud(hb + 0.18, 48, 0.08, 0.2); hb += max(0.5, 0.85 - 0.06 * k_); k_ += 1
     # the throw: slow whoosh, the grab: fog roar + swirl, the hat lands in the puddle (splash)
     nb(T_THROW, 1.1, 300, 2500, 0.04, 51, 1); nb(T_GRAB[0], 0.9, 60, 800, 0.1, 52, 1); thud(T_GRAB[0] + 0.5, 40, 0.2, 0.8)
-    nb(T_LANDHAT, 0.25, 800, 5000, 0.04, 53, 0.5)
+    nb(T_LANDHAT, 0.25, 800, 5000, 0.05, 53, 0.5)
+    for k_ in range(5): nb(T_WAVE + 0.11 * k_ * 3.0, 0.18, 400, 2200, 0.02, 60 + k_, 1)
+    for k_ in range(4): tone(T_PICK[1] - 0.25 + 0.13 * k_, 90 - 2 * k_, 0.05, 0.008, dec=40)
+    thud(T_PAT[0] + 0.25, 180, 0.015, 0.06); thud(T_PAT[0] + 0.55, 180, 0.015, 0.06)
     # dawn: a bright music-box sting + bell; respawn sparkle; the loop: a reverse whoosh back to night
     for k_, m in enumerate((72, 76, 79, 84, 88)): tone(T_SUN[0] + 0.1 * k_, m, 0.9, 0.02, dec=2.5, harm=(1.0, 0.0, 0.3), buf=MUS)
     tone(T_SUN[0] + 0.6, 60, 2.5, 0.03, dec=1.2, harm=(1.0, 0.6, 0.4, 0.3))

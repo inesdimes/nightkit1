@@ -30,6 +30,8 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
   TR sheet `briefs/night_freeze_voice_sheet.md` (Betül = Marta). Next in the queue: loading_tips.
 - **v2 after Enes's review (boss look, light, NPCs in walls, torch, jerky):** see `reviews/night_freeze.md` -> `..._v2_29s.mp4`. New QA habits for every
   short: a per-frame intersection check vs set props, a per-frame joint-jump check, light = glow + ground pool (depth-masked), smooth_pose.
+- **v3 after Enes's 2nd review** (cover, arm, DAWN box, walking in place, line 01, why the hat is thrown / put back): see `reviews/night_freeze.md`
+  -> `renders/night_freeze/why_do_npcs_stand_still_at_night_v3_32s.mp4` (32.2 s). TR sheet now has 11 lines (Kayıt 11 = Bram 'Buraya bak!').
 - Lessons: Whisper small.en hears "respawns" as "responds" (hyphenated text "re-spawns" fixed the clone); long bash heredocs with many quotes
   break in Git Bash: write patch scripts to the scratchpad instead.
 

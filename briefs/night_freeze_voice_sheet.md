@@ -12,7 +12,7 @@ Recipe: copy into `renders/night_freeze/tr_voice_tts/mix` -> `TTS_DIR=../renders
 | Kayıt | speaker | EN | TR (record this) | how to read |
 |---|---|---|---|---|
 | 1 | NARR | Why do NPCs stand still at night? | NPC'ler geceleri neden kıpırdamaz? | hook: calm, low, a little ominous |
-| 2 | KNIGHT | Hello? Is anyone home? | Merhaba? Kimse yok mu? | cheerful, loud, oblivious |
+| 2 | KNIGHT | Hello? Why is nobody moving? | Merhaba? Neden kimse kıpırdamıyor? | cheerful, puzzled, loud |
 | 3 | NARR | They aren't broken. They're hiding. | Bozuk değiller. Saklanıyorlar. | quiet, slow; pause before "Saklanıyorlar" |
 | 4 | MARTA (Betül) | Stop. Moving. | Kıpırdama. | WHISPER through the teeth, terrified |
 | 5 | NARR | It only sees what moves. | O sadece kıpırdayanı görür. | very calm, like a rule |
@@ -21,3 +21,4 @@ Recipe: copy into `renders/night_freeze/tr_voice_tts/mix` -> `TTS_DIR=../renders
 | 8 | NARR | Every night, someone has to move. | Her gece birinin kıpırdaması gerekir. | heavy, slow, sad |
 | 9 | NARR | At dawn, every NPC respawns. | Şafakta her NPC yeniden doğar. | lighter, relief |
 | 10 | BRAM | Nice weather today! | Bugün hava ne güzel! | bright, too cheerful (the NPC line) |
+| 11 | BRAM | Over here! | Buraya bak! | SHOUTED, waving his hat: he draws the monster's eye off the knight on purpose (plays between lines 7 and 8 in the film) |
