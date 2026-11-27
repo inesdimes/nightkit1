@@ -35,6 +35,16 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 - Lessons: Whisper small.en hears "respawns" as "responds" (hyphenated text "re-spawns" fixed the clone); long bash heredocs with many quotes
   break in Git Bash: write patch scripts to the scratchpad instead.
 
+## Art direction test (28 Nov 2026) - nightkit vs Blender, same 8 s gag
+- Enes's art-direction doc (`briefs/ART_DIRECTION_insert_disc_2.md`): squat knight with a bent ochre plume + loose visor, tall precise
+  instructor, painted colour shapes + anchored marks, quiet background. Enes asked for BOTH engines.
+- Shared choreography `examples/art_test_chor.py` (positions, phases, visor, fold, cameras, foley events) -> nightkit `examples/art_test.py`
+  and Blender `blender/art_test.py` (puppets from primitives, FK from the chor; painted texture atlases made by the SYSTEM python
+  (`python blender/art_test.py`, Blender's python has no PIL), Closest filtering, Freestyle ink, 360x640 x3 nearest).
+- Renders: `renders/art_test/art_test_nightkit_8s.mp4`, `art_test_blender_8s.mp4`, `art_test_compare_nightkit_vs_blender.mp4`. Waiting for Enes.
+- Lessons: Blender front = +Y for chor +z (map chor (x, y, z) -> Blender (x, z, y)); nightkit fov is HORIZONTAL (fpx = W / 2 tan(fov/2)):
+  Blender needs sensor_fit HORIZONTAL + angle_x; a full-sphere helmet hides the face: cut the dome above the brows.
+
 ## Next (27 Nov 2026): six full briefs by Claude wait in `briefs/QUEUE_27NOV.md` (Enes liked all six; build after the weekly limit resets).
 
 ## Newest (27 Nov 2026) - Why do tutorials make you jump? (GPT story with the new rules, full authority to Claude)
