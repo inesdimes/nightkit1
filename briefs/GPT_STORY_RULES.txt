@@ -1,4 +1,4 @@
-INSERT DISC 2 - STORY RULES FOR GPT  (version 27 Nov 2026, b: stakes + re-hooks)
+INSERT DISC 2 - STORY RULES FOR GPT  (version 27 Nov 2026, c: stakes + re-hooks + research)
 Paste this whole file at the start of a new chat, then ask for ideas.
 =====================================================================
 
@@ -37,6 +37,10 @@ These are the reasons for the rules. Do not break them without saying why.
 - LONG, SLOW, EMOTIONAL stories (44-67 s) did badly. Short, fast ones won.
   Very short loop gags (14-21 s) also work: few people stay, but those who stay rewatch.
 - FANTASY/RPG ONLY. Real-world topics died (a stolen car: 74 views, a science fact: 120).
+  Why (curiosity research, Loewenstein 1994): curiosity is strongest when the viewer ALREADY KNOWS a little and the gap is small.
+  Everyone knows final bosses and NPCs, so "Why do...?" opens a small gap at once; a real-world fact starts from zero.
+  -> Pick tropes every gamer recognises instantly. Never a topic that needs explaining first.
+- TARGET: at least 60 % of viewers "viewed" (not swiped) at 48 h. Shorts under ~60 % rarely take off (Galloway, 5,400 Shorts).
 - A TWIST beats a plain gag. But not only sad stories: surprise, curiosity, creepy and funny twists are all welcome.
   Mix the tones across your ideas.
 - Comments were 0 on every video, so every story ends with something viewers want to answer.
@@ -56,6 +60,11 @@ These are the reasons for the rules. Do not break them without saying why.
 - RE-HOOK EVERY 5-7 SECONDS: when a question is answered, open the next one at once (a new problem, a new rule,
   a reveal). Never a stretch of pure talk or explaining with nothing new on screen.
 - ONE HEAD FAKE at least: make the viewer expect A, then snap to B (he looks like he will jump... then he does not).
+- BUT / THEREFORE (South Park rule): every beat is linked to the one before by BUT (a new problem) or THEREFORE (a consequence),
+  never by "and then". Read your beats aloud with "but / therefore" between them; any "and then" is a dead beat: cut or change it.
+- START AT "ONE DAY": skip "once upon a time / every day" (the trope already says it). The first second is the day it goes wrong.
+- CLOSE EVERY GAP you open inside the video; an unpaid promise kills trust.
+- VARY THE LOOP TYPE between videos (a question, a countdown, a mystery object, "what will he do?"); never "wait till the end".
 - Something new every 2-3 s. No silence longer than about 1 s (except the wordless beat).
 - Plant ONE concrete detail early (an object, a HUD counter, a habit) that the twist reverses or pays off.
 - ONE wordless beat of 1-2 s where the viewer feels or realises it (a look, a hand that stops, a light going out).
@@ -105,10 +114,11 @@ STEP 3 - STORY + CAMERA SCRIPT (after my OK), in this order:
   6. Stakes + urgency (what can he lose, why now) and the re-hook moments with their seconds
   7. One question for the pinned comment (one word or A-or-B)
 
-SELF-CHECK before sending step 3 (answer in 6 lines):
+SELF-CHECK before sending step 3 (answer in 7 lines):
   [ ] fantasy/RPG trope, "Why do...?" title (or a reason for another), logic holds in every scene
   [ ] frame 1 big + moving + bright, hook clear within 2 s, at most one game text besides the cover
   [ ] stakes + urgency in the first 3 s, a re-hook every 5-7 s, at least one head fake
+  [ ] every beat linked by BUT or THEREFORE (no "and then"), every opened question answered, a trope everyone knows
   [ ] final length <= 35 s (40 max), word count inside the budget
   [ ] planted detail + wordless beat + loop ending present
   [ ] the ending + the pinned comment ask a one-word / A-or-B question
