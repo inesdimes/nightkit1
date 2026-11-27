@@ -241,7 +241,13 @@ def human(S, P):
     RH = RW @ Ry(hy) @ Rx(-hp) @ Rz(ht)
     Q += limb(neck - Wd(Rch @ np.array([0, 0.02, 0])), neck + RH @ np.array([0, 0.06 * k, 0.0]), 0.05 * (1 - 0.1 * fem), 0.046, S['skin'], n=nl, m=1, ref=RW @ np.array([0, 0, 1.0]))
     hc = neck + RH @ np.array([0, 0.125 * k, 0.014])
-    Q += head(hc, RH, S, P, k)
+    if P.get('face') is not None:                                          # opt-in performance face (nightkit/face.py); old face otherwise
+        from . import face as _face
+        hk = k * P.get('head_scale', 1.0)                                  # bigger heads read at phone size (chibi-lite); grows up from the neck
+        hc = neck + RH @ np.array([0, 0.125 * hk - 0.02 * (hk - k), 0.014])
+        Q += _face.head(hc, RH, S, P, hk)
+    else:
+        Q += head(hc, RH, S, P, k)
     # ---- arms
     sw_walk = 0.0 if feet_walk is None else math.sin(g('walk'))
     for sd, key in ((1, 'r'), (-1, 'l')):

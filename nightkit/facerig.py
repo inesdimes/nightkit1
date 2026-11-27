@@ -119,10 +119,11 @@ def eyes_geo(M, E):
     for sd, side in ((1, 'R'), (-1, 'L')):
         cx, cy = sd * 0.033, 0.012
         op = E['eyes' + side]; sq = E['squint' + side]
-        n = 9; s = np.linspace(-1, 1, n); hw = 0.0135
+        es = E.get('eye_size', 1.0)                    # 1 = the original rig (Fox Wind / Sorceress); face.py uses a bigger anime eye
+        n = 9; s = np.linspace(-1, 1, n); hw = 0.0135 * es
         x = cx + s * hw
         tilt = 0.0012 * s * sd                       # outer corner a touch higher
-        ck = E.get('cheek' + side, 0.0); wide_ = float(np.clip((op - 1.0) / 0.3, 0, 1)); KU = 0.0085 * (1 + 0.3 * wide_); KL = 0.0058 * (1 + 0.2 * wide_)
+        ck = E.get('cheek' + side, 0.0); wide_ = float(np.clip((op - 1.0) / 0.3, 0, 1)); KU = 0.0085 * es * (1 + 0.3 * wide_); KL = 0.0058 * es * (1 + 0.2 * wide_)
         up_full = cy + tilt + KU * (1 - s ** 2) ** 0.8 + 0.0006
         lo_full = cy + tilt - KL * (1 - s ** 2) ** 0.8
         lid = lo_full + 0.0006 + (up_full - lo_full) * np.clip(op / 1.3, 0, 1.0) * (1 - 0.5 * sq)
@@ -133,22 +134,22 @@ def eyes_geo(M, E):
         # sclera
         M.strip(P2(x, up_full, 0.0012), P2(x, lo_full, 0.0012), (240, 236, 228))
         # iris + pupil + glint (kept inside the eye opening)
-        lx, ly = E['look']; ix = cx + np.clip(lx, -1, 1) * 0.0032; iy = cy + 0.0006 + np.clip(ly, -1, 1) * 0.0022
+        lx, ly = E['look']; ix = cx + np.clip(lx, -1, 1) * 0.0032 * es; iy = cy + 0.0006 + np.clip(ly, -1, 1) * 0.0022 * es
         th = np.linspace(0, 2 * PI, 12, endpoint=False)
         def ring(r):
             xs = ix + np.cos(th) * r; ys = iy + np.sin(th) * r
             ss = np.clip((xs - cx) / hw, -0.97, 0.97)
             top = cy + 0.0012 * ss * sd + KU * (1 - ss ** 2) ** 0.8; bot = cy + 0.0012 * ss * sd - KL * (1 - ss ** 2) ** 0.8
             return np.stack([xs, np.clip(ys, bot, top)], -1)
-        M.fan(on([[ix, iy]], 0.0018, E)[0], on(ring(0.0056), 0.0018, E), ST['eye'])
-        M.fan(on([[ix, iy]], 0.0022, E)[0], on(ring(0.0035), 0.0022, E), shade(ST['eye'], 0.55))
-        M.fan(on([[ix, iy]], 0.0026, E)[0], on(ring(0.0022), 0.0026, E), (16, 12, 12))
+        M.fan(on([[ix, iy]], 0.0018, E)[0], on(ring(0.0056 * es), 0.0018, E), ST['eye'])
+        M.fan(on([[ix, iy]], 0.0022, E)[0], on(ring(0.0035 * es), 0.0022, E), shade(ST['eye'], 0.55))
+        M.fan(on([[ix, iy]], 0.0026, E)[0], on(ring(0.0022 * es), 0.0026, E), (16, 12, 12))
         g0 = on([[ix + 0.0016, iy + 0.0018]], 0.003, E)[0]
         M.fan(g0, on(np.stack([ix + 0.0016 + np.cos(th[::3]) * 0.0009, iy + 0.0018 + np.sin(th[::3]) * 0.0009], -1), 0.003, E), (255, 255, 250))
         # upper lid (covers everything above the lid line) + lash line + crease
         lidcol = shade(ST['skin'], 0.9)
         M.strip(P2(x, up_full + 0.0034, 0.0034), P2(x, lid, 0.0034), lidcol)
-        lash = np.where(s * sd > 0, 0.0017, 0.0011)
+        lash = np.where(s * sd > 0, 0.0017, 0.0011) * E.get('bold', 1.0)
         M.strip(P2(x * 1.0 + sd * 0.0006 * (s * sd > 0.6), lid + lash, 0.0038), P2(x, lid - 0.0003, 0.0038), (34, 22, 18))
         M.strip(P2(x[1:-1], up_full[1:-1] + 0.0042, 0.0036), P2(x[1:-1], up_full[1:-1] + 0.0034, 0.0036), shade(ST['skin'], 0.84))
         # lower lid
@@ -161,8 +162,8 @@ def brows_geo(M, E):
         r = E['brow' + side]; inn = E['inner' + side] - 0.5 * fu
         s = np.linspace(-1, 1, 7)                       # -1 = inner end, +1 = outer end
         x = sd * (0.033 + 0.017 * s - 0.0035 * fu * (1 - s) / 2)
-        y = 0.0295 + 0.0095 * r + (0.0024 + 0.0028 * max(0.0, r)) * (1 - s ** 2) + 0.0045 * inn * (1 - s) / 2 - 0.0012 * s
-        th = 0.0052 - 0.002 * (s + 1) / 2
+        y = 0.0295 + 0.012 * (E.get('eye_size', 1.0) - 1) + 0.0095 * r + (0.0024 + 0.0028 * max(0.0, r)) * (1 - s ** 2) + 0.0045 * inn * (1 - s) / 2 - 0.0012 * s
+        th = (0.0052 - 0.002 * (s + 1) / 2) * E.get('bold', 1.0)
         M.strip(on(np.stack([x, y + th * 0.55], -1), 0.0042, E), on(np.stack([x, y - th * 0.45], -1), 0.0042, E), ST['brow'])
         if r > 0.55:                                     # forehead line over a high brow
             k_ = min(1.0, (r - 0.55) / 0.4); ys = 0.0295 + 0.0095 * r + 0.012
