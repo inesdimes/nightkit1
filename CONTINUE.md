@@ -19,6 +19,13 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 ```
 (For Final Boss B also run A's `PART=audio` first; same for Guard Forgets B.)
 
+## Newest (28 Nov 2026, noon) - 30-short IG + YT analysis -> NEXT: a new story with the proven mould
+- ANALYTICS.md section 24 + `analysis 48 hours/IG_YT_birlesik_28kas.csv`: only 5 shorts won on BOTH platforms (Final Boss A/B, Monster Shop,
+  99 Swords, Goblins) = "Why do <game rule everyone noticed>?" about bosses / enemies / inventory / shops + a lore twist, trope in frame 1.
+  The last 3 posts (3 knocks, Ragebait, Boss Wanted) failed on both -> the video, not the slot. IG: no slot effect, no middle (stuck or pushed).
+- `briefs/GPT_STORY_RULES.txt` (+ copy `../GPT_HIKAYE_KURALLARI.txt`) updated to v28 Nov: proven mould first, 30-40 s, no short loop gags.
+- Next session: Enes wants a NEW STORY built on these rules (pitch first, wait for OK; then nightkit HD build).
+
 ## Newest (27 Nov 2026, evening) - human performance SKELETON (Enes: "build the skeleton this week, detail later, remember the bugs")
 All opt-in; old videos render pixel-identical (fingerprints checked after every step).
 1. Face `nightkit/face.py` (P['face'], 11 presets, Track) - approved. 2. Hands `nightkit/hands.py` (P['rfingers'], 18 presets) - approved.
