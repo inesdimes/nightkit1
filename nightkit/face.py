@@ -79,9 +79,10 @@ class Track:
 def _fx(M, E, fx):
     on = lambda xy, lift: facerig.on(np.asarray(xy, float), lift, E)
     if 'sweat' in fx:                                                        # a big teardrop at the temple
-        c = (0.071, 0.052); pts = [(c[0] + 0.009 * math.sin(a) * (1 - 0.6 * math.cos(a) if a < math.pi else 1), c[1] + 0.016 * math.cos(a) * (0.7 if a < math.pi / 2 or a > 3 * math.pi / 2 else 1.0)) for a in np.linspace(0, 2 * math.pi, 12, endpoint=False)]
+        c = (0.069, 0.05); sz = 0.62                                         # 0.62: the 27 Nov drop was too big (half the eye height)
+        pts = [(c[0] + sz * 0.009 * math.sin(a) * (1 - 0.6 * math.cos(a) if a < math.pi else 1), c[1] + sz * 0.016 * math.cos(a) * (0.7 if a < math.pi / 2 or a > 3 * math.pi / 2 else 1.0)) for a in np.linspace(0, 2 * math.pi, 12, endpoint=False)]
         ring = on(pts, 0.016); cc = on([c], 0.016)[0]; M.fan(cc, ring, (176, 214, 255), emit=True)
-        M.fan(on([(c[0] - 0.0025, c[1] - 0.003)], 0.017)[0], on([(c[0] - 0.0025 + 0.002 * math.cos(a), c[1] - 0.003 + 0.004 * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 6, endpoint=False)], 0.017), (250, 252, 255), emit=True)
+        M.fan(on([(c[0] - sz * 0.0025, c[1] - sz * 0.003)], 0.017)[0], on([(c[0] - sz * 0.0025 + sz * 0.002 * math.cos(a), c[1] - sz * 0.003 + sz * 0.004 * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 6, endpoint=False)], 0.017), (250, 252, 255), emit=True)
     if 'vein' in fx:                                                         # the cross-shaped anger mark
         cx, cy = -0.042, 0.062
         for a in (0.4, 0.4 + math.pi / 2, 0.4 + math.pi, 0.4 + 3 * math.pi / 2):

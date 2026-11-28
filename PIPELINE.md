@@ -57,6 +57,8 @@ Automatic checks run on every frame (`scene_qa.py`). Everything else is checked 
 | Characters interpenetrate | automatic: `intersect` |
 | Camera inside a wall, or near-plane clipping a character | automatic: `camera` |
 | Text wider than the frame, or a glyph missing from the font | automatic: `text` |
+| hd humans: arm / hand / fingers inside the body or head, forearms or fingers through each other, a hand inside another character, legs crossing, feet in the ground, folded elbows | automatic: `python tools/qa/body_qa.py examples/<script>.py` (`arm-torso`, `arm-head`, `arm-arm`, `hand-other`, `leg-leg`, `foot-ground`, `elbow-fold`; nightkit/bodycheck.py) |
+| hd humans: a joint that snaps (`jump`) or starts / stops dead (`pop`), body-relative, looser for walking legs | automatic: `body_qa.py` (run with `--step 1` before delivering; 0 windows or each one explained) |
 | Extra or missing limbs, changing faces or clothing, morphing, duplication, unreadable movement, floating objects, distorted text, framing (for example a character filling the frame) | manual, on the contact sheets |
 
 ## Phase 5 — Final render

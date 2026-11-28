@@ -171,6 +171,21 @@ def walk_cycle(phase, stride=0.32, lift=0.11):
     bob = 0.025 * (abs(math.sin(phase)) - 0.6)
     return out, bob
 
+def _carry(d_from, p, d_to):
+    """p rotated by the smallest rotation that takes direction d_from to d_to, then made perpendicular to d_to"""
+    a = nz(np.asarray(d_from, float)); b = nz(np.asarray(d_to, float)); p = np.asarray(p, float)
+    ax = np.cross(a, b); sn = float(np.linalg.norm(ax)); cs = float(a @ b)
+    if sn > 1e-6:
+        ax = ax / sn; p = p * cs + np.cross(ax, p) * sn + ax * float(ax @ p) * (1 - cs)
+    q = p - b * float(p @ b); return q / np.linalg.norm(q) if np.linalg.norm(q) > 1e-9 else p
+def palm_transport(d, d0, p0, d1, p1, u):
+    """palm direction (chest frame) for forearm direction d during a blend: the start palm (p0 on forearm d0) and the end palm
+    (p1 on d1) are both carried onto d, then turned into each other ABOUT the forearm by u. The palm never crosses the forearm axis,
+    so the hand frame cannot flip mid-move (it did when a world-space palm blend met a swinging forearm)."""
+    d = nz(np.asarray(d, float)); q0 = _carry(d0, p0, d); q1 = _carry(d1, p1, d)
+    phi = math.atan2(float(np.cross(q0, q1) @ d), float(q0 @ q1)); u = min(1.0, max(0.0, u)); c, s_ = math.cos(phi * u), math.sin(phi * u)
+    return q0 * c + np.cross(d, q0) * s_ + d * float(d @ q0) * (1 - c)
+
 def human(S, P):
     """S = spec(...), P = pose dict. Returns a list of zraster faces."""
     g = lambda k, d=None: P.get(k, d)
@@ -207,6 +222,7 @@ def human(S, P):
         (chest + Wd(Rch @ np.array([0, 0.03 * k, 0.0])), RW, (0.178 - 0.02 * fem) * bw, 0.105 * bw, tun),
         (chest + Wd(Rch @ np.array([0, 0.1 * k, -0.01])), RW, (0.15 - 0.025 * fem) * bw, 0.085 * bw, tun),
         (neck + Wd(Rch @ np.array([0, -0.005, -0.012])), RW, 0.07, 0.065, tun)]
+    P['_torso'] = [(c, Rr, rxx, rzz) for c, Rr, rxx, rzz, _ in secs]; P['_RP'] = RP   # for nightkit/bodycheck.py
     R = []; C = []
     for c, Rr, rxx, rzz, _ in secs:
         ring = []
@@ -241,11 +257,12 @@ def human(S, P):
     RH = RW @ Ry(hy) @ Rx(-hp) @ Rz(ht)
     Q += limb(neck - Wd(Rch @ np.array([0, 0.02, 0])), neck + RH @ np.array([0, 0.06 * k, 0.0]), 0.05 * (1 - 0.1 * fem), 0.046, S['skin'], n=nl, m=1, ref=RW @ np.array([0, 0, 1.0]))
     hc = neck + RH @ np.array([0, 0.125 * k, 0.014])
+    P['_hk'] = k
     if P.get('face') is not None:                                          # opt-in performance face (nightkit/face.py); old face otherwise
         from . import face as _face
         hk = k * P.get('head_scale', 1.0)                                  # bigger heads read at phone size (chibi-lite); grows up from the neck
         hc = neck + RH @ np.array([0, 0.125 * hk - 0.02 * (hk - k), 0.014])
-        Q += _face.head(hc, RH, S, P, hk)
+        Q += _face.head(hc, RH, S, P, hk); P['_hk'] = hk
     else:
         Q += head(hc, RH, S, P, k)
     # ---- arms
@@ -282,6 +299,8 @@ def human(S, P):
         palm = g(key + 'palm')
         if g(key + 'palm_c') is not None: palm = Rch @ np.asarray(g(key + 'palm_c'), float)
         palm = Wd(Rch @ np.array([-sd * 1.0, 0, 0.2])) if palm is None else (Wd(np.asarray(palm, float)) if g(key + 'palm_local', True) else np.asarray(palm, float))
+        if g(key + 'palm_tr') is not None:                                 # opt-in (nightkit/body.py): the palm carried along with the forearm
+            palm = RW @ palm_transport(RW.T @ nz(wr - el), *g(key + 'palm_tr'))
         if g(key + 'fingers') is not None:                                # opt-in hand with real fingers (nightkit/hands.py); old grip hand otherwise
             from . import hands as _hands
             _o = {}; Q += _hands.hand(wr, wr - el, palm, g(key + 'fingers'), S['gloves'] or S['skin'], k, ring=(S.get('ring') if key == S.get('ring_hand', 'l') else None),

@@ -19,6 +19,33 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 ```
 (For Final Boss B also run A's `PART=audio` first; same for Guard Forgets B.)
 
+## Newest (27 Nov 2026, evening) - human performance SKELETON (Enes: "build the skeleton this week, detail later, remember the bugs")
+All opt-in; old videos render pixel-identical (fingerprints checked after every step).
+1. Face `nightkit/face.py` (P['face'], 11 presets, Track) - approved. 2. Hands `nightkit/hands.py` (P['rfingers'], 18 presets) - approved.
+3. Body `nightkit/body.py` (21 GESTURES, point_at, Performer: arcs, distance-timed blends, anticipation, head lag, breath, sway) - approved.
+   Soft cloak: `spec(cloak_hd=True)` (22x32 chain-hung cloth, slides over back/skirt/legs, Performer spring -> cape_sway/side/t) - Enes: "Harika".
+4. Checks `nightkit/bodycheck.py` + `tools/qa/body_qa.py examples/<x>.py` (no script changes: wraps hd.human): arm/hand/fingers in body or head,
+   forearms / fingers through each other, hand in another character, legs crossing, feet in ground, folded elbow, joint jump / pop. In PIPELINE phase 4.
+   It already fixed arms_crossed, clap, bow, think. Tutorial Jump has findings (right hand/forearm 2-5 cm in the body at 0.7/13/14/23/26 s;
+   NPC h1.72 arms snapping 40-90 cm at 14.8/23.7/25.5 s) - not fixed (video waits for Enes's verdict).
+Review sheets: `examples/face_sheet.py`, `hand_sheet.py`, `body_sheet.py` (sheet / clip / cloak / cloakclip) -> `renders/<x>_sheet/`.
+5. **Transition pass (28 Nov 2026, night, after the PC switched off mid-scan):** every gesture -> gesture pair (420) through bodycheck:
+   102 -> 10 transitions with issues (the 10 left: 2 cm for 1-3 frames, mostly scratch_head fingertips in the hair). Fixes in body.py:
+   blend time from the real hand path (arc + wrist turn; a 1.3x lead arm made 7.5 m/s fingertips); crossed arms: the other arm is DELAYED
+   (never sped up), the top arm lifts over the other forearm (X_AMP/X_POW/X_UP grid-searched), no anticipation / overshoot when arms
+   cross or hands meet; hands keep apart in transit (no inward overshoot); palms that meet turn first; the torso keep-out fades at its
+   edges (a hard edge popped the hands); NaN fix in the keep-out when u overshoots 1; head keep-out padded by finger length.
+   **Palm parallel transport** (hd opt-in key `palm_tr`, `hd.palm_transport`): the palm rides the forearm and blends ABOUT it - a world-space
+   palm blend met a swinging forearm and flipped the hand for a frame (hips/proud <-> shocked). Poses: cry fingers up side by side
+   (wrist dev 0.5, hands 0.088), laugh hands wider, point_fwd straight forward, sweat drop 0.62x. bodycheck: Performer's internal still
+   poses are not counted as characters (`human.__wrapped__`). 13 hd videos checked pixel-identical vs HEAD (per-script fingerprints).
+   Showcase: `python examples/body_sheet.py show` -> `renders/body_sheet/body_showcase_12s.mp4` (12.6 s: all 5 FX, close-ups + full shots, loops).
+   Note: `tools/qa/regress.py compare` on many scripts in ONE process skips the P['E'] scripts (sorceress_rage/fox_wind patch hd.head) - run per script.
+**Known bugs (to detail later):** kneel stiff; laughing cheeks collapse; cloak shoulder top reads
+as a shell, no wind for running, no forearm collision; gestures while walking untested; no hair motion; faces need a medium close-up at phone size;
+10 short transition contacts (scratch_head fingertips 2 cm in the hair from fist_pump/clap/shocked/salute; arms_crossed -> bow/clap/scratch_head,
+bow/cry -> arms_crossed, cheer -> slump: 2 cm for 1-3 frames).
+
 ## Newest (28 Nov 2026) - Why do NPCs stand still at night? (queue #1, built after the weekly reset)
 - Brief `briefs/night_freeze.md` through the rules filter (v27 Nov c): Bram no longer points (he would be seen), the rule is spoken
   ("It only sees what moves.", "But fire never stands still."), Bram RESPAWNS at dawn and says his repeated line -> perfect loop (he is in frame 0).

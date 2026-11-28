@@ -67,5 +67,19 @@ def cloakclip():
         t = f / 24; P = pf.at(t)
         render(hd.human(S, P), *cam).resize((1080, 1920), Image.NEAREST).save(os.path.join(d, f'f_{f + 1:04d}.png'))
     print('wrote cloakclip frames')
+# the whole system in one take: face presets + every anime mark (FX), fingers, body acting, soft cloak; full shots for the body,
+# medium close-ups where the face carries the beat (faces only read that close at phone size). Ends on idle -> loops.
+SHOW = [(0.0, 'idle'), (0.5, 'wave'), (2.0, 'scratch_head'), (3.4, 'shocked'), (4.6, 'fist_pump', dict(face='angry')),
+        (5.8, 'arms_crossed'), (7.0, 'think'), (8.2, 'proud'), (9.4, 'laugh'), (10.6, 'bow'), (11.8, 'idle')]
+SHOW_DUR = 12.6
+CLOSE = (V((0.38, 1.62, 0.95)), V((0.0, 1.52, 0.0)))
+SHOW_CAMS = [(0.0, CAM), (2.0, CLOSE), (5.8, CAM), (8.2, CLOSE), (9.4, CAM)]       # cuts land on the gesture keys
+def show():
+    pf = body.Performer(S, SHOW); d = os.path.join(OUT, 'show'); os.makedirs(d, exist_ok=True)
+    for f in range(int(SHOW_DUR * 24)):
+        t = f / 24; P = pf.at(t); cam = [c for t0, c in SHOW_CAMS if t0 <= t][-1]
+        render(hd.human(S, P), *cam).resize((1080, 1920), Image.NEAREST).save(os.path.join(d, f'f_{f + 1:04d}.png'))
+    print('wrote show frames')
 if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'show': show(); sys.exit()
     {'sheet': sheet, 'clip': clip, 'cloak': cloak, 'cloakclip': cloakclip}[sys.argv[1] if len(sys.argv) > 1 else 'sheet']()
