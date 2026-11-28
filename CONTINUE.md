@@ -62,7 +62,20 @@ Review sheets: `examples/face_sheet.py`, `hand_sheet.py`, `body_sheet.py` (sheet
 bow/cry -> arms_crossed, cheer -> slump: 2 cm for 1-3 frames); faint dark specks where the mantle meets the cloak in a deep bow;
 walking is straight-line only (no turning / speed change helpers).
 
-## Newest (28 Nov 2026) - Why do NPCs stand still at night? (queue #1, built after the weekly reset)
+## Newest (28 Nov 2026) - Why do loading screens show tips? (queue #3, loading_tips)
+- Brief `briefs/loading_tips.md` v2: lines locked by Enes (pasted GPT notes): 14 lines / 73 words, HIRED stamp held 1 s, the hero TAKES
+  Bob's coin (Bob is the pot loot), loop = Bob's hammer up (last frame) -> down (frame 0), ending "Read the tips... or skip?", cover
+  WHY DO / LOADING TIPS / EXIST?. TR sheet `briefs/loading_tips_voice_sheet.md` (14 lines, all Enes).
+- Voice `tools/tts/lt.py` (all cloned Enes; Bob +3 st x1.12, goblin +5 st, door -2 st). "Creak." failed with a leading "..." (4 takes):
+  plain "Creak." + 8 takes, take 6 heard as "Creek".
+- `examples/loading_tips.py` = first video on the human performance system (body.Performer + face rig; goblins = hd.human with
+  head_scale 1.32 + ears / nose / hard hats). New QA tool `tools/qa/props_lt.py` (characters vs set solids: 0 hits); body_qa v1 66 jumps
+  -> v3 clean except a few 1-frame startles and the sword strike. Lesson: in a white world the VHS vignette 0.5 turns the corners grey (0.1).
+  Lesson: never snap a hand to rh_w; blend a world target into the Performer's chest-frame rhc (to_chest / blend_hc).
+- Master `renders/loading_tips/why_do_loading_screens_show_tips_v3.mp4` (33.5 s, -13.3 LUFS, -1.8 dBTP, check 11/13: FAIL = 1.2x length,
+  WARN = sparks / flash / whip pans). Thumbnails EN/TR, `captions/loading_tips.md`. Waiting for Enes's verdict + TR takes.
+
+## Earlier (28 Nov 2026) - Why do NPCs stand still at night? (queue #1, built after the weekly reset)
 - Brief `briefs/night_freeze.md` through the rules filter (v27 Nov c): Bram no longer points (he would be seen), the rule is spoken
   ("It only sees what moves.", "But fire never stands still."), Bram RESPAWNS at dawn and says his repeated line -> perfect loop (he is in frame 0).
   Villagers restaged: frozen in the street mid-task (broom, washing, bucket, kid mid-step), not facing the walls (faces visible).
