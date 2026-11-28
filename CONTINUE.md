@@ -73,7 +73,10 @@ walking is straight-line only (no turning / speed change helpers).
   -> v3 clean except a few 1-frame startles and the sword strike. Lesson: in a white world the VHS vignette 0.5 turns the corners grey (0.1).
   Lesson: never snap a hand to rh_w; blend a world target into the Performer's chest-frame rhc (to_chest / blend_hc).
 - Master `renders/loading_tips/why_do_loading_screens_show_tips_v3.mp4` (33.5 s, -13.3 LUFS, -1.8 dBTP, check 11/13: FAIL = 1.2x length,
-  WARN = sparks / flash / whip pans). Thumbnails EN/TR, `captions/loading_tips.md`. Waiting for Enes's verdict + TR takes.
+  WARN = sparks / flash / whip pans). Thumbnails EN/TR, `captions/loading_tips.md`.
+- **v4 after Enes's review** (colours too light, Bob's body vs arm at the tip board, tip box to the TOP, empty tip box at 17 s): darker palette +
+  saturation grade, Bob faces the board, tip box at y 96, 'OUT OF TIPS...' -> `..._v4.mp4` (33.5 s). Enes: 'video yeterli gibi' once fixed.
+  v1-v3 in scratch_old/loading_tips. Next: Enes's TR takes (14 lines), then queue #6 levelup_fairy.
 
 ## Earlier (28 Nov 2026) - Why do NPCs stand still at night? (queue #1, built after the weekly reset)
 - Brief `briefs/night_freeze.md` through the rules filter (v27 Nov c): Bram no longer points (he would be seen), the rule is spoken

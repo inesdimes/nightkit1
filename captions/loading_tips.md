@@ -1,6 +1,6 @@
 # Why do loading screens show tips? — captions (28 Nov 2026)
 
-Video: `renders/loading_tips/why_do_loading_screens_show_tips_v1.mp4` · thumbnails `thumbnail_en.png` / `thumbnail_tr.png`
+Video: `renders/loading_tips/why_do_loading_screens_show_tips_v4.mp4` · thumbnails `thumbnail_en.png` / `thumbnail_tr.png`
 Script `examples/loading_tips.py` · brief `briefs/loading_tips.md` · voices `tools/tts/lt.py` (all Enes cloned; Bob / goblin / door pitched).
 
 ## English channel (Insert Disc 2, @pleaseinsertdisc2)

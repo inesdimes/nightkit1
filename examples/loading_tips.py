@@ -128,18 +128,18 @@ def tip_text(t):
     if u < T_TIPON: return None
     if u < S_MONT: return 'TAKE YOUR TIME'
     if u < T_EMPTY: return 'CHESTS ARE ALWAYS SAFE'
-    if u < T_100: return ''
+    if u < T_100: return 'OUT OF TIPS...'                               # Bob has run out: nothing slows the bar now
     return None
 def tip_t0(t):
-    u = TT(t); return T_TIPON if u < S_MONT else S_MONT
+    u = TT(t); return T_TIPON if u < S_MONT else (S_MONT if u < T_EMPTY else T_EMPTY)
 def slowed(t): u = TT(t); return T_TIPON + 0.25 <= u < T_EMPTY
 def ui_on(t): u = TT(t); return u < S_HERO - 0.25
 
 # ======================= set: the floating courtyard =======================
-STONE = [(186, 178, 162), (176, 168, 152), (194, 186, 170), (170, 162, 148)]
-BLOCKC = [(168, 160, 146), (158, 150, 138), (176, 168, 152), (150, 144, 134)]
+STONE = [(160, 150, 134), (150, 140, 124), (168, 158, 140), (144, 134, 120)]
+BLOCKC = [(150, 136, 118), (138, 126, 110), (158, 144, 124), (130, 120, 106)]
 WOOD = (150, 104, 62); WOOD_D = (116, 78, 46)
-VOIDC = (240, 242, 248)
+VOIDC = (226, 232, 244)
 WALL_X = (-2.95, 4.3); WALL_Z = (6.0, 6.5); GATE_X = 0.7; COURSE = 0.4
 TOWERS = [(-1.35, -0.7), (0.7, 1.35)]; TOWER_Z = (5.85, 6.65); TOWER_H = 3.2
 LOW_X = (-2.95, -1.35)                                   # the low (unfinished) stretch: courses 3-5 pop in on "Faster!"
@@ -571,7 +571,7 @@ def bob_state(t):
             a = seg01(u, T_JUMP, T_JUMP + 0.75); X['hat'] = ('pop', a)
         elif u >= T_JUMP + 0.75: X['hat'] = ('crooked', 1.0)
     elif sc == 'tip' or u < S_MONT:
-        cp_ = cam_shot(S_TIP + 0.5)[0]; P['base'] = tuple(BOB_TIP); P['yaw'] = ang_to(BOB_TIP, cp_) - 0.95; X['hat'] = ('crooked', 1.0)   # 3/4 to us, writing beside him
+        P['base'] = tuple(BOB_TIP); P['yaw'] = ang_to(BOB_TIP, BOARD + V((0, 0, 0)) + BOARD_U * 0.3 + BOARD_N * 0.06) - 0.6; X['hat'] = ('crooked', 1.0)   # body to the board (arm in front of him), turned a little to us
         ph = (u - S_TIP) * 9.0; bc = BOARD + V((0, 1.0, 0)) + BOARD_N * 0.06
         if u >= T_TIPON - 0.1:
             wt = bc + BOARD_U * (0.3 + 0.05 * math.sin(ph)) + V((0, -0.06 + 0.035 * math.sin(ph * 1.7), 0)); X['pencil_hand'] = True
@@ -737,7 +737,7 @@ def cam_shot(t):
         w = sm(seg01(t, a, a + 0.22)); p = V((-1.45, 1.55, 4.7)); t0_ = V((BOB_X, 1.55, 6.8)); t1_ = PORTAL + V((0, 1.15, 0))
         return p, V(lerp3(tuple(t0_), tuple(t1_), w)), 44.0
     if sc == 'tip':
-        tg = BOARD + V((0.4, 0.92, 0.05)); p = tg + V((1.05, 0.22, -1.45)); return V(motion.dolly(tuple(p), tuple(tg), motion.creep(t, a, 0.004))), tg, 46.0
+        tg = BOARD + V((0.4, 0.92, 0.05)); p = tg + V((1.05, 0.22, -1.45)); return V(motion.dolly(tuple(p), tuple(tg), motion.creep(t, a, 0.0012))), tg, 46.0
     if sc == 'mont':
         an = mont_ang(t); R_ = lerp(2.7, 1.75, sm(seg01(t, T_WINK - 0.45, T_WINK - 0.1))); p = MONT_C + V((R_ * math.sin(an), lerp(1.05, 0.55, sm(seg01(t, T_WINK - 0.45, T_WINK - 0.1))), -R_ * math.cos(an)))
         return p, mont_tgt(t), 52.0
@@ -872,7 +872,7 @@ def world(t):
     if u >= T_LEAVE + 0.3 and sc in ('gate',):                                              # the gate becomes the exit: white light
         layers.append(hd.decal((0.0, 1.0, 6.42), (0, 0, -1.0), (0, 1, 0), 1.38, 2.0, (255, 255, 255), emit=True, lift=0.0))
     # lights: soft white sky light + the torches (warm, flicker)
-    L = [(tuple(V(tgt) + V((-5.0, 9.0, -4.0))), (255, 250, 240), 20.0), (tuple(V(tgt) + V((6.0, 5.0, 2.0))), (220, 230, 255), 6.0)]
+    L = [(tuple(V(tgt) + V((-5.0, 9.0, -4.0))), (255, 246, 232), 13.0), (tuple(V(tgt) + V((6.0, 5.0, 2.0))), (200, 214, 255), 4.0)]
     for i, p in enumerate(TORCH_POS):
         k = torch_k(i, t)
         if k > 0: L.append((tuple(p + V((0, 1.6, 0))), (255, 170, 90), 1.2 * k * (1 + 0.12 * math.sin(t * 23 + i))))
@@ -908,9 +908,10 @@ def frame_low(t):
     pos = V(pos) + V((0.0, sh, 0.0)); cam = Camera.look(tuple(pos), tuple(tgt))
     layers, L, info = world(t)
     R = Renderer(W, H, fog=VOIDC)
-    img, vi, zb = zrender(R, cam, layers, L, fov=fov, fog_start=11.0, fog_end=34.0, ambient=0.5, return_z=True)
+    img, vi, zb = zrender(R, cam, layers, L, fov=fov, fog_start=12.0, fog_end=36.0, ambient=0.3, return_z=True)
     a = look.outline(np.asarray(img).astype(np.float32), zb)
-    a = np.clip((a - 80) * 1.08 + 84, 0, 255)
+    lum = a.mean(2, keepdims=True); a = lum + (a - lum) * 1.3               # richer colours (28 Nov, Enes: 'renkler çok açık')
+    a = np.clip((a - 128) * 1.12 + 122, 0, 255)
     return post.ps1(Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)), levels=6), vi, R, info, zb
 
 # ======================= overlays (1080 x 1920) =======================
@@ -919,7 +920,7 @@ def ctext(d, s, y, sc, col, o=4, x=None):
     x = int(540 - tw(s, sc) / 2) if x is None else x
     look.draw_cells(d, look.text_cells(s, x, y, sc, col), o)
 TX = dict(load='YÜKLENİYOR' if TRL else 'LOADING', tip='İPUCU:' if TRL else 'TIP:', px='DEVAM İÇİN X' if TRL else 'PRESS X TO CONTINUE',
-          tips={'TAKE YOUR TIME': 'ACELE ETME' if TRL else 'TAKE YOUR TIME', 'CHESTS ARE ALWAYS SAFE': 'SANDIKLAR HEP GÜVENLİDİR' if TRL else 'CHESTS ARE ALWAYS SAFE', '': ''},
+          tips={'TAKE YOUR TIME': 'ACELE ETME' if TRL else 'TAKE YOUR TIME', 'CHESTS ARE ALWAYS SAFE': 'SANDIKLAR HEP GÜVENLİDİR' if TRL else 'CHESTS ARE ALWAYS SAFE', 'OUT OF TIPS...': 'İPUCU KALMADI...' if TRL else 'OUT OF TIPS...'},
           cov=('YÜKLEME EKRANI', 'NEDEN İPUCU', 'GÖSTERİR?') if TRL else ('WHY DO', 'LOADING TIPS', 'EXIST?'),
           clip=('LISTE', 'DUVAR', 'MESALE', 'EJDERHA', 'GEC = KOVULDUN') if TRL else ('TO DO:', 'WALL', 'TORCHES', 'DRAGON', 'LATE = FIRED'),
           hired='İŞTE' if TRL else 'HIRED', gold='+1 ALTIN' if TRL else '+1 G')
@@ -949,11 +950,12 @@ def loading_ui(d, t):
     tp = tip_text(t)
     if tp is not None:
         s = TX['tips'][tp]; n = int((u - tip_t0(t)) * 26) if tp else 0; shown = s[:max(0, n)]
-        d.rectangle([90, 1236, 990, 1376], fill=(14, 16, 28)); d.rectangle([90, 1236, 990, 1376], outline=(255, 214, 70), width=4)
-        ctext(d, TX['tip'], 1262, 6, YEL, o=4, x=118)
-        if shown: ctext(d, shown, 1318, 6, WHT, o=4, x=118)
-        if tp == '' or n < len(s):                                         # the blinking cursor (alone = he has run out of tips)
-            if (t * 3) % 1.0 < 0.55: cx_ = 118 + (tw(shown, 6) + 12 if shown else 0); d.rectangle([cx_, 1318, cx_ + 24, 1318 + 42], fill=WHT)
+        TY = 96                                                              # the tip box sits at the TOP of the screen (Enes 28 Nov)
+        d.rectangle([90, TY, 990, TY + 140], fill=(14, 16, 28)); d.rectangle([90, TY, 990, TY + 140], outline=(255, 214, 70), width=4)
+        ctext(d, TX['tip'], TY + 26, 6, YEL, o=4, x=118)
+        if shown: ctext(d, shown, TY + 82, 6, WHT, o=4, x=118)
+        if n < len(s):                                                     # the blinking cursor while it types
+            if (t * 3) % 1.0 < 0.55: cx_ = 118 + (tw(shown, 6) + 12 if shown else 0); d.rectangle([cx_, TY + 82, cx_ + 24, TY + 82 + 42], fill=WHT)
     if u >= T_100 and (t * 2.6) % 1.0 < 0.62: ctext(d, TX['px'], 1300, 7, YEL, o=5)
 def cover(d, t):
     if not (0 <= t < T0['01'] + 0.2): return
@@ -1070,7 +1072,7 @@ def _sub_scr():
 SUBS = look.Subtitles(_sub_scr(), [x for x in LINES if x[0] != '00'], W, H, S, COL, title_key='none', n=17,
                       hil=({'ONLAR', 'ZAMAN', 'KAPI', 'GEÇER'} if TRL else {'THEM.', 'TIME.', 'DOOR?', 'SKIP?', 'HIRED!'}))
 from nightkit import cta
-CTA = cta.Achievement(t0=T_LOOK - 1.6, lang=SUB_LANG, dur=F(1.5), y=300)
+CTA = cta.Achievement(t0=T_LOOK - 1.6, lang=SUB_LANG, dur=F(1.5), y=340)
 def frame_final(t):
     if t >= DUR: t = t - DUR
     img, vi, R, info, zb = frame_low(t); arr = post.upscale(img, S)
