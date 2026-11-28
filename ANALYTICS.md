@@ -359,3 +359,65 @@ enemies_queue 02:00, mimic + one potion 22:30, 3 knocks 01:30).
   "The Last Time He Heard...") 26-391 views. The weak videos of 20-25 Nov are mostly the longer nightkit HD emotional stories (44-67 s).
   Exceptions that survived: very short loops (knight 14 s, BHB 21 s, cats 15 s, pizza cat 16 s) live on rewatches with low stayed %.
 - 82-96 % of viewers are new on every video: no returning audience yet, each video stands alone in the feed test.
+
+## 24. All 30 shorts, Instagram + YouTube together (Enes's screenshots 28 Nov 2026 ~12:20; folder `analysis 48 hours/`)
+Instagram = Meta Business Suite insights, lifetime (every IG curve is flat after ~1 day, so lifetime ~= 48 h). YouTube = section 23
+list + 3 new Studio screens (3 knocks, Ragebait, Boss Wanted EN). Merged table: `analysis 48 hours/IG_YT_birlesik_28kas.csv`.
+(The file `tutorial guy.jpg` is actually 40 years / the well NPC. 1 HP Boss is on IG only; there are no YT numbers for it.)
+
+| Video | Posted (TR) | IG views | IG avg watch | IG likes / saves | YT views | YT stayed |
+|---|---|---|---|---|---|---|
+| Final Boss never leave B (60 s) | 16 Nov 21:24 | **2.3 K** | 27 s | 54 / 3 | 1.5 K | 66.5 % |
+| Monsters never attack in shops | 18 Nov 02:01 | **2.2 K** | 28 s | 23 / 0 | 1.3 K | 69.2 % |
+| Final Boss never leave A (30 s) | 18 Nov 23:01 | **2.1 K** | 18 s | 31 / 2 | 3.7 K | 64.6 % |
+| Goblins all at once | 22 Nov 02:01 | 1.9 K | 17 s | 20 / 1 | 1.2 K | 53.3 % |
+| 99 swords | 17 Nov 22:48 | 1.8 K | 17 s | 15 / 0 | 1.4 K | 58.9 % |
+| Boss speech skip | 21 Nov 21:56 | 1.8 K | 18 s | 46 / 5 | 120 | 13.6 % |
+| Boss health bar village | 24 Nov 22:16 | 1.8 K | 12 s | 8 / 0 | 1.0 K | 19.3 % |
+| Mimic | 22 Nov 22:30 | 1.7 K | 14 s | 18 / 4 | 795 | 30.8 % |
+| One potion | 23 Nov 22:31 | 1.6 K | 20 s | 11 / 1 | 175 | 46.4 % |
+| Pizza cat (POV) | 17 Nov 19:04 | 1.4 K | 10 s | 8 / 0 | 1.4 K | 34.7 % |
+| Four phases | 21 Nov 02:01 | 1.0 K | 15 s | 10 / 1 | 1.1 K | 34.2 % |
+| Never trust the last save point | 15 Nov 20:02 | 620 | 13 s | 9 / 1 | 1.1 K | 58.0 % |
+| 40 years (well NPC) | 23 Nov 01:00 | 391 | 15 s | 2 / 0 | 912 | 45.3 % |
+| 1 HP boss | 20 Nov 02:00 | 347 | 12 s | 3 / 0 | - | - |
+| Cats knock things | 19 Nov 04:01 | 302 | 8 s | 5 / 0 | 1.1 K | 24.3 % |
+| Dragon taxes | 24 Nov 01:00 | 229 | 12 s | 1 / 0 | 26 | 15.4 % |
+| Stolen car | 20 Nov 23:00 | 205 | 7 s | 0 / 0 | 74 | 6.4 % |
+| Cat PS1 fighter | 13 Nov 20:29 | 198 | 5 s | 1 / 0 | 1.3 K | 15.3 % |
+| Boss Wanted EN | 26 Nov 01:00 | 198 | 14 s | 0 / 0 | 160 | 27.0 % |
+| Streamer boyfriend | 14 Nov 20:14 | 191 | 18 s | 0 / 1 | 1.2 K | 45.7 % |
+| What does the knight say | 24 Nov 19:32 | 167 | 5 s | 0 / 0 | 1.2 K | 41.6 % |
+| Guards forget (30 s) | 16 Nov 20:34 | 163 | 13 s | 2 / 0 | 1.2 K | 37.1 % |
+| Rat King | 14 Nov 22:24 | 144 | 16 s | 0 / 0 | 1.1 K | 52.6 % |
+| Ragebait (mad mad) | 25 Nov 20:49 | 140 | 6 s | 2 / 0 | 437 | 23.1 % |
+| 3 knocks (Last Echo) | 25 Nov 01:16 | 139 | 8 s | 0 / 0 | 391 | 33.2 % |
+| Lighthouse blink | 19 Nov 02:01 | 135 | 29 s | 0 / 0 (+1 follow) | 450 | 45.9 % |
+| Token (I DON'T GET IT) | 13 Nov 21:52 | 130 | 10 s | 0 / 0 | 1.3 K | 37.7 % |
+| Anthocyanin | 19 Nov 23:00 | 130 | 5 s | 1 / 1 | 120 | 42.2 % |
+| Last player online | 12 Nov 23:14 | 125 | 6 s | 1 / 0 | ~1.1 K | 20.1 % |
+| Wrong NPC | 15 Nov 22:04 | 122 | 13 s | 0 / 0 | 499 | 55.8 % |
+
+Totals: IG 23.7 K views, YT 27.4 K. IG 271 likes, 20 saves, 3 shares, ~4 real comments (the rest are our own), 2 follows over 30 reels.
+Audience on IG: 18-24 men first (men 86-97 %); only the cat / cabbage videos reached women (22-33 %).
+
+Reading (observations, not rules):
+- **Instagram has two outcomes only:** a reel either stays at ~120-400 views or gets pushed to 1.0-2.3 K. Nothing in between except Save Point (620).
+  11 of 30 were pushed, all posted 16-24 Nov. 0 of 7 before 16 Nov (new account) and 0 of the last 3 (25-26 Nov).
+- **5 videos win on both platforms** (IG >= 1.8 K, YT >= 1.2 K, YT stayed >= 53 %): Final Boss A, Final Boss B, Monster Shop, 99 Swords,
+  Goblins. All five are a "Why do <game rule everyone knows>?" question about bosses / enemies / inventory, answered with a lore twist,
+  21-60 s, title or trope visible in frame 1. This is the channel's proven format.
+- **Both platforms dropped the same videos at the same time.** The last three (3 knocks, Ragebait, Boss Wanted) are weak on IG
+  (139-198) and YT (160-437, 23-33 % stayed). Dragon Taxes, Stolen Car, Anthocyanin are dead on both. When two separate feeds reject
+  the same video, the cause is the video (opening, topic, title), not the posting slot or one platform.
+- **IG and YT disagree in two cases:** (1) Boss Skip, One Potion, Mimic: strong on IG, weak on YT (all three posted 21:56-22:31; YT
+  "first test" failed, stayed 14-46 %). Only 3 videos, and 99 Swords (22:48) / BHB (22:15) passed on YT, so the slot is still a weak
+  lever. (2) Short loops / gags (Cat PS1, Cats Knock, Knight, Ragebait: IG avg watch 5-8 s) live on YT through rewatches but die on IG.
+  This supports Enes's 28 Nov decision: no 5-20 s loop clips.
+- Posting time on IG: winners were posted at 02:01, 19:04, 21:24, 21:56, 22:30, 22:48, 23:01. No slot effect.
+- IG avg watch: pushed reels median 17 s, stuck reels 12 s (rank correlation with views 0.54). Like rate is highest on the boss-lore
+  stories (Boss Skip 2.6 %, Final Boss B 2.3 %, Final Boss A 1.5 %).
+- Conversion is still ~0: 2 IG follows in 30 reels, comments ~0. The end-question has not produced comments yet (Ragebait: 0 real).
+
+Missing: the posts after 26 Nov 01:00 (test week, not 48 h old yet or no screenshots), the Turkish channel, IG skip rate (not shown
+in Meta Business Suite; it is in the Instagram app insights), TikTok.
