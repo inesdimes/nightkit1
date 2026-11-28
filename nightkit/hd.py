@@ -258,6 +258,7 @@ def human(S, P):
     Q += limb(neck - Wd(Rch @ np.array([0, 0.02, 0])), neck + RH @ np.array([0, 0.06 * k, 0.0]), 0.05 * (1 - 0.1 * fem), 0.046, S['skin'], n=nl, m=1, ref=RW @ np.array([0, 0, 1.0]))
     hc = neck + RH @ np.array([0, 0.125 * k, 0.014])
     P['_hk'] = k
+    P['_hlw'] = Wd(np.asarray(g('hair_lag'), float)) if g('hair_lag') is not None else None   # opt-in hair follow-through (body.Performer), body-local -> world
     if P.get('face') is not None:                                          # opt-in performance face (nightkit/face.py); old face otherwise
         from . import face as _face
         hk = k * P.get('head_scale', 1.0)                                  # bigger heads read at phone size (chibi-lite); grows up from the neck
@@ -453,20 +454,30 @@ def hair(hc, RH, S, P, k, rad, deform):
         if st == 'messy':          # a few tufts
             for a_ in (-0.7, -0.15, 0.35, 0.85):                  # tufts lying forward over the brow, not spikes
                 p = hc + RH @ np.array([0.055 * k * math.sin(a_), ry_ * 0.86, 0.045 * k * math.cos(a_)])
-                Q += limb(p, p + RH @ np.array([0.025 * k * math.sin(a_), -0.012 * k, 0.05 * k]), 0.018 * k, 0.005, hd, n=5, m=1, flat=0.55, ref=RH @ np.array([0, 1.0, 0]))
+                tip = p + RH @ np.array([0.025 * k * math.sin(a_), -0.012 * k, 0.05 * k])
+                if P.get('_hlw') is not None: tip = tip + 0.35 * P['_hlw']                     # tufts lag a little behind the head
+                Q += limb(p, tip, 0.018 * k, 0.005, hd, n=5, m=1, flat=0.55, ref=RH @ np.array([0, 1.0, 0]))
         if st == 'long':           # hair down the back + side locks over the shoulders
             top = hc + RH @ np.array([0, 0.02 * k, -0.05 * k])
             cs = [top + RH @ np.array([0, -s * 0.3 * k, -0.025 * k * s]) for s in np.linspace(0, 1, 5)]
+            hl = P.get('_hlw')
+            if hl is not None:                                                              # the sheet hangs more from the root as it lags,
+                gdn = np.array([0, -1.0, 0]) - RH @ np.array([0, -1.0, 0])                  # and falls toward the ground when the head tips
+                cs = [c + (hl + gdn * 0.22 * k) * s ** 1.6 for c, s in zip(cs, np.linspace(0, 1, 5))]
             u = RH @ np.array([1.0, 0, 0]); v = RH @ np.array([0, 0, 1.0])
             rs = [(rx_ * (1.05 - 0.2 * s), 0.06 * k * (1 - 0.4 * s)) for s in np.linspace(0, 1, 5)]
             Q += loft(cs, [u] * 5, [v] * 5, rs, 12, hc_, fold=lambda i, th: 1 + 0.07 * math.cos(7 * th), th0=PI * 1.0, th1=PI * 2.0, cap0=False, cap1=False, closed=False,
                       colfn=lambda i, j: hd if j % 2 else hc_)
             for sd in (1, -1):
                 a = hc + RH @ np.array([sd * rx_ * 1.0, 0.03 * k, 0.0]); b = a + RH @ np.array([sd * 0.03 * k, -0.24 * k, -0.01 * k])
+                if hl is not None: b = b + 0.8 * hl + gdn * 0.2 * k
                 Q += limb(a, b, 0.03 * k, 0.018 * k, hc_, n=8, m=3, flat=0.35, ref=RH @ np.array([1.0 * sd, 0, 0]), colfn=lambda i, j: hd if j % 2 else hc_)
         if st == 'pony':
             a = hc + RH @ np.array([0, 0.03 * k, -rz_ * 1.02]); b = a + RH @ np.array([0, -0.08 * k, -0.06 * k]); c = b + RH @ np.array([0, -0.16 * k, -0.01 * k])
             sw = P.get('hair_sway', 0.0); c = c + RH @ np.array([sw * 0.05, 0, 0])
+            if P.get('_hlw') is not None:                                                  # lags, and drops toward the ground when the head tips
+                gdn = np.array([0, -1.0, 0]) - RH @ np.array([0, -1.0, 0])
+                b = b + 0.4 * P['_hlw'] + gdn * 0.05 * k; c = c + P['_hlw'] + gdn * 0.16 * k
             Q += bx(a, RH, (0.018 * k, 0.012 * k, 0.012 * k), (150, 40, 40))
             Q += limb(a, b, 0.024 * k, 0.03 * k, hc_, n=7, m=2) + limb(b, c, 0.03 * k, 0.006 * k, hd, n=7, m=3)
         if st == 'bun':
@@ -536,6 +547,56 @@ def cloak(chest, neck, RW, RP, pel, S, P, k, bw):
     Q += bx(neck + RW @ np.array([0.0, -0.05, 0.075 * bw]), RW, (0.02, 0.02, 0.008), S['buckle'])
     return Q
 
+def _mantle(neck, RW, S, P, k, bw, col, lift):
+    """the cloak's shoulder piece (28 Nov): cloth from the collar over both shoulders to the clasp, draped over the torso and
+    the shoulder balls (they push it up when the arms rise / shrug). Hides the cloak's top edge, which read as a shell on the back."""
+    secs = P.get('_torso') or []
+    def torso_push(p):
+        best = None
+        for a, b in zip(secs[:-1], secs[1:]):                                 # the two sections bracketing p along the spine
+            ca, Ra, rxa, rza = a; cb, Rb_, rxb, rzb = b
+            ha = float((p - ca) @ Ra[:, 1]); hb = float((p - cb) @ Rb_[:, 1])
+            if ha >= 0.0 and hb <= 0.0:
+                w = ha / max(ha - hb, 1e-9); best = (ca + (cb - ca) * w, Ra, rxa + (rxb - rxa) * w, rza + (rzb - rza) * w)
+        if best is None: return p
+        c, R_, rx, rz = best; q = R_.T @ (p - c); rx += 0.012; rz += 0.012
+        e = (q[0] / rx) ** 2 + (q[2] / rz) ** 2
+        if e >= 1.0: return p
+        f = 1.0 / math.sqrt(max(e, 1e-9)); return c + R_ @ np.array([q[0] * f, q[1], q[2] * f])
+    balls = []
+    for s_ in 'rl':
+        sh, el = P.get('_' + s_ + 'sh'), P.get('_' + s_ + 'el')
+        if sh is not None and el is not None: balls.append((np.asarray(sh, float), np.asarray(el, float)))
+    def arm_push(p):
+        for a, b in balls:
+            ab = b - a; h = float(np.clip((p - a) @ ab / max(ab @ ab, 1e-9), 0.0, 0.35)); c = a + ab * h; dv = p - c; dl = float(np.linalg.norm(dv))
+            r = 0.078 * max(1.0, bw)
+            if dl < r: p = c + (dv / dl if dl > 1e-6 else RW @ np.array([0, 1.0, 0])) * r
+        return p
+    NA, NS = 30, 7; ph0 = 0.3; rows = []
+    for i in range(NS + 1):
+        s = i / NS; row = []
+        for j in range(NA + 1):
+            ph = ph0 + (2 * PI - 2 * ph0) * j / NA; sx, cz = math.sin(ph), math.cos(ph)
+            back = max(0.0, -cz); front = max(0.0, cz); sg = 1 if sx > 0 else -1
+            rx = (0.074 + (0.226 - 0.074) * s ** 0.8) * bw; rz = (0.068 + ((0.142 + 0.012 * back) - 0.068) * s ** 0.8) * bw
+            y = -0.004 - (0.14 + 0.04 * back + 0.03 * front) * s ** 2.0 + lift[sg] * abs(sx) * s * 0.6
+            hem = 1.0 + 0.04 * math.sin(7 * ph + 0.5) * s ** 2                  # a soft wavy edge
+            p = neck + RW @ np.array([rx * sx * hem, y, rz * cz * hem])
+            p = arm_push(torso_push(p)); row.append(p)
+        rows.append(row)
+    for _ in range(2):                                                         # relax: neighbours pull pushed points smooth, re-collide
+        for i in range(1, NS + 1):
+            for j in range(1, NA):
+                p = rows[i][j] * 0.5 + (rows[i][j - 1] + rows[i][j + 1]) * 0.25
+                rows[i][j] = arm_push(torso_push(p))
+    C = [neck + RW @ np.array([0, -0.16, 0.0])] * (NS + 1)
+    lt = shade(col, 1.12); dk = shade(col, 0.74)
+    def cf(i, j):
+        if i == NS - 1: return dk                                              # dark edge band, like the cloak hem
+        return mix(lt, col, i / NS) if j % 3 else shade(mix(lt, col, i / NS), 0.92)
+    return rings_mesh(rows, col, C, False, False, cf, False, False)
+
 def cloak_hd(chest, neck, RW, RP, Rb, pel, base, S, P, k, bw):
     """soft cloth cloak (opt-in: spec(cloak_hd=True)); ~ 22 x 32 grid instead of the 6 x 16 tube.
     Each column hangs from the shoulders as a chain under gravity: uneven pleats that deepen toward the hem, a wavy hem,
@@ -565,7 +626,7 @@ def cloak_hd(chest, neck, RW, RP, Rb, pel, base, S, P, k, bw):
         ax = neck - pel; u = float(np.clip((p - pel) @ ax / max(ax @ ax, 1e-9), 0.0, 1.0))
         if u > 0.0 or (p - pel) @ ax > -0.02:
             c = pel + ax * u; R_ = RW if u > 0.45 else RP; q = R_.T @ (p - c)
-            rx, rz = (0.2 + 0.015 * u) * bw, (0.15 - 0.01 * u) * bw; e = (q[0] / rx) ** 2 + (q[2] / rz) ** 2
+            rx, rz = (0.2 + 0.015 * u) * bw, (0.15 - 0.01 * u) * bw + 0.03 * max(0.0, 1.0 - u / 0.3); e = (q[0] / rx) ** 2 + (q[2] / rz) ** 2   # + the belt at the waist
             if e < 1.0 or (q[2] > 0.0 and abs(q[0]) < rx):                       # the cloak always stays on the BACK of the torso
                 xx = float(np.clip(q[0], -rx * 0.995, rx * 0.995)); q = np.array([xx, q[1], -(rz + 0.012) * math.sqrt(1.0 - (xx / rx) ** 2)]); p = c + R_ @ q
         # skirt hem cone below the pelvis
@@ -620,6 +681,7 @@ def cloak_hd(chest, neck, RW, RP, Rb, pel, base, S, P, k, bw):
         if i == NR - 1: return shade(col, 0.6)                                 # darker hem band so the edge reads
         return mix(dk, lt, float(np.clip(0.5 + 0.7 * f, 0.0, 1.0)))
     Q += rings_mesh(R, col, C, False, False, colfn, False, False)
+    Q += _mantle(neck, RW, S, P, k, bw, col, lift)
     if S['hood']:
         Q += ellip(neck + RW @ np.array([0, 0.02, -0.11]), RW @ Rx(0.5), (0.12 * k, 0.05 * k, 0.09 * k), 10, 4, col, closed=False)
     Q += bx(neck + RW @ np.array([0.0, -0.05, 0.075 * bw]), RW, (0.02, 0.02, 0.008), S['buckle'])

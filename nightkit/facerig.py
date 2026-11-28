@@ -52,6 +52,14 @@ def expr_def(p, E):
             dist = np.hypot(x0 - (ax + tpar * dx), y0 - (ay + tpar * dy))
             fold = np.exp(-(dist / 0.0075) ** 2) * np.sin(np.pi * tpar) * fr
             z = z - 0.006 * ck * fold
+            fl = E.get('fill', 0.0) * ck
+            if fl:
+                # opt-in (28 Nov): a big grin bunches the lower cheek too - without this the lifted apple leaves a hollow below it
+                # and the jaw line steps in under the widened cheek (the 'collapsed' laughing face)
+                gl_ = np.exp(-(((x0 - sd * 0.05) / 0.026) ** 2 + ((y0 + 0.05) / 0.024) ** 2)) * fr
+                z = z + 0.007 * fl * gl_
+                gs2 = np.exp(-((y0 + 0.05) / 0.03) ** 2) * np.clip((sd * x0 - 0.035) / 0.03, 0, 1) * np.clip((z + 0.05) / 0.05, 0, 1)
+                x = x + sd * 0.006 * fl * gs2
         if sm_:
             # skin at the mouth corner follows the corner up and out
             gc = np.exp(-(((x0 - sd * 0.024) / 0.013) ** 2 + ((y0 + 0.05) / 0.013) ** 2)) * fr

@@ -64,8 +64,12 @@ GESTURES = {
     'slump':        dict(**both(arm(0.2, -0.47, 0.16, fingers='relaxed', shrug=(-0.035, 0.07))), lean=0.34, crouch=0.05, head=(0.0, 0.45, 0.0), face='sad'),
     'proud':        dict(**both(arm(0.21, -0.33, 0.0, palm=(-1, -0.2, 0.3), pole=(1, 0.0, -0.8), fingers='relaxed', wrist=(-0.5, 0.0))),
                          lean=-0.1, head=(0.0, -0.14, 0.0), face='proud'),
-    'kneel':        dict(r=arm(0.26, -0.34, 0.24, pole=(1, -0.5, -0.4)), l=mirror(REST), crouch=0.44, lean=0.08,
-                         rf=(0.11, 0.075, 0.36), lf=(-0.11, 0.07, -0.44), rkpole=(0.1, 0.0, 1.0), lkpole=(-0.05, -1.0, 0.25), head=(0.0, 0.15, 0.0)),
+    'kneel':        dict(r=arm(0.25, -0.33, 0.27, palm=(-0.6, -0.6, 0.3), pole=(1, -0.5, -0.4), wrist=(0.3, 0.0)),
+                         l=mirror(arm(0.2, -0.4, 0.17, palm=(-1, 0, 0.4), pole=(0.6, -0.3, -1.0), fingers='relaxed')),
+                         crouch=0.44, lean=0.36, twist=-0.12, side=0.04, head=(0.06, 0.42, 0.05),
+                         face=('neutral', dict(eyesR=0.55, eyesL=0.55, browR=-0.1, browL=-0.1, press=0.3)),
+                         rf=(0.11, 0.075, 0.36), lf=(-0.11, 0.07, -0.44), rkpole=(0.1, 0.0, 1.0), lkpole=(-0.05, -1.0, 0.25),
+                         osc=[('lean', None, 0.012, 0.25)]),
 }
 BODY = dict(lean=0.0, twist=0.0, side=0.0, crouch=0.0, pel=(0.0, 0.0, 0.0), head=(0.0, 0.0, 0.0))
 FEET = dict(rf=(0.11, 0.075, 0.02), lf=(-0.11, 0.075, 0.02), rkpole=(0.15, 0.0, 1.0), lkpole=(-0.15, 0.0, 1.0))
@@ -283,6 +287,24 @@ class Performer:
             self._cs.append((d, v))
         d = self._cs[n][0]
         return float(np.clip(0.06 + d[0] / 0.15, -0.3, 1.4)), float(np.clip(d[1] / 0.15, -0.8, 0.8))
+    def _hdrive(self, t):
+        """where the head is (body-local metres: right, up, forward) - what the hair lags behind; a head turn swings the tips too"""
+        P = self._core(t); k = self.k; hy, hn, _ = P['head']
+        x = 0.62 * k * math.sin(-P['side']) + P['pel'][0] + 0.12 * k * math.sin(hy)
+        y = P['pel'][1] - P['crouch'] + 0.62 * k * (math.cos(P['lean']) - 1)
+        z = 0.62 * k * math.sin(P['lean']) + P['pel'][2] + 0.12 * k * math.sin(hn)
+        return V((x, y, z))
+    def hair(self, t):
+        """hair follow-through: the same damped spring as the cloak, lighter and quicker (2 Hz). Body-local lag vector (m)."""
+        h = 1.0 / 48; n = max(0, int(round(t / h)))
+        if not hasattr(self, '_hs'): self._hs = [(V((0.0, 0.0, 0.0)), V((0.0, 0.0, 0.0)))]; self._hx = [self._hdrive(0.0), self._hdrive(0.0)]
+        w = 2 * math.pi * 2.0; z = 0.28
+        while len(self._hs) <= n:
+            m = len(self._hs); self._hx.append(self._hdrive(m * h))
+            acc = (self._hx[-1] - 2 * self._hx[-2] + self._hx[-3]) / (h * h)
+            d, v = self._hs[-1]; v = v + h * (-w * w * d - 2 * z * w * v - acc); d = d + h * v
+            self._hs.append((d, v))
+        return np.clip(self._hs[n][0], -0.06, 0.06)
     def _core(self, t):
         i = max(j for j in range(len(self.keys)) if self.keys[j][0] <= t) if t >= self.keys[0][0] else 0
         P = self._eval(i, t)
@@ -302,11 +324,33 @@ class Performer:
             P['pel'] = (P['pel'][0] + 0.016 * w * self.k, P['pel'][1] - 0.004 * abs(w), P['pel'][2])
             P['side'] += -0.025 * w
         return P
-    def at(self, t, talk=0.0):
+    def _walk(self, P, ph, stride, ww):
+        k, bw = self.k, self.bw; sw = math.sin(ph); feet, bob = hd.walk_cycle(ph, stride, 0.1)
+        P['walk'] = ph; P['stride'] = stride
+        P['pel'] = (P['pel'][0] * (1 - 0.6 * ww), P['pel'][1] - bob * (1 - ww), P['pel'][2])      # hd adds the bob; no weight shift while stepping
+        P['lean'] += 0.05 * ww
+        for i, (sd, s) in enumerate(((1, 'r'), (-1, 'l'))):
+            d0 = V((sd * 0.11 * bw, 0.075, 0.02)); f = V(P[s + 'f']) if s + 'f' in P else d0
+            wf = ww * _smooth(1 - float(np.linalg.norm(f - d0)) / 0.12)                     # a placed foot (kneel) does not step
+            fz, up = feet[i]; P[s + 'f'] = tuple(f + V((0, up, fz)) * wf)
+            r0 = V(_flat(dict(r=REST, l=mirror(REST)), k, bw, False)[s + 'hc'])
+            wa = ww * _smooth(1 - float(np.linalg.norm(V(P[s + 'hc']) - r0)) / (0.16 * k))  # only arms near rest swing
+            x, y, z = P[s + 'hc']; P[s + 'hc'] = (x, y + 0.025 * k * wa * sw * sw, z - sd * 0.14 * k * wa * sw * stride / 0.3)
+    def at(self, t, talk=0.0, walk=None, stride=0.3, walk_w=1.0):
+        """walk = the walking phase (radians, as hd.human's P['walk']; the caller moves base by about 2*stride/pi per radian),
+        walk_w (0..1) eases into / out of the walk. Gestures keep playing on top: arms near the rest pose swing against the legs,
+        arms doing something (wave, think, ...) keep doing it; feet a gesture places itself (kneel) do not step."""
         P = self._core(t)
+        hl = self.hair(t)
+        if walk is not None and walk_w > 0:
+            self._walk(P, walk, stride, min(1.0, walk_w))
+            _, bob = hd.walk_cycle(walk, stride, 0.1); ww = min(1.0, walk_w)
+            hl = hl + V((0.0, -0.5 * bob, -0.02)) * ww                     # walking: the step bounce + the air going past
+        P['hair_lag'] = tuple(float(c) for c in hl)
         if self.S.get('cloak_hd'):                                      # soft cloak: follow-through + living folds
             P['cape_sway'], P['cape_side'] = self.cape(t); P['cape_t'] = t
         if talk > 0.02:
             hy, hn, ht = P['head']; P['head'] = (hy + 0.03 * talk * math.sin(t * 5.3), hn + 0.03 * talk * math.sin(t * 7.9), ht)
         if self.ftrack is not None: P['face'] = self.ftrack.at(t, talk=talk)
+        hy, hn, ht = P['head']; P['head'] = (hy, -hn, ht)              # gesture nod: + = chin down; hd.human's head pitch: + = looks up
         return P

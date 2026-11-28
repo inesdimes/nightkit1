@@ -16,7 +16,7 @@ import numpy as np
 from . import hd, facerig
 V = np.array
 NEUTRAL = dict(browR=0.0, browL=0.0, innerR=0.0, innerL=0.0, furrow=0.0, eyesR=1.0, eyesL=1.0, squintR=0.0, squintL=0.0, smR=0.0, smL=0.0,
-               press=0.0, open=0.0, round=0.0, wide=0.0, teeth=0.0, jaw=0.0, cheekR=0.0, cheekL=0.0, hollowR=0.0, hollowL=0.0, look=(0.0, 0.0), bold=1.4, eye_size=1.15)
+               press=0.0, open=0.0, round=0.0, wide=0.0, teeth=0.0, jaw=0.0, cheekR=0.0, cheekL=0.0, hollowR=0.0, hollowL=0.0, fill=0.0, look=(0.0, 0.0), bold=1.4, eye_size=1.15)
 def _both(**kw):
     """helper: browR/browL etc. from brow=..."""
     out = {}
@@ -32,10 +32,10 @@ PRESETS = {   # one clear intention each; FX = the anime marks that come with it
     'scared':      (_both(brow=0.6, inner=0.85, eyes=1.22, open=0.3, wide=0.7, teeth=0.7, sm=-0.25), ('sweat',)),
     'deadpan':     (_both(brow=-0.08, eyes=0.52, press=0.35), ()),
     'angry':       (_both(brow=-0.7, inner=-1.1, furrow=1.0, eyes=0.95, squint=0.35, open=0.4, wide=1.0, teeth=1.0, jaw=0.2, sm=-0.3), ('vein',)),
-    'proud':       (_both(brow=0.3, eyes=0.72, sm=0.6, cheek=0.6, press=0.25), ('sparkle',)),
+    'proud':       (dict(_both(brow=0.3, eyes=0.72, sm=0.6, cheek=0.6, press=0.25), fill=1.0), ('sparkle',)),
     'sad':         (_both(brow=-0.3, inner=1.2, eyes=0.6, sm=-0.7, press=0.4, look=(0.0, -0.6)), ()),
     'embarrassed': (dict(browR=0.2, browL=0.15, innerR=0.6, innerL=0.6, eyesR=0.82, eyesL=0.82, smR=0.35, smL=0.08, look=(0.6, -0.3)), ('blush', 'sweat')),
-    'laughing':    (_both(brow=0.4, eyes=0.12, squint=1.0, cheek=1.0, sm=1.0, open=0.8, wide=0.7, teeth=0.6), ()),
+    'laughing':    (dict(_both(brow=0.4, eyes=0.12, squint=1.0, cheek=1.0, sm=1.0, open=0.8, wide=0.7, teeth=0.6), fill=1.0), ()),
 }
 def expr(name='neutral', **over):
     """a full expression dict: neutral <- preset <- overrides"""

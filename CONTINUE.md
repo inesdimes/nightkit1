@@ -41,10 +41,26 @@ Review sheets: `examples/face_sheet.py`, `hand_sheet.py`, `body_sheet.py` (sheet
    poses are not counted as characters (`human.__wrapped__`). 13 hd videos checked pixel-identical vs HEAD (per-script fingerprints).
    Showcase: `python examples/body_sheet.py show` -> `renders/body_sheet/body_showcase_12s.mp4` (12.6 s: all 5 FX, close-ups + full shots, loops).
    Note: `tools/qa/regress.py compare` on many scripts in ONE process skips the P['E'] scripts (sorceress_rage/fox_wind patch hd.head) - run per script.
-**Known bugs (to detail later):** kneel stiff; laughing cheeks collapse; cloak shoulder top reads
-as a shell, no wind for running, no forearm collision; gestures while walking untested; no hair motion; faces need a medium close-up at phone size;
-10 short transition contacts (scratch_head fingertips 2 cm in the hair from fist_pump/clap/shocked/salute; arms_crossed -> bow/clap/scratch_head,
-bow/cry -> arms_crossed, cheer -> slump: 2 cm for 1-3 frames).
+6. **Bug-list pass (28 Nov 2026, later; Enes: "tamam kanka devam edebilirsin"):**
+   - **Head nod sign was flipped** in every gesture: hd.human's head pitch + = looks UP, the GESTURES table meant + = chin down
+     (slump / bow / cry looked at the sky, laugh at the floor). Performer.at now negates the nod at its output (one place).
+   - Laughing cheeks: opt-in expression key `fill` (facerig.expr_def: the lower cheek bunches forward + out under the lifted apple);
+     presets laughing + proud use fill=1. No more V-chin / jaw-line notch.
+   - Kneel: torso leans in, head bowed, free arm hangs forward, hand rests on the knee, solemn face, slow breathing sway.
+   - **Gestures while walking:** `Performer.at(t, walk=phase, stride=0.3, walk_w=0..1)` - arms near rest swing against the legs,
+     gesturing arms keep gesturing, placed feet (kneel) do not step, walk_w eases in/out. Caller moves base ~2*stride/pi per radian.
+   - **Hair follow-through:** Performer.hair(t) spring (2 Hz) on the head's motion -> P['hair_lag'] (opt-in hd key): messy tufts, long hair
+     sheet + side locks, pony lag; long locks + pony fall toward the ground when the head tips (bow). Walking adds a step bounce.
+   - **Cloak mantle** (cloak_hd only): a shoulder piece from the collar over both shoulders to the clasp, pushed by the torso sections
+     and the shoulder balls (rides up with cheer / shrug) - hides the cloak's top edge (the 'shell'). Cloak waist collision + 3 cm: the belt
+     no longer shows through in bow.
+   - Scan again: **9 / 420** transitions with issues. 13 hd videos pixel-identical vs HEAD.
+   - Clips: `body_sheet.py show` (12.6 s, re-rendered with all of the above) and NEW `body_sheet.py walkshow` (6.6 s: a long-haired woman
+     walks in waving, thinks on the move, stops, bows - hair falls forward - idle; camera travels, 2.4 m = floor period -> loops).
+**Known bugs (to detail later):** no wind for running, no forearm-forearm collision in the cloth; faces need a medium close-up at phone size;
+9 short transition contacts (scratch_head fingertips 2 cm in the hair from fist_pump/clap/shocked; arms_crossed -> bow/clap/scratch_head,
+bow/cry -> arms_crossed, cheer -> slump: 2 cm for 1-3 frames); faint dark specks where the mantle meets the cloak in a deep bow;
+walking is straight-line only (no turning / speed change helpers).
 
 ## Newest (28 Nov 2026) - Why do NPCs stand still at night? (queue #1, built after the weekly reset)
 - Brief `briefs/night_freeze.md` through the rules filter (v27 Nov c): Bram no longer points (he would be seen), the rule is spoken
