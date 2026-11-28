@@ -19,6 +19,23 @@ python tools/tts/<fb|lr|gf|sz|ap|ap15|cd|cp|um|cb|gb|mc|mc2|lh>.py      # regene
 ```
 (For Final Boss B also run A's `PART=audio` first; same for Guard Forgets B.)
 
+## Newest (28 Nov 2026, evening) - Why do bosses glow red before they attack? (red_glow, Enes's seed, TENSION)
+- Brief `briefs/red_glow.md`: Enes approved + 3 touches (we read the knight SEES the crystal before the first dodge, the blade hits his old
+  spot by 2 s; on "Master?" his stare gives the master away and the boss follows it to his own chest; finale: after the helmet glows the
+  shield covers the lens -> frame 0). Last line "Dodge again, or save him?", no extra narrator line. 11 lines / 60 words.
+- `examples/red_glow.py` (new: the Hollow King = 2.7 m hd.human + armour, closed horned helmet with eye slits, chest crystal cavity; the master =
+  full-size hd.human scaled 0.3 into the window, ember, white sun; round shield with the white sun in the RIGHT hand = camera side; greatsword,
+  shards, spark, glass highlight + halo 2D; final_boss arena reused), voice `tools/tts/rg.py` (N/K cloned, M <- B ref + glass / helmet FX,
+  H <- N -6 st + iron comb; line 06 cut after "Run, b-"; 04 take 0 picked by hand). 5 sequences ->
+  `renders/red_glow/why_do_bosses_glow_red_before_they_attack.mp4` (31.4 s, -13.6 LUFS, -2.0 dBTP, check 11/13: FAIL = 1.2x length,
+  WARN = planned cuts). body_qa: 0 contact issues on the main figures (3 one-frame elbow jumps at the slam / lift). Critique r1-r2 in
+  `reviews/red_glow.md`. Thumbnails EN/TR, `captions/red_glow.md`, TR sheet `briefs/red_glow_voice_sheet.md` (11 lines, all Enes;
+  line 7 must be cut after "Kaç, ev-" too: rg.py cutoff() runs for EN only now).
+- Lessons: hd.human sizes are partly absolute (no 0.4 m humans: scale the faces); lathe caps cover openings; a lathe from r = 0 breaks into
+  wedges (use flat faces); emissive faces get an 8 cm depth pull (nobias); in 9:16 two fighters facing each other never both read
+  (depth-stage + cheat both 3/4); the copied tighten() removed only `keep` s of a pause (fixed in rg.py only); Git Bash heredocs with
+  many quotes break -> write patch scripts to the scratchpad. Waiting for Enes's verdict + TR takes.
+
 ## Newest (28 Nov 2026, noon) - 30-short IG + YT analysis -> NEXT: a new story with the proven mould
 - ANALYTICS.md section 24 + `analysis 48 hours/IG_YT_birlesik_28kas.csv`: only 5 shorts won on BOTH platforms (Final Boss A/B, Monster Shop,
   99 Swords, Goblins) = "Why do <game rule everyone noticed>?" about bosses / enemies / inventory / shops + a lore twist, trope in frame 1.
